@@ -1,0 +1,328 @@
+/* Add all your custom CSS from the original index.html */
+.hero {
+  background: linear-gradient(rgba(0, 35, 102, 0.8), rgba(0, 35, 102, 0.9)), url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1500&q=80');
+  background-size: cover;
+  background-position: center;
+}
+
+.feature-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.stats-card {
+  transition: all 0.3s ease;
+}
+
+.stats-card:hover {
+  transform: scale(1.05);
+}
+
+/* Custom animations */
+@keyframes pulse-gold {
+  0%, 100% { box-shadow: 0 0 5px rgba(255, 215, 0, 0.5); }
+  50% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.8); }
+}
+
+.pulse-button {
+  animation: pulse-gold 2s infinite;
+}
+
+/* Admin button specific styles */
+.admin-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.admin-button:hover {
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+}
+
+.nav-link {
+  position: relative;
+  padding: 0.5rem 0;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: 0;
+  left: 0;
+  background-color: #FFD700;
+  transition: width 0.3s ease;
+}
+
+.nav-link:hover::after {
+  width: 100%;
+}
+
+/* Improved dropdown styling */
+.dropdown-menu {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: all 0.3s ease;
+}
+
+.dropdown-group:hover .dropdown-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* Mobile menu improvements */
+@media (max-width: 768px) {
+  .mobile-menu-item {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .mobile-menu-item:last-child {
+    border-bottom: none;
+  }
+}
+/* Admin Login Specific Styles */
+.backdrop-blur-lg {
+  backdrop-filter: blur(16px);
+}
+
+.bg-white\/95 {
+  background-color: rgba(255, 255, 255, 0.95);
+}
+
+.shadow-3xl {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+/* Animation delays */
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+
+/* Floating animation */
+@keyframes float {
+  0%, 100% { 
+    transform: translateY(0px); 
+  }
+  50% { 
+    transform: translateY(-10px); 
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Smooth transitions */
+.transition-all {
+  transition: all 0.3s ease;
+}
+
+/* Focus styles for better accessibility */
+input:focus, button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 35, 102, 0.2);
+}
+
+/* Custom scrollbar for webkit */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #002366;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #003399;
+}
+
+:root {
+  --sricblue: #002366;
+  --sricblueLight: #003399;
+  --sricgold: #FFD700;
+  --sricgoldLight: #FFE44D;
+}
+
+.event-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.calendar-day:hover {
+  background-color: rgba(0, 35, 102, 0.1);
+}
+
+.calendar-day.event-day {
+  background-color: rgba(255, 215, 0, 0.2);
+}
+
+.calendar-day.today {
+  border: 2px solid #FFD700;
+}
+
+.month-header {
+  background: linear-gradient(135deg, #002366 0%, #0044cc 100%);
+}
+
+.holiday {
+  background-color: rgba(255, 0, 0, 0.1);
+}
+
+.exam-day {
+  background-color: rgba(0, 128, 0, 0.1);
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.month-transition {
+  transition: all 0.3s ease;
+}
+
+.academic-table tr:nth-child(even) {
+  background-color: #f9fafb;
+}
+
+.academic-table tr:hover {
+  background-color: #f3f4f6;
+}
+
+.event-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 4px;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  background-color: #e5e7eb;
+}
+
+@media (max-width: 768px) {
+  .calendar-grid {
+    grid-template-columns: repeat(1, 1fr);
+  }
+  
+  .calendar-day {
+    height: auto;
+    min-height: 80px;
+  }
+}
+
+/* Exam schedule specific styles */
+.exam-table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.exam-table th {
+  background: linear-gradient(135deg, #002366 0%, #0044cc 100%);
+  color: white;
+  padding: 12px;
+  text-align: left;
+}
+
+.exam-table tr:nth-child(even) {
+  background-color: #f8fafc;
+}
+
+.exam-table tr:hover {
+  background-color: #e2e8f0;
+}
+
+.exam-table td {
+  padding: 12px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.class-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin: 2px;
+}
+
+.class-badge.ukg {
+  background-color: #e0f2fe;
+  color: #0369a1;
+}
+
+.class-badge.primary {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.class-badge.middle {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.class-badge.secondary {
+  background-color: #fce7f3;
+  color: #9d174d;
+}
+
+.class-badge.senior {
+  background-color: #f3e8ff;
+  color: #6b21a8;
+}
+
+.exam-highlight {
+  background: linear-gradient(120deg, #fef3c7 0%, #fef3c7 100%);
+  background-repeat: no-repeat;
+  background-size: 100% 40%;
+  background-position: 0 90%;
+}
+
+.parent-meeting {
+  background: linear-gradient(120deg, #dcfce7 0%, #dcfce7 100%);
+  background-repeat: no-repeat;
+  background-size: 100% 40%;
+  background-position: 0 90%;
+}
+/* Add this to your existing CSS file (index.css or App.css) */
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.animate-bounce {
+  animation: bounce 1s infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
