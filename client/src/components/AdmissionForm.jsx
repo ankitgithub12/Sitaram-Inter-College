@@ -27,15 +27,18 @@ const AdmissionForm = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [toast, setToast] = useState({ show: false, message: '', type: '' });
-  const [apiUrl] = useState('http://localhost:5000/api');
   const [submittedAdmissionId, setSubmittedAdmissionId] = useState(null);
   const [showPrintModal, setShowPrintModal] = useState(false);
   const [printData, setPrintData] = useState(null);
   const [isLoadingPrintData, setIsLoadingPrintData] = useState(false);
+  const [applicationNumber, setApplicationNumber] = useState('');
   const printContentRef = useRef(null);
 
+  // API URL - make sure this matches your server URL
+  const API_URL = 'http://localhost:5000/api';
+
   // Show toast notification
-  const showToast = (message, type) => {
+  const showToast = (message, type = 'info') => {
     setToast({ show: true, message, type });
     setTimeout(() => {
       setToast({ show: false, message: '', type: '' });
@@ -62,19 +65,35 @@ const AdmissionForm = () => {
   // Format date for display
   const formatDate = (dateString) => {
     if (!dateString) return '';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    } catch (error) {
+      return dateString;
+    }
+  };
+
+  // Get today's date in YYYY-MM-DD format
+  const getToday = () => {
+    return new Date().toISOString().split('T')[0];
+  };
+
+  // Get date 3 years ago for max DOB
+  const getMaxDOB = () => {
+    const date = new Date();
+    date.setFullYear(date.getFullYear() - 3);
+    return date.toISOString().split('T')[0];
   };
 
   // Prepare print data
   const preparePrintData = async (admissionId) => {
     setIsLoadingPrintData(true);
     try {
-      const response = await axios.get(`${apiUrl}/admissions/${admissionId}`);
+      const response = await axios.get(`${API_URL}/admissions/${admissionId}`);
       if (response.data.success) {
         const admission = response.data.data;
         
@@ -153,6 +172,7 @@ const AdmissionForm = () => {
           
           <div class="application-id">
             Application ID: ${printData._id} | Status: ${printData.status.toUpperCase()}
+            ${printData.applicationNumber ? `<br>Application Number: ${printData.applicationNumber}` : ''}
           </div>
           
           <div class="section">
@@ -326,7 +346,7 @@ const AdmissionForm = () => {
     }
   };
 
-  // Form submission to backend
+  // Form submission to backend - FIXED VERSION
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -353,27 +373,76 @@ const AdmissionForm = () => {
       return;
     }
 
+    // Validate email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      showToast('Please enter a valid email address', 'error');
+      return;
+    }
+
+    // Validate all required fields
+    const requiredFields = [
+      'name', 'dob', 'motherTongue', 'caste', 'religion', 
+      'previousClass', 'previousSchool', 'admissionDate',
+      'fatherName', 'motherName', 'email', 'occupation', 'address'
+    ];
+    
+    const missingFields = requiredFields.filter(field => !formData[field]);
+    if (missingFields.length > 0) {
+      showToast(`Please fill in all required fields: ${missingFields.join(', ')}`, 'error');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
       // Prepare data for submission
       const submissionData = {
-        ...formData,
-        declaration: formData.declaration.toString() // Convert boolean to string
+        name: formData.name.trim(),
+        dob: formData.dob,
+        motherTongue: formData.motherTongue,
+        caste: formData.caste.trim(),
+        religion: formData.religion,
+        previousClass: formData.previousClass,
+        admissionClass: formData.admissionClass,
+        previousSchool: formData.previousSchool.trim(),
+        admissionDate: formData.admissionDate,
+        fatherName: formData.fatherName.trim(),
+        motherName: formData.motherName.trim(),
+        fatherContact: formData.fatherContact.replace(/\D/g, ''),
+        motherContact: formData.motherContact ? formData.motherContact.replace(/\D/g, '') : '',
+        email: formData.email.trim(),
+        occupation: formData.occupation.trim(),
+        motherOccupation: formData.motherOccupation ? formData.motherOccupation.trim() : '',
+        address: formData.address.trim(),
+        declaration: formData.declaration
       };
 
-      console.log('Submitting data:', submissionData);
+      console.log('Submitting data to:', `${API_URL}/admission`);
+      console.log('Data:', submissionData);
 
       // Send POST request to backend
-      const response = await axios.post(`${apiUrl}/admission`, submissionData, {
+      const response = await axios.post(`${API_URL}/admission`, submissionData, {
         headers: {
           'Content-Type': 'application/json'
-        }
+        },
+        timeout: 30000
       });
+
+      console.log('Response:', response.data);
 
       if (response.data.success) {
         const admissionId = response.data.data._id;
+        const appNumber = response.data.applicationNumber;
+        
         setSubmittedAdmissionId(admissionId);
+        setApplicationNumber(appNumber || '');
+        
+        // Store in localStorage for persistence
+        localStorage.setItem('lastAdmissionId', admissionId);
+        if (appNumber) {
+          localStorage.setItem('lastApplicationNumber', appNumber);
+        }
         
         showToast('🎉 Admission form submitted successfully! Please print and submit the hard copy to school.', 'success');
         
@@ -381,6 +450,28 @@ const AdmissionForm = () => {
         setTimeout(() => {
           showToast('📄 Click the "Print Application" button below to get your admission form', 'info');
         }, 2000);
+
+        // Reset form
+        setFormData({
+          name: '',
+          dob: getMaxDOB(),
+          motherTongue: '',
+          caste: '',
+          religion: '',
+          previousClass: '',
+          admissionClass: '',
+          previousSchool: '',
+          admissionDate: getToday(),
+          fatherName: '',
+          motherName: '',
+          fatherContact: '',
+          motherContact: '',
+          email: '',
+          occupation: '',
+          motherOccupation: '',
+          address: '',
+          declaration: false
+        });
 
       } else {
         throw new Error(response.data.message || 'Submission failed');
@@ -391,9 +482,15 @@ const AdmissionForm = () => {
       
       // Handle specific error messages
       if (error.response) {
-        showToast(`❌ ${error.response.data.message || 'Error submitting form'}`, 'error');
+        const errorData = error.response.data;
+        if (errorData.errors && Array.isArray(errorData.errors)) {
+          showToast(`❌ ${errorData.errors.join(', ')}`, 'error');
+        } else {
+          showToast(`❌ ${errorData.message || 'Error submitting form'}`, 'error');
+        }
       } else if (error.request) {
-        showToast('❌ Network error. Please check if the server is running.', 'error');
+        showToast('❌ Network error. Please check if the server is running at http://localhost:5000', 'error');
+        console.log('Server might not be running. Please start it with: node server.js');
       } else {
         showToast(`❌ ${error.message}`, 'error');
       }
@@ -402,20 +499,39 @@ const AdmissionForm = () => {
     }
   };
 
-  // Set default dates
+  // Check server connection on mount
   useEffect(() => {
-    const today = new Date().toISOString().split('T')[0];
-    const threeYearsAgo = new Date();
-    threeYearsAgo.setFullYear(threeYearsAgo.getFullYear() - 3);
-    const maxDob = threeYearsAgo.toISOString().split('T')[0];
-
-    // Set default values for date inputs
-    if (!formData.dob) {
-      setFormData(prev => ({ ...prev, dob: maxDob }));
-    }
+    const checkServer = async () => {
+      try {
+        await axios.get(`${API_URL}/health`, { timeout: 5000 });
+        console.log('Server connection successful');
+      } catch (error) {
+        console.warn('Server not reachable:', error.message);
+        showToast('⚠️ Server not connected. Please start the backend server.', 'error');
+      }
+    };
     
-    if (!formData.admissionDate) {
-      setFormData(prev => ({ ...prev, admissionDate: today }));
+    checkServer();
+    
+    // Set default dates
+    const today = getToday();
+    const maxDob = getMaxDOB();
+
+    setFormData(prev => ({ 
+      ...prev, 
+      dob: prev.dob || maxDob,
+      admissionDate: prev.admissionDate || today
+    }));
+
+    // Check for previously submitted admission
+    const lastAdmissionId = localStorage.getItem('lastAdmissionId');
+    const lastAppNumber = localStorage.getItem('lastApplicationNumber');
+    
+    if (lastAdmissionId) {
+      setSubmittedAdmissionId(lastAdmissionId);
+      if (lastAppNumber) {
+        setApplicationNumber(lastAppNumber);
+      }
     }
   }, []);
 
@@ -464,18 +580,6 @@ const AdmissionForm = () => {
       ]
     }
   ];
-
-  // Get today's date in YYYY-MM-DD format for max date
-  const getToday = () => {
-    return new Date().toISOString().split('T')[0];
-  };
-
-  // Get date 3 years ago for max DOB
-  const getMaxDOB = () => {
-    const date = new Date();
-    date.setFullYear(date.getFullYear() - 3);
-    return date.toISOString().split('T')[0];
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-600 to-indigo-800 py-8">
@@ -618,6 +722,10 @@ const AdmissionForm = () => {
                 src="/assets/SRIC LOGO.PNG" 
                 alt="SRIC Logo" 
                 className="h-24 w-24 rounded-full mr-6 border-4 border-white shadow-2xl transform hover:scale-105 transition-transform duration-300"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = "https://via.placeholder.com/96/1e3a8a/ffffff?text=SRIC";
+                }}
               />
               <div className="text-center md:text-left mt-6 md:mt-0">
                 <h1 className="text-4xl md:text-5xl font-bold mb-3 bg-gradient-to-r from-yellow-400 to-yellow-200 bg-clip-text text-transparent">
@@ -652,6 +760,11 @@ const AdmissionForm = () => {
                     <p className="text-green-700">
                       Your application ID: <span className="font-mono font-bold">{submittedAdmissionId.substring(0, 8)}...</span>
                     </p>
+                    {applicationNumber && (
+                      <p className="text-green-700">
+                        Application Number: <span className="font-mono font-bold">{applicationNumber}</span>
+                      </p>
+                    )}
                     <p className="text-green-700 text-sm mt-2">
                       Please print and submit a hard copy to the school office
                     </p>
@@ -680,7 +793,6 @@ const AdmissionForm = () => {
                 </h2>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* ... (rest of the form remains exactly the same) ... */}
                   <div className="space-y-2">
                     <label className="block text-sm font-semibold text-gray-700">
                       Full Name <span className="text-red-500">*</span>

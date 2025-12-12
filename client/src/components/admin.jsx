@@ -12,7 +12,7 @@ import {
   TrendingUp, TrendingDown, MoreVertical, Shield,
   Trash2, Edit, EyeIcon, Check, X, MessageSquare,
   Phone, MapPin, Calendar as CalendarIcon, BookOpen,
-  Archive // ADD THIS IMPORT
+  Archive, Image as ImageIcon, ExternalLink, File
 } from 'lucide-react';
 
 const Admin = () => {
@@ -40,46 +40,46 @@ const Admin = () => {
   const API_BASE_URL = 'http://localhost:5000'; // Change this to your backend URL
 
   const fetchWithAuth = async (url, options = {}) => {
-    const token = localStorage.getItem('adminToken');
-    const headers = {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    };
+  const token = localStorage.getItem('adminToken');
+  const headers = {
+    'Content-Type': 'application/json',
+    ...options.headers,
+  };
+  
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  
+  try {
+    console.log(`📡 Fetching: ${url}`);
+    const response = await fetch(url, {
+      ...options,
+      headers,
+      credentials: 'include'
+    });
     
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-    
-    try {
-      const response = await fetch(url, {
-        ...options,
-        headers,
-      });
-      
-      if (response.status === 401) {
-        localStorage.removeItem('adminToken');
-        localStorage.removeItem('adminOTP');
-        localStorage.removeItem('otpEmail');
-        navigate('/admin-login');
-        return null;
-      }
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      return await response.json();
-    } catch (error) {
-      console.error('Fetch error:', error);
-      if (error.message.includes('401')) {
-        localStorage.removeItem('adminToken');
-        localStorage.removeItem('adminOTP');
-        localStorage.removeItem('otpEmail');
-        navigate('/admin-login');
-      }
+    if (response.status === 401) {
+      localStorage.removeItem('adminToken');
+      navigate('/admin-login');
       return null;
     }
-  };
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('❌ Fetch error:', error);
+    if (error.message.includes('401')) {
+      localStorage.removeItem('adminToken');
+      navigate('/admin-login');
+    }
+    return null;
+  }
+};
+
 
   const showToast = (message, type = 'success') => {
     setToast({ show: true, message, type });
@@ -137,32 +137,28 @@ const Admin = () => {
   };
 
   const loadDashboardData = async () => {
-    try {
-      const [statsRes, admissionsRes, paymentsRes] = await Promise.all([
-        fetchWithAuth(`${API_BASE_URL}/api/admin/dashboard`),
-        fetchWithAuth(`${API_BASE_URL}/api/admissions?limit=5`),
-        fetchWithAuth(`${API_BASE_URL}/api/fee-payments?limit=5`)
-      ]);
+  try {
+    const data = await fetchWithAuth(`${API_BASE_URL}/api/admin/dashboard`);
+    
+    if (data?.success) {
+      setStats(data.data);
       
-      if (statsRes?.success) {
-        setStats(statsRes.data);
-        
-        // Update notification counts
-        const pendingAdmissions = statsRes.data.admissionsByStatus?.find(s => s._id === 'pending')?.count || 0;
-        const pendingPayments = statsRes.data.paymentsByStatus?.find(s => s._id === 'pending')?.count || 0;
-        const unreadContacts = 0; // You'll need to fetch this
-        
-        setNotificationCounts({
-          admissions: pendingAdmissions,
-          fees: pendingPayments,
-          contacts: unreadContacts,
-          total: pendingAdmissions + pendingPayments + unreadContacts
-        });
-      }
-    } catch (error) {
-      console.error('Error loading dashboard:', error);
+      // Update notification counts
+      const pendingAdmissions = data.data.admissionsByStatus?.find(s => s._id === 'pending')?.count || 0;
+      const pendingPayments = data.data.paymentsByStatus?.find(s => s._id === 'pending')?.count || 0;
+      const unreadContacts = data.data.counts?.unreadContacts || 0;
+      
+      setNotificationCounts({
+        admissions: pendingAdmissions,
+        fees: pendingPayments,
+        contacts: unreadContacts,
+        total: pendingAdmissions + pendingPayments + unreadContacts
+      });
     }
-  };
+  } catch (error) {
+    console.error('❌ Error loading dashboard:', error);
+  }
+};
 
   const loadAdmissions = async () => {
     try {
@@ -209,39 +205,54 @@ const Admin = () => {
     }
   };
 
-  const handleUpdateStatus = async (type, id, status, notes = '') => {
-    try {
-      let endpoint = '';
-      let body = { status };
-      
-      if (type === 'admission') {
-        endpoint = `/api/admissions/${id}/status`;
-        if (notes) body.adminNotes = notes;
-      } else if (type === 'fee') {
-        endpoint = `/api/fee-payments/${id}/status`;
-        if (notes) body.verificationNotes = notes;
-      } else if (type === 'contact') {
-        endpoint = `/api/contacts/${id}/status`;
-        if (notes) body.responseMessage = notes;
-      }
-      
-      const response = await fetchWithAuth(`${API_BASE_URL}${endpoint}`, {
-        method: 'PUT',
-        body: JSON.stringify(body)
-      });
-      
-      if (response?.success) {
-        showToast(`${type} status updated to ${status}`, 'success');
-        loadData(); // Refresh data
-        setViewDetails(null); // Close details view if open
-      } else {
-        throw new Error(response?.message || 'Failed to update status');
-      }
-    } catch (error) {
-      console.error('Error updating status:', error);
-      showToast('Error updating status', 'error');
+ const handleUpdateStatus = async (type, id, status, notes = '') => {
+  try {
+    let endpoint = '';
+    let body = { status };
+    
+    if (type === 'admission') {
+      endpoint = `/api/admissions/status/${id}`;
+      if (notes) body.adminNotes = notes;
+    } else if (type === 'fee') {
+      endpoint = `/api/fee-payments/${id}/status`;
+      if (notes) body.verificationNotes = notes;
+    } else if (type === 'contact') {
+      endpoint = `/api/contacts/${id}/status`;
+      if (notes) body.responseMessage = notes;
     }
-  };
+    
+    const response = await fetchWithAuth(`${API_BASE_URL}${endpoint}`, {
+      method: 'PUT',
+      body: JSON.stringify(body)
+    });
+    
+    if (response?.success) {
+      showToast(`${type.charAt(0).toUpperCase() + type.slice(1)} status updated to ${status}`, 'success');
+      
+      // Refresh the current data
+      switch (currentTab) {
+        case 'admissions':
+          await loadAdmissions();
+          break;
+        case 'fees':
+          await loadFeePayments();
+          break;
+        case 'contacts':
+          await loadContacts();
+          break;
+        default:
+          await loadDashboardData();
+      }
+      
+      setViewDetails(null); // Close details view if open
+    } else {
+      throw new Error(response?.message || 'Failed to update status');
+    }
+  } catch (error) {
+    console.error('❌ Error updating status:', error);
+    showToast('Error updating status', 'error');
+  }
+};
 
   const handleDelete = async (type, id) => {
     if (!window.confirm('Are you sure you want to delete this item?')) return;
@@ -324,6 +335,14 @@ const Admin = () => {
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  const formatFileSize = (bytes) => {
+    if (!bytes) return 'N/A';
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    if (bytes === 0) return '0 Byte';
+    const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)), 10);
+    return `${(bytes / Math.pow(1024, i)).toFixed(2)} ${sizes[i]}`;
   };
 
   const renderAdmissionDetails = (admission) => (
@@ -444,9 +463,86 @@ const Admin = () => {
         </div>
       </div>
       
-      {payment.receiptFile && (
+      {payment.cloudinaryFile ? (
         <div className="mt-6">
-          <h4 className="font-semibold text-gray-700 mb-3">Receipt</h4>
+          <h4 className="font-semibold text-gray-700 mb-3">Receipt (Cloudinary)</h4>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+              <div className="flex items-center space-x-3">
+                {payment.cloudinaryFile.resource_type === 'image' ? (
+                  <ImageIcon className="w-5 h-5 text-green-600" />
+                ) : (
+                  <File className="w-5 h-5 text-red-600" />
+                )}
+                <div>
+                  <p className="font-medium text-gray-900">{payment.cloudinaryFile.original_filename || 'Cloudinary file'}</p>
+                  <p className="text-sm text-gray-500">
+                    {formatFileSize(payment.cloudinaryFile.bytes)} • 
+                    {payment.cloudinaryFile.format ? ` ${payment.cloudinaryFile.format.toUpperCase()} • ` : ' '}
+                    {payment.cloudinaryFile.resource_type === 'image' ? 'Image' : 'PDF'}
+                  </p>
+                </div>
+              </div>
+              <a
+                href={payment.cloudinaryFile.secure_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center space-x-2 text-blue-600 hover:text-blue-800 font-medium"
+              >
+                <span>View</span>
+                <ExternalLink className="w-4 h-4" />
+              </a>
+            </div>
+            
+            {/* Show image preview for image files */}
+            {payment.cloudinaryFile.resource_type === 'image' && (
+              <div className="mt-4">
+                <div className="relative w-full h-64 md:h-80 overflow-hidden rounded-lg border border-gray-200">
+                  <img
+                    src={payment.cloudinaryFile.secure_url}
+                    alt={`Receipt for ${payment.studentName}`}
+                    className="w-full h-full object-contain bg-white"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239CA3AF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='18' height='18' rx='2' ry='2'%3E%3C/rect%3E%3Ccircle cx='8.5' cy='8.5' r='1.5'%3E%3C/circle%3E%3Cpolyline points='21 15 16 10 5 21'%3E%3C/polyline%3E%3C/svg%3E";
+                    }}
+                  />
+                </div>
+                {payment.cloudinaryFile.width && payment.cloudinaryFile.height && (
+                  <p className="text-xs text-gray-500 mt-2 text-center">
+                    Dimensions: {payment.cloudinaryFile.width} × {payment.cloudinaryFile.height}px
+                  </p>
+                )}
+              </div>
+            )}
+            
+            {/* Show PDF info for PDF files */}
+            {payment.cloudinaryFile.resource_type === 'pdf' && (
+              <div className="mt-4 p-4 bg-red-50 rounded-lg border border-red-200">
+                <div className="flex items-center space-x-3">
+                  <FileText className="w-5 h-5 text-red-600" />
+                  <div>
+                    <p className="font-medium text-red-800">PDF Document</p>
+                    <p className="text-sm text-red-600">
+                      Click the "View" button above to open this PDF document in a new tab.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Cloudinary ID for reference */}
+            <div className="mt-2">
+              <p className="text-xs text-gray-400">
+                Cloudinary ID: {payment.cloudinaryFile.public_id}
+              </p>
+            </div>
+          </div>
+        </div>
+      ) : payment.receiptFile ? (
+        // Fallback for older local storage files
+        <div className="mt-6">
+          <h4 className="font-semibold text-gray-700 mb-3">Receipt (Local Storage)</h4>
           <a
             href={payment.receiptFile.url}
             target="_blank"
@@ -456,6 +552,13 @@ const Admin = () => {
             <FileText className="w-4 h-4 mr-2" />
             View Receipt ({payment.receiptFile.originalName})
           </a>
+        </div>
+      ) : (
+        <div className="mt-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+          <div className="flex items-center space-x-3">
+            <FileText className="w-5 h-5 text-yellow-600" />
+            <p className="text-yellow-700">No receipt file attached to this payment.</p>
+          </div>
         </div>
       )}
       
@@ -1070,6 +1173,16 @@ const Admin = () => {
                                 <div>
                                   <h4 className="font-medium text-gray-800">{payment.studentName}</h4>
                                   <p className="text-gray-600 text-sm mt-1">₹{payment.amount?.toLocaleString('en-IN') || '0'} - {payment.className}</p>
+                                  {payment.cloudinaryFile && (
+                                    <div className="flex items-center mt-1">
+                                      {payment.cloudinaryFile.resource_type === 'image' ? (
+                                        <ImageIcon className="w-3 h-3 text-green-500 mr-1" />
+                                      ) : (
+                                        <File className="w-3 h-3 text-red-500 mr-1" />
+                                      )}
+                                      <span className="text-xs text-gray-500">Cloudinary</span>
+                                    </div>
+                                  )}
                                 </div>
                                 <div className="flex items-center space-x-2">
                                   {renderStatusBadge(payment.status)}
@@ -1272,6 +1385,9 @@ const Admin = () => {
                                 Receipt #
                               </th>
                               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                File Type
+                              </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Date
                               </th>
                               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -1306,6 +1422,31 @@ const Admin = () => {
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                   {payment.receiptNumber}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  {payment.cloudinaryFile ? (
+                                    <div className="flex items-center space-x-1">
+                                      {payment.cloudinaryFile.resource_type === 'image' ? (
+                                        <>
+                                          <ImageIcon className="w-4 h-4 text-green-600" />
+                                          <span className="text-xs text-gray-600">Image</span>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <File className="w-4 h-4 text-red-600" />
+                                          <span className="text-xs text-gray-600">PDF</span>
+                                        </>
+                                      )}
+                                      <span className="text-xs text-gray-400 ml-1">☁️</span>
+                                    </div>
+                                  ) : payment.receiptFile ? (
+                                    <div className="flex items-center space-x-1">
+                                      <FileText className="w-4 h-4 text-blue-600" />
+                                      <span className="text-xs text-gray-600">File</span>
+                                    </div>
+                                  ) : (
+                                    <span className="text-xs text-gray-400">No file</span>
+                                  )}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                   {formatDate(payment.receiptDate)}

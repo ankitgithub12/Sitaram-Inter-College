@@ -24,6 +24,7 @@ const Fees = () => {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [receiptDetails, setReceiptDetails] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const API_BASE_URL = 'http://localhost:5000';
 
   const fileInputRef = useRef(null);
   const bankFileInputRef = useRef(null);
@@ -419,65 +420,66 @@ const Fees = () => {
   };
 
   // NEW FUNCTION: Submit payment to backend
-  const submitPaymentToBackend = async () => {
-    try {
-      const totalAmount = calculateTotal();
-      const now = new Date();
-      const receiptNumber = `SRIC-${now.getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
-      
-      // Prepare payment data - matching your MongoDB schema
-      const paymentData = {
-        studentName: formData.studentName,
-        fatherName: formData.fatherName,
-        mobile: formData.mobile,
-        email: formData.email,
-        className: feeStructure[selectedClass]?.name || '',
-        classId: selectedClass,
-        amount: totalAmount,
-        paymentMethod: paymentMethod === 'online' ? 'UPI Payment' : 'Bank Transfer',
-        transactionId: paymentMethod === 'online' ? transactionId : bankTransactionId,
-        receiptNumber: receiptNumber,
-        receiptDate: now,
-        status: 'pending'
-      };
-      
-      // Create FormData to include file
-      const formDataToSend = new FormData();
-      formDataToSend.append('paymentData', JSON.stringify(paymentData));
-      
-      // Add the receipt file
-      if (paymentMethod === 'online' && uploadedFile) {
-        formDataToSend.append('receipt', uploadedFile);
-      } else if (paymentMethod === 'bank-transfer' && bankUploadedFile) {
-        formDataToSend.append('receipt', bankUploadedFile);
-      }
-      
-      // Send to your backend API
-      const response = await fetch('/api/fee-payment', {
-        method: 'POST',
-        body: formDataToSend,
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Payment submission failed');
-      }
-      
-      const result = await response.json();
-      
-      if (result.success) {
-        console.log('Payment saved to database:', result.data);
-        return { success: true, receiptNumber: receiptNumber };
-      } else {
-        throw new Error(result.message || 'Payment submission failed');
-      }
-      
-    } catch (error) {
-      console.error('Error submitting payment:', error);
-      alert(`Payment submission failed: ${error.message}`);
-      return { success: false };
+const submitPaymentToBackend = async () => {
+  try {
+    const totalAmount = calculateTotal();
+    const now = new Date();
+    const receiptNumber = `SRIC-${now.getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+    
+    // Create FormData and append individual fields
+    const formDataToSend = new FormData();
+    
+    // Append all required fields individually
+    formDataToSend.append('studentName', formData.studentName);
+    formDataToSend.append('fatherName', formData.fatherName);
+    formDataToSend.append('mobile', formData.mobile);
+    formDataToSend.append('email', formData.email);
+    formDataToSend.append('className', feeStructure[selectedClass]?.name || '');
+    formDataToSend.append('classId', selectedClass);
+    formDataToSend.append('amount', totalAmount.toString());
+    formDataToSend.append('paymentMethod', paymentMethod === 'online' ? 'UPI Payment' : 'Bank Transfer');
+    formDataToSend.append('transactionId', paymentMethod === 'online' ? transactionId : bankTransactionId);
+    formDataToSend.append('receiptNumber', receiptNumber);
+    formDataToSend.append('receiptDate', now.toISOString());
+    
+    // Add the receipt file
+    if (paymentMethod === 'online' && uploadedFile) {
+      formDataToSend.append('receiptFile', uploadedFile);
+    } else if (paymentMethod === 'bank-transfer' && bankUploadedFile) {
+      formDataToSend.append('receiptFile', bankUploadedFile);
     }
-  };
+    
+    console.log('📦 Sending payment data. Fields:');
+    for (let [key, value] of formDataToSend.entries()) {
+      console.log(`${key}: ${value}`);
+    }
+    
+    // Send to backend
+    const response = await fetch(`${API_BASE_URL}/api/fee-payments/upload`, {
+      method: 'POST',
+      body: formDataToSend,
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Payment submission failed');
+    }
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      console.log('✅ Payment saved to database:', result.data);
+      return { success: true, receiptNumber: receiptNumber };
+    } else {
+      throw new Error(result.message || 'Payment submission failed');
+    }
+    
+  } catch (error) {
+    console.error('❌ Error submitting payment:', error);
+    alert(`Payment submission failed: ${error.message}`);
+    return { success: false };
+  }
+};
 
   const handleNextStep = async () => {
     if (activeStep === 1) {

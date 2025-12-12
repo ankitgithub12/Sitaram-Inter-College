@@ -1,31 +1,62 @@
-
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const path = require('path');
-const http = require('http');
-const multer = require('multer');
 const fs = require('fs');
+const multer = require('multer');
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+
 
 const app = express();
 
 // Use environment variable for port or default to 5000
 const PORT = process.env.PORT || 5000;
 
+
+// CORS Configuration - Allow React frontend
+app.use(cors({
+  origin: ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:5174'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
+}));
+
+// Custom OPTIONS handler for preflight requests
+app.use((req, res, next) => {
+  if (req.method === 'OPTIONS') {
+    res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.status(200).end();
+    return;
+  }
+  next();
+});
 // Middleware
-app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Serve static files from Public folder
-app.use(express.static(path.join(__dirname, 'Public')));
+// Serve static files from Public folder if exists
+if (fs.existsSync(path.join(__dirname, 'Public'))) {
+  app.use(express.static(path.join(__dirname, 'Public')));
+}
 
-// MongoDB Connection - Use your actual connection string from .env
+// Cloudinary Configuration
 require('dotenv').config();
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'your_cloud_name',
+  api_key: process.env.CLOUDINARY_API_KEY || 'your_api_key',
+  api_secret: process.env.CLOUDINARY_API_SECRET || 'your_api_secret'
+});
+
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://SRIC:SRIC221205@cluster.fmt0jf7.mongodb.net/sric_admissions?retryWrites=true&w=majority&appName=Cluster';
 
 // Connect to MongoDB
+// Replace the MongoDB connection section with this:
 mongoose.connect(MONGODB_URI)
 .then(() => console.log('✅ Connected to MongoDB Atlas successfully'))
 .catch(err => {
@@ -34,65 +65,60 @@ mongoose.connect(MONGODB_URI)
   console.log('💡 Make sure your IP is whitelisted in MongoDB Atlas');
 });
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    const uploadDir = 'uploads/receipts/';
-    // Create directory if it doesn't exist
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-    cb(null, uploadDir);
-  },
-  filename: function (req, file, cb) {
-    // Create a unique filename with timestamp
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, 'receipt-' + uniqueSuffix + path.extname(file.originalname));
-  }
-});
-
-const upload = multer({ 
-  storage: storage,
-  limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB limit
-  },
-  fileFilter: function (req, file, cb) {
-    // Check file type
-    if (file.mimetype.startsWith('image/') || file.mimetype === 'application/pdf') {
-      cb(null, true);
-    } else {
-      cb(new Error('Only images and PDF files are allowed'), false);
-    }
-  }
-});
-
 // Define Admission Schema
 const admissionSchema = new mongoose.Schema({
   // Student Information
-  name: { type: String, required: true },
-  dob: { type: Date, required: true },
-  motherTongue: { type: String, required: true },
-  caste: { type: String, required: true },
-  religion: { type: String, required: true },
-  previousClass: { type: String, required: true },
-  admissionClass: { type: String, required: true },
-  previousSchool: { type: String, required: true },
-  admissionDate: { type: Date, required: true },
+  name: { type: String, required: [true, 'Name is required'] },
+  dob: { type: Date, required: [true, 'Date of birth is required'] },
+  motherTongue: { type: String, required: [true, 'Mother tongue is required'] },
+  caste: { type: String, required: [true, 'Caste is required'] },
+  religion: { type: String, required: [true, 'Religion is required'] },
+  previousClass: { type: String, required: [true, 'Previous class is required'] },
+  admissionClass: { type: String, required: [true, 'Admission class is required'] },
+  previousSchool: { type: String, required: [true, 'Previous school is required'] },
+  admissionDate: { type: Date, required: [true, 'Admission date is required'] },
   
   // Parent/Guardian Information
-  fatherName: { type: String, required: true },
-  motherName: { type: String, required: true },
-  fatherContact: { type: String, required: true },
-  motherContact: { type: String },
-  email: { type: String, required: true },
-  occupation: { type: String, required: true },
+  fatherName: { type: String, required: [true, "Father's name is required"] },
+  motherName: { type: String, required: [true, "Mother's name is required"] },
+  fatherContact: { 
+    type: String, 
+    required: [true, "Father's contact is required"],
+    validate: {
+      validator: function(v) {
+        return /^[0-9]{10}$/.test(v);
+      },
+      message: props => `${props.value} is not a valid phone number!`
+    }
+  },
+  motherContact: { 
+    type: String,
+    validate: {
+      validator: function(v) {
+        if (!v) return true;
+        return /^[0-9]{10}$/.test(v);
+      },
+      message: props => `${props.value} is not a valid phone number!`
+    }
+  },
+  email: { 
+    type: String, 
+    required: [true, 'Email is required'],
+    lowercase: true,
+    trim: true
+  },
+  occupation: { type: String, required: [true, "Father's occupation is required"] },
   motherOccupation: { type: String },
   
   // Address Information
-  address: { type: String, required: true },
+  address: { type: String, required: [true, 'Address is required'] },
   
   // Declaration
-  declaration: { type: Boolean, required: true },
+  declaration: { 
+    type: Boolean, 
+    required: [true, 'Declaration acceptance is required'],
+    default: false 
+  },
   
   // Status field
   status: { 
@@ -104,33 +130,55 @@ const admissionSchema = new mongoose.Schema({
   // Timestamps
   submittedAt: { type: Date, default: Date.now },
   
-  // Additional fields for better management
+  // Additional fields
   studentId: { type: String },
   applicationNumber: { 
     type: String,
-    unique: true
-  }
+    unique: true,
+    sparse: true
+  },
+  
+  // Admin notes
+  adminNotes: { type: String }
 });
 
-// Generate application number before saving
-admissionSchema.pre('save', function(next) {
+admissionSchema.pre('save', function () {
   if (!this.applicationNumber) {
     const prefix = 'SRIC';
     const year = new Date().getFullYear().toString().slice(-2);
     const random = Math.floor(10000 + Math.random() * 90000);
     this.applicationNumber = `${prefix}${year}${random}`;
   }
-  next();
 });
+
+// Create indexes for better performance
+// admissionSchema.index({ email: 1 });
+// admissionSchema.index({ status: 1 });
+// admissionSchema.index({ submittedAt: -1 });
+// admissionSchema.index({ applicationNumber: 1 }, { unique: true });
 
 const Admission = mongoose.model('Application', admissionSchema, 'applications');
 
 // Define Contact Schema
 const contactSchema = new mongoose.Schema({
   name: { type: String, required: true },
-  email: { type: String, required: true },
-  phone: { type: String },
-  subject: { type: String },
+  email: { 
+    type: String, 
+    required: true,
+    lowercase: true,
+    trim: true
+  },
+  phone: { 
+    type: String,
+    validate: {
+      validator: function(v) {
+        if (!v) return true;
+        return /^[0-9]{10}$/.test(v);
+      },
+      message: props => `${props.value} is not a valid phone number!`
+    }
+  },
+  subject: { type: String, default: 'General Inquiry' },
   message: { type: String, required: true },
   
   // Status field
@@ -150,10 +198,15 @@ const contactSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now }
 });
 
-contactSchema.pre('save', function(next) {
+// Update timestamp on save
+contactSchema.pre('save', function () {
   this.updatedAt = new Date();
-  next();
 });
+
+
+// contactSchema.index({ email: 1 });
+// contactSchema.index({ status: 1 });
+// contactSchema.index({ submittedAt: -1 });
 
 const Contact = mongoose.model('Contact', contactSchema, 'contacts');
 
@@ -162,13 +215,31 @@ const feePaymentSchema = new mongoose.Schema({
   // Student Information
   studentName: { type: String, required: true },
   fatherName: { type: String, required: true },
-  mobile: { type: String, required: true },
-  email: { type: String, required: true },
+  mobile: { 
+    type: String, 
+    required: true,
+    validate: {
+      validator: function(v) {
+        return /^[0-9]{10}$/.test(v);
+      },
+      message: props => `${props.value} is not a valid phone number!`
+    }
+  },
+  email: { 
+    type: String, 
+    required: true,
+    lowercase: true,
+    trim: true
+  },
   className: { type: String, required: true },
   classId: { type: String },
   
   // Payment Information
-  amount: { type: Number, required: true },
+  amount: { 
+    type: Number, 
+    required: true,
+    min: [0, 'Amount cannot be negative']
+  },
   paymentMethod: { type: String, required: true },
   transactionId: { type: String, required: true },
   
@@ -180,14 +251,24 @@ const feePaymentSchema = new mongoose.Schema({
   },
   receiptDate: { type: Date, required: true },
   
-  // File Information
+  // Cloudinary File Information
+  cloudinaryFile: {
+    public_id: { type: String },
+    secure_url: { type: String },
+    original_filename: { type: String },
+    format: { type: String },
+    resource_type: { type: String },
+    bytes: { type: Number },
+    width: { type: Number },
+    height: { type: Number },
+    created_at: { type: String }
+  },
+  
+  // Old file format for backward compatibility
   receiptFile: {
+    url: { type: String },
     originalName: { type: String },
-    storageName: { type: String },
-    mimeType: { type: String },
-    size: { type: Number },
-    path: { type: String },
-    url: { type: String }
+    size: { type: Number }
   },
   
   // Status field
@@ -207,38 +288,168 @@ const feePaymentSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now }
 });
 
-feePaymentSchema.pre('save', function(next) {
-  if (this.receiptFile && this.receiptFile.path) {
-    this.receiptFile.url = `/uploads/receipts/${this.receiptFile.storageName}`;
-  }
+// Update timestamp on save
+feePaymentSchema.pre('save', function () {
   this.updatedAt = new Date();
-  next();
 });
+
+
+// feePaymentSchema.index({ email: 1 });
+// feePaymentSchema.index({ status: 1 });
+// feePaymentSchema.index({ receiptNumber: 1 }, { unique: true });
+// feePaymentSchema.index({ submittedAt: -1 });
 
 const FeePayment = mongoose.model('FeePayment', feePaymentSchema, 'feePayments');
 
-// API Routes
+// Configure Cloudinary storage for file uploads
+const cloudinaryStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'sric_admissions/fee_payments',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'pdf', 'webp'],
+    resource_type: 'auto',
+    transformation: [{ width: 1000, height: 1000, crop: 'limit' }]
+  }
+});
+
+const upload = multer({ 
+  storage: cloudinaryStorage,
+  limits: {
+    fileSize: 10 * 1024 * 1024 // 10MB limit
+  },
+  fileFilter: function (req, file, cb) {
+    // Check file type
+    const allowedMimes = [
+      'image/jpeg',
+      'image/jpg',
+      'image/png',
+      'image/webp',
+      'image/gif',
+      'application/pdf'
+    ];
+    
+    if (allowedMimes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only images (JPEG, PNG, WebP, GIF) and PDF files are allowed'), false);
+    }
+  }
+});
+
+// ==================== API ROUTES ====================
+
+// POST admission form
 app.post('/api/admission', async (req, res) => {
   try {
-    console.log('Received form data:', req.body);
+    console.log('📨 Received admission form data');
     
-    // Parse dates
-    if (req.body.dob) req.body.dob = new Date(req.body.dob);
-    if (req.body.admissionDate) req.body.admissionDate = new Date(req.body.admissionDate);
+    // Validate required fields
+    const requiredFields = [
+      'name', 'dob', 'motherTongue', 'caste', 'religion', 
+      'previousClass', 'admissionClass', 'previousSchool', 'admissionDate',
+      'fatherName', 'motherName', 'fatherContact', 'email', 
+      'occupation', 'address', 'declaration'
+    ];
     
-    const newAdmission = new Admission(req.body);
+    const missingFields = requiredFields.filter(field => !req.body[field]);
+    
+    if (missingFields.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: `Missing required fields: ${missingFields.join(', ')}`
+      });
+    }
+    
+    // Parse dates and prepare data
+    const admissionData = {
+      name: req.body.name.trim(),
+      dob: new Date(req.body.dob),
+      motherTongue: req.body.motherTongue,
+      caste: req.body.caste.trim(),
+      religion: req.body.religion,
+      previousClass: req.body.previousClass,
+      admissionClass: req.body.admissionClass,
+      previousSchool: req.body.previousSchool.trim(),
+      admissionDate: new Date(req.body.admissionDate),
+      fatherName: req.body.fatherName.trim(),
+      motherName: req.body.motherName.trim(),
+      fatherContact: req.body.fatherContact.replace(/\D/g, ''),
+      motherContact: req.body.motherContact ? req.body.motherContact.replace(/\D/g, '') : '',
+      email: req.body.email.toLowerCase().trim(),
+      occupation: req.body.occupation.trim(),
+      motherOccupation: req.body.motherOccupation ? req.body.motherOccupation.trim() : '',
+      address: req.body.address.trim(),
+      declaration: req.body.declaration === 'true' || req.body.declaration === true,
+      submittedAt: new Date()
+    };
+    
+    // Validate dates
+    if (isNaN(admissionData.dob.getTime())) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid date of birth'
+      });
+    }
+    
+    if (isNaN(admissionData.admissionDate.getTime())) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid admission date'
+      });
+    }
+    
+    // Check if student is too young (less than 3 years)
+    const age = new Date().getFullYear() - admissionData.dob.getFullYear();
+    if (age < 3) {
+      return res.status(400).json({
+        success: false,
+        message: 'Student must be at least 3 years old for admission'
+      });
+    }
+    
+    const newAdmission = new Admission(admissionData);
     const savedAdmission = await newAdmission.save();
     
-    console.log('Data saved to MongoDB:', savedAdmission);
+    console.log('✅ Data saved to MongoDB:', savedAdmission.applicationNumber);
     
     res.status(201).json({
       success: true,
       message: 'Admission form submitted successfully!',
-      data: savedAdmission
+      data: savedAdmission,
+      applicationNumber: savedAdmission.applicationNumber
     });
   } catch (error) {
-    console.error('Error saving to MongoDB:', error);
-    res.status(400).json({
+    console.error('❌ Error saving to MongoDB:', error);
+    
+    // Handle duplicate key error
+    if (error.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        message: 'Duplicate application detected. Please try again.',
+        error: 'Duplicate entry'
+      });
+    }
+    
+    // Handle validation errors
+    if (error.name === 'ValidationError') {
+      const messages = Object.values(error.errors).map(err => err.message);
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: messages
+      });
+    }
+    
+    // Handle cast errors
+    if (error.name === 'CastError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid data format',
+        error: error.message
+      });
+    }
+    
+    res.status(500).json({
       success: false,
       message: 'Error submitting form',
       error: error.message
@@ -246,15 +457,33 @@ app.post('/api/admission', async (req, res) => {
   }
 });
 
-// API Route for Contact Form
+// POST contact form
 app.post('/api/contact', async (req, res) => {
   try {
-    console.log('Received contact form data:', req.body);
+    console.log('📨 Received contact form data');
     
-    const newContact = new Contact(req.body);
+    // Validate required fields
+    if (!req.body.name || !req.body.email || !req.body.message) {
+      return res.status(400).json({
+        success: false,
+        message: 'Name, email, and message are required'
+      });
+    }
+    
+    const contactData = {
+      name: req.body.name.trim(),
+      email: req.body.email.toLowerCase().trim(),
+      phone: req.body.phone ? req.body.phone.replace(/\D/g, '') : '',
+      subject: req.body.subject || 'General Inquiry',
+      message: req.body.message.trim(),
+      submittedAt: new Date(),
+      updatedAt: new Date()
+    };
+    
+    const newContact = new Contact(contactData);
     const savedContact = await newContact.save();
     
-    console.log('Contact data saved to MongoDB:', savedContact);
+    console.log('✅ Contact data saved to MongoDB:', savedContact._id);
     
     res.status(201).json({
       success: true,
@@ -262,8 +491,18 @@ app.post('/api/contact', async (req, res) => {
       data: savedContact
     });
   } catch (error) {
-    console.error('Error saving contact to MongoDB:', error);
-    res.status(400).json({
+    console.error('❌ Error saving contact to MongoDB:', error);
+    
+    if (error.name === 'ValidationError') {
+      const messages = Object.values(error.errors).map(err => err.message);
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: messages
+      });
+    }
+    
+    res.status(500).json({
       success: false,
       message: 'Error submitting contact form',
       error: error.message
@@ -271,31 +510,43 @@ app.post('/api/contact', async (req, res) => {
   }
 });
 
-// API Route for Fee Payment Submission with file upload
-app.post('/api/fee-payment', upload.single('receipt'), async (req, res) => {
+// POST fee payment with file upload
+app.post("/api/fee-payments", async (req, res) => {
   try {
-    console.log('Received fee payment submission');
-    
-    // Check if payment data exists
-    if (!req.body.paymentData) {
-      return res.status(400).json({
-        success: false,
-        message: 'Payment data is required'
-      });
-    }
-    
-    let paymentData;
-    try {
-      paymentData = JSON.parse(req.body.paymentData);
-    } catch (parseError) {
-      console.error('Error parsing payment data:', parseError);
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid payment data format'
-      });
-    }
-    
-    // Basic validation
+    console.log("📨 Received Fee Payment Data:", req.body);
+
+    const payment = new FeePayment({
+      studentName: req.body.studentName,
+      phone: req.body.phone,
+      course: req.body.course,
+      amount: req.body.amount,
+      transactionId: req.body.transactionId,
+    });
+
+    await payment.save();
+
+    return res.status(201).json({
+      success: true,
+      message: "Payment saved successfully",
+      data: payment,
+    });
+  } catch (error) {
+    console.error("❌ Error saving fee payment:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error while saving payment",
+    });
+  }
+});
+app.post('/api/fee-payments/upload', upload.single('receiptFile'), async (req, res) => {
+  try {
+    console.log('📨 Received fee payment data with file upload')
+    const paymentData = req.body
+      ;
+      
+
+
+    // Validate required fields
     const requiredFields = ['studentName', 'fatherName', 'mobile', 'email', 'className', 'amount', 'paymentMethod', 'transactionId', 'receiptNumber'];
     const missingFields = requiredFields.filter(field => !paymentData[field]);
     
@@ -306,40 +557,64 @@ app.post('/api/fee-payment', upload.single('receipt'), async (req, res) => {
       });
     }
     
+    // Check if file was uploaded
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'Receipt file is required'
+      });
+    }
+    
     // Check for duplicate receipt number
     const existingPayment = await FeePayment.findOne({ receiptNumber: paymentData.receiptNumber });
     if (existingPayment) {
       return res.status(400).json({
         success: false,
-        message: 'This receipt number already exists. Please try again.'
+        message: 'This receipt number already exists. Please use a different receipt number.'
       });
     }
     
-    // Add file information if uploaded
-    if (req.file) {
-      paymentData.receiptFile = {
-        originalName: req.file.originalname,
-        storageName: req.file.filename,
-        mimeType: req.file.mimetype,
-        size: req.file.size,
-        path: req.file.path,
-        url: `/uploads/receipts/${req.file.filename}`
-      };
+    // Prepare payment data
+    const feePaymentData = {
+      studentName: paymentData.studentName.trim(),
+      fatherName: paymentData.fatherName.trim(),
+      mobile: paymentData.mobile.replace(/\D/g, ''),
+      email: paymentData.email.toLowerCase().trim(),
+      className: paymentData.className,
+      classId: paymentData.classId || '',
+      amount: parseFloat(paymentData.amount),
+      paymentMethod: paymentData.paymentMethod,
+      transactionId: paymentData.transactionId.trim(),
+      receiptNumber: paymentData.receiptNumber.trim(),
+      receiptDate: new Date(paymentData.receiptDate || Date.now()),
+      cloudinaryFile: {
+        public_id: req.file.public_id,
+        secure_url: req.file.secure_url,
+        original_filename: req.file.originalname,
+        format: req.file.format,
+        resource_type: req.file.resource_type,
+        bytes: req.file.size,
+        width: req.file.width || null,
+        height: req.file.height || null,
+        created_at: req.file.created_at || new Date().toISOString()
+      },
+      submittedAt: new Date(),
+      updatedAt: new Date()
+    };
+    
+    // Validate amount
+    if (feePaymentData.amount <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Amount must be greater than 0'
+      });
     }
     
-    // Ensure receiptDate is properly formatted
-    if (!paymentData.receiptDate || isNaN(new Date(paymentData.receiptDate))) {
-      paymentData.receiptDate = new Date();
-    } else {
-      paymentData.receiptDate = new Date(paymentData.receiptDate);
-    }
-    
-    // Create and save payment record
-    const newFeePayment = new FeePayment(paymentData);
+    // Save to database
+    const newFeePayment = new FeePayment(feePaymentData);
     const savedFeePayment = await newFeePayment.save();
     
-    console.log(`✅ Fee payment saved: ${savedFeePayment.receiptNumber} for ${savedFeePayment.studentName}`);
-    console.log(`   Amount: ₹${savedFeePayment.amount}, Class: ${savedFeePayment.className}`);
+    console.log('✅ Fee payment saved:', savedFeePayment.receiptNumber);
     
     res.status(201).json({
       success: true,
@@ -352,7 +627,7 @@ app.post('/api/fee-payment', upload.single('receipt'), async (req, res) => {
         amount: savedFeePayment.amount,
         date: savedFeePayment.receiptDate,
         status: savedFeePayment.status,
-        receiptUrl: savedFeePayment.receiptFile?.url
+        receiptUrl: savedFeePayment.cloudinaryFile.secure_url
       }
     });
     
@@ -363,7 +638,7 @@ app.post('/api/fee-payment', upload.single('receipt'), async (req, res) => {
     if (error.code === 11000) {
       return res.status(400).json({
         success: false,
-        message: 'Duplicate receipt detected. Please refresh and try again.'
+        message: 'Duplicate receipt number detected. Please try again with a different receipt number.'
       });
     }
     
@@ -382,28 +657,187 @@ app.post('/api/fee-payment', upload.single('receipt'), async (req, res) => {
       if (error.code === 'LIMIT_FILE_SIZE') {
         return res.status(400).json({
           success: false,
-          message: 'File size exceeds 5MB limit'
+          message: 'File size exceeds 10MB limit'
         });
       }
       return res.status(400).json({
         success: false,
-        message: 'File upload error'
+        message: 'File upload error: ' + error.message
       });
     }
     
     res.status(500).json({
       success: false,
       message: 'Server error while saving payment',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
     });
   }
 });
 
-// API to update admission status
+// GET all admissions with pagination and filtering
+app.get('/api/admissions', async (req, res) => {
+  try {
+    const { status, search, page = 1, limit = 20, sort = '-submittedAt' } = req.query;
+    let query = {};
+    
+    if (status && status !== 'all') {
+      query.status = status;
+    }
+    
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } },
+        { applicationNumber: { $regex: search, $options: 'i' } },
+        { fatherName: { $regex: search, $options: 'i' } },
+        { fatherContact: { $regex: search, $options: 'i' } }
+      ];
+    }
+    
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
+    
+    const [admissions, total] = await Promise.all([
+      Admission.find(query)
+        .sort(sort)
+        .skip(skip)
+        .limit(limitNum)
+        .lean(),
+      Admission.countDocuments(query)
+    ]);
+    
+    res.json({
+      success: true,
+      count: admissions.length,
+      total,
+      pages: Math.ceil(total / limitNum),
+      currentPage: pageNum,
+      data: admissions
+    });
+  } catch (error) {
+    console.error('❌ Error fetching admissions:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching admissions',
+      error: error.message
+    });
+  }
+});
+
+// GET all fee payments
+app.get('/api/fee-payments', async (req, res) => {
+  try {
+    const { status, search, page = 1, limit = 20 } = req.query;
+    let query = {};
+    
+    if (status && status !== 'all') {
+      query.status = status;
+    }
+    
+    if (search) {
+      query.$or = [
+        { studentName: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } },
+        { receiptNumber: { $regex: search, $options: 'i' } },
+        { fatherName: { $regex: search, $options: 'i' } },
+        { mobile: { $regex: search, $options: 'i' } }
+      ];
+    }
+    
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
+    
+    const [feePayments, total] = await Promise.all([
+      FeePayment.find(query)
+        .sort({ submittedAt: -1 })
+        .skip(skip)
+        .limit(limitNum)
+        .lean(),
+      FeePayment.countDocuments(query)
+    ]);
+    
+    res.json({
+      success: true,
+      count: feePayments.length,
+      total,
+      pages: Math.ceil(total / limitNum),
+      currentPage: pageNum,
+      data: feePayments
+    });
+  } catch (error) {
+    console.error('❌ Error fetching fee payments:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching fee payments',
+      error: error.message
+    });
+  }
+});
+
+// GET all contacts
+app.get('/api/contacts', async (req, res) => {
+  try {
+    const { status, search, page = 1, limit = 20 } = req.query;
+    let query = {};
+    
+    if (status && status !== 'all') {
+      query.status = status;
+    }
+    
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } },
+        { subject: { $regex: search, $options: 'i' } },
+        { message: { $regex: search, $options: 'i' } }
+      ];
+    }
+    
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
+    
+    const [contacts, total] = await Promise.all([
+      Contact.find(query)
+        .sort({ submittedAt: -1 })
+        .skip(skip)
+        .limit(limitNum)
+        .lean(),
+      Contact.countDocuments(query)
+    ]);
+    
+    res.json({
+      success: true,
+      count: contacts.length,
+      total,
+      pages: Math.ceil(total / limitNum),
+      currentPage: pageNum,
+      data: contacts
+    });
+  } catch (error) {
+    console.error('❌ Error fetching contacts:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching contacts',
+      error: error.message
+    });
+  }
+});
+
+// UPDATE admission status
 app.put('/api/admissions/:id/status', async (req, res) => {
   try {
     const { id } = req.params;
     const { status, adminNotes } = req.body;
+    
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid admission ID'
+      });
+    }
     
     const validStatuses = ['pending', 'approved', 'rejected'];
     if (!validStatuses.includes(status)) {
@@ -419,7 +853,7 @@ app.put('/api/admissions/:id/status', async (req, res) => {
     const updatedAdmission = await Admission.findByIdAndUpdate(
       id,
       updateData,
-      { new: true }
+      { new: true, runValidators: true }
     );
     
     if (!updatedAdmission) {
@@ -435,7 +869,7 @@ app.put('/api/admissions/:id/status', async (req, res) => {
       data: updatedAdmission
     });
   } catch (error) {
-    console.error('Error updating admission status:', error);
+    console.error('❌ Error updating admission status:', error);
     res.status(500).json({
       success: false,
       message: 'Error updating admission status',
@@ -444,11 +878,74 @@ app.put('/api/admissions/:id/status', async (req, res) => {
   }
 });
 
-// API to update contact status
+// UPDATE fee payment status
+app.put('/api/fee-payments/:id/status', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status, verificationNotes } = req.body;
+    
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid fee payment ID'
+      });
+    }
+    
+    const validStatuses = ['pending', 'verified', 'rejected'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid status'
+      });
+    }
+    
+    const updateData = { status };
+    if (verificationNotes) updateData.verificationNotes = verificationNotes;
+    if (status === 'verified' || status === 'rejected') {
+      updateData.verifiedAt = new Date();
+      updateData.verifiedBy = req.user?.username || 'Admin';
+    }
+    
+    const updatedPayment = await FeePayment.findByIdAndUpdate(
+      id,
+      updateData,
+      { new: true, runValidators: true }
+    );
+    
+    if (!updatedPayment) {
+      return res.status(404).json({
+        success: false,
+        message: 'Fee payment not found'
+      });
+    }
+    
+    res.json({
+      success: true,
+      message: `Fee payment ${status}`,
+      data: updatedPayment
+    });
+  } catch (error) {
+    console.error('❌ Error updating fee payment status:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error updating fee payment status',
+      error: error.message
+    });
+  }
+});
+
+// UPDATE contact status
 app.put('/api/contacts/:id/status', async (req, res) => {
   try {
     const { id } = req.params;
     const { status, adminNotes, responseMessage } = req.body;
+    
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid contact ID'
+      });
+    }
     
     const validStatuses = ['unread', 'read', 'replied', 'archived'];
     if (!validStatuses.includes(status)) {
@@ -458,18 +955,21 @@ app.put('/api/contacts/:id/status', async (req, res) => {
       });
     }
     
-    const updateData = { status };
+    const updateData = { 
+      status,
+      updatedAt: new Date()
+    };
     if (adminNotes) updateData.adminNotes = adminNotes;
     if (responseMessage) updateData.responseMessage = responseMessage;
     if (status === 'replied') {
       updateData.respondedAt = new Date();
-      updateData.respondedBy = 'Admin';
+      updateData.respondedBy = req.user?.username || 'Admin';
     }
     
     const updatedContact = await Contact.findByIdAndUpdate(
       id,
       updateData,
-      { new: true }
+      { new: true, runValidators: true }
     );
     
     if (!updatedContact) {
@@ -485,7 +985,7 @@ app.put('/api/contacts/:id/status', async (req, res) => {
       data: updatedContact
     });
   } catch (error) {
-    console.error('Error updating contact status:', error);
+    console.error('❌ Error updating contact status:', error);
     res.status(500).json({
       success: false,
       message: 'Error updating contact status',
@@ -494,59 +994,17 @@ app.put('/api/contacts/:id/status', async (req, res) => {
   }
 });
 
-// API to update fee payment status
-app.put('/api/fee-payments/:id/status', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { status, verificationNotes } = req.body;
-    
-    const validStatuses = ['pending', 'verified', 'rejected'];
-    if (!validStatuses.includes(status)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid status'
-      });
-    }
-    
-    const updateData = { status };
-    if (verificationNotes) updateData.verificationNotes = verificationNotes;
-    if (status === 'verified' || status === 'rejected') {
-      updateData.verifiedAt = new Date();
-      updateData.verifiedBy = 'Admin';
-    }
-    
-    const updatedFeePayment = await FeePayment.findByIdAndUpdate(
-      id,
-      updateData,
-      { new: true }
-    );
-    
-    if (!updatedFeePayment) {
-      return res.status(404).json({
-        success: false,
-        message: 'Fee payment not found'
-      });
-    }
-    
-    res.json({
-      success: true,
-      message: `Fee payment ${status}`,
-      data: updatedFeePayment
-    });
-  } catch (error) {
-    console.error('Error updating fee payment status:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error updating fee payment status',
-      error: error.message
-    });
-  }
-});
-
-// API to delete admission
+// DELETE admission
 app.delete('/api/admissions/:id', async (req, res) => {
   try {
     const { id } = req.params;
+    
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid admission ID'
+      });
+    }
     
     const deletedAdmission = await Admission.findByIdAndDelete(id);
     
@@ -559,10 +1017,11 @@ app.delete('/api/admissions/:id', async (req, res) => {
     
     res.json({
       success: true,
-      message: 'Admission deleted successfully'
+      message: 'Admission deleted successfully',
+      data: { id: deletedAdmission._id }
     });
   } catch (error) {
-    console.error('Error deleting admission:', error);
+    console.error('❌ Error deleting admission:', error);
     res.status(500).json({
       success: false,
       message: 'Error deleting admission',
@@ -571,10 +1030,68 @@ app.delete('/api/admissions/:id', async (req, res) => {
   }
 });
 
-// API to delete contact
+// DELETE fee payment
+app.delete('/api/fee-payments/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid fee payment ID'
+      });
+    }
+    
+    // Find payment to get Cloudinary public_id
+    const payment = await FeePayment.findById(id);
+    
+    if (!payment) {
+      return res.status(404).json({
+        success: false,
+        message: 'Fee payment not found'
+      });
+    }
+    
+    // Delete from Cloudinary if exists
+    if (payment.cloudinaryFile && payment.cloudinaryFile.public_id) {
+      try {
+        await cloudinary.uploader.destroy(payment.cloudinaryFile.public_id);
+        console.log(`✅ Deleted Cloudinary file: ${payment.cloudinaryFile.public_id}`);
+      } catch (cloudinaryError) {
+        console.error('❌ Error deleting Cloudinary file:', cloudinaryError);
+        // Continue with MongoDB deletion
+      }
+    }
+    
+    // Delete from MongoDB
+    await FeePayment.findByIdAndDelete(id);
+    
+    res.json({
+      success: true,
+      message: 'Fee payment deleted successfully',
+      data: { id: payment._id }
+    });
+  } catch (error) {
+    console.error('❌ Error deleting fee payment:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error deleting fee payment',
+      error: error.message
+    });
+  }
+});
+
+// DELETE contact
 app.delete('/api/contacts/:id', async (req, res) => {
   try {
     const { id } = req.params;
+    
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid contact ID'
+      });
+    }
     
     const deletedContact = await Contact.findByIdAndDelete(id);
     
@@ -587,10 +1104,11 @@ app.delete('/api/contacts/:id', async (req, res) => {
     
     res.json({
       success: true,
-      message: 'Contact deleted successfully'
+      message: 'Contact deleted successfully',
+      data: { id: deletedContact._id }
     });
   } catch (error) {
-    console.error('Error deleting contact:', error);
+    console.error('❌ Error deleting contact:', error);
     res.status(500).json({
       success: false,
       message: 'Error deleting contact',
@@ -599,74 +1117,11 @@ app.delete('/api/contacts/:id', async (req, res) => {
   }
 });
 
-// API to delete fee payment
-app.delete('/api/fee-payments/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    
-    const deletedFeePayment = await FeePayment.findByIdAndDelete(id);
-    
-    if (!deletedFeePayment) {
-      return res.status(404).json({
-        success: false,
-        message: 'Fee payment not found'
-      });
-    }
-    
-    res.json({
-      success: true,
-      message: 'Fee payment deleted successfully'
-    });
-  } catch (error) {
-    console.error('Error deleting fee payment:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error deleting fee payment',
-      error: error.message
-    });
-  }
-});
-
-// API Routes for Admin Dashboard
-app.get('/api/admissions', async (req, res) => {
-  try {
-    const { status, search } = req.query;
-    let query = {};
-    
-    if (status && status !== 'all') {
-      query.status = status;
-    }
-    
-    if (search) {
-      query.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { email: { $regex: search, $options: 'i' } },
-        { applicationNumber: { $regex: search, $options: 'i' } },
-        { fatherName: { $regex: search, $options: 'i' } }
-      ];
-    }
-    
-    const admissions = await Admission.find(query).sort({ submittedAt: -1 });
-    res.json({
-      success: true,
-      count: admissions.length,
-      data: admissions
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching admissions',
-      error: error.message
-    });
-  }
-});
-
-// API to get admission by ID
+// GET admission by ID
 app.get('/api/admissions/:id', async (req, res) => {
   try {
     const { id } = req.params;
     
-    // Validate ID format
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({
         success: false,
@@ -688,7 +1143,7 @@ app.get('/api/admissions/:id', async (req, res) => {
       data: admission
     });
   } catch (error) {
-    console.error('Error fetching admission:', error);
+    console.error('❌ Error fetching admission:', error);
     res.status(500).json({
       success: false,
       message: 'Error fetching admission',
@@ -697,118 +1152,24 @@ app.get('/api/admissions/:id', async (req, res) => {
   }
 });
 
-// API to get dashboard statistics
-app.get('/api/dashboard/stats', async (req, res) => {
+// GET fee payment by ID
+app.get('/api/fee-payments/:id', async (req, res) => {
   try {
-    const [
-      totalAdmissions,
-      pendingAdmissions,
-      approvedAdmissions,
-      totalFeePayments,
-      pendingFeePayments,
-      verifiedFeePayments,
-      totalContacts,
-      unreadContacts
-    ] = await Promise.all([
-      Admission.countDocuments(),
-      Admission.countDocuments({ status: 'pending' }),
-      Admission.countDocuments({ status: 'approved' }),
-      FeePayment.countDocuments(),
-      FeePayment.countDocuments({ status: 'pending' }),
-      FeePayment.countDocuments({ status: 'verified' }),
-      Contact.countDocuments(),
-      Contact.countDocuments({ status: 'unread' })
-    ]);
-
-    // Get recent data
-    const recentAdmissions = await Admission.find()
-      .sort({ submittedAt: -1 })
-      .limit(5)
-      .select('name email admissionClass status submittedAt');
-
-    const recentFeePayments = await FeePayment.find()
-      .sort({ submittedAt: -1 })
-      .limit(5)
-      .select('studentName className amount status receiptNumber submittedAt');
-
-    const recentContacts = await Contact.find()
-      .sort({ submittedAt: -1 })
-      .limit(5)
-      .select('name email subject status submittedAt');
-
-    res.json({
-      success: true,
-      data: {
-        counts: {
-          admissions: totalAdmissions,
-          pendingAdmissions,
-          approvedAdmissions,
-          feePayments: totalFeePayments,
-          pendingFeePayments,
-          verifiedFeePayments,
-          contacts: totalContacts,
-          unreadContacts
-        },
-        recent: {
-          admissions: recentAdmissions,
-          feePayments: recentFeePayments,
-          contacts: recentContacts
-        }
-      }
-    });
-  } catch (error) {
-    console.error('Error fetching dashboard stats:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching dashboard statistics',
-      error: error.message
-    });
-  }
-});
-
-app.get('/api/fee-payments', async (req, res) => {
-  try {
-    const { status, search } = req.query;
-    let query = {};
+    const { id } = req.params;
     
-    if (status && status !== 'all') {
-      query.status = status;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid fee payment ID format'
+      });
     }
     
-    if (search) {
-      query.$or = [
-        { studentName: { $regex: search, $options: 'i' } },
-        { email: { $regex: search, $options: 'i' } },
-        { receiptNumber: { $regex: search, $options: 'i' } },
-        { fatherName: { $regex: search, $options: 'i' } }
-      ];
-    }
-    
-    const feePayments = await FeePayment.find(query).sort({ submittedAt: -1 });
-    res.json({
-      success: true,
-      count: feePayments.length,
-      data: feePayments
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching fee payments',
-      error: error.message
-    });
-  }
-});
-
-// New API to get fee payment by receipt number
-app.get('/api/fee-payments/receipt/:receiptNumber', async (req, res) => {
-  try {
-    const { receiptNumber } = req.params;
-    const payment = await FeePayment.findOne({ receiptNumber });
+    const payment = await FeePayment.findById(id);
     
     if (!payment) {
       return res.status(404).json({
         success: false,
-        message: 'Receipt not found'
+        message: 'Fee payment not found'
       });
     }
     
@@ -817,62 +1178,45 @@ app.get('/api/fee-payments/receipt/:receiptNumber', async (req, res) => {
       data: payment
     });
   } catch (error) {
+    console.error('❌ Error fetching fee payment:', error);
     res.status(500).json({
       success: false,
-      message: 'Error fetching receipt',
+      message: 'Error fetching fee payment',
       error: error.message
     });
   }
 });
 
-// New API to get fee payments by email
-app.get('/api/fee-payments/email/:email', async (req, res) => {
+// GET contact by ID
+app.get('/api/contacts/:id', async (req, res) => {
   try {
-    const { email } = req.params;
-    const payments = await FeePayment.find({ email }).sort({ submittedAt: -1 });
+    const { id } = req.params;
+    
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid contact ID format'
+      });
+    }
+    
+    const contact = await Contact.findById(id);
+    
+    if (!contact) {
+      return res.status(404).json({
+        success: false,
+        message: 'Contact not found'
+      });
+    }
     
     res.json({
       success: true,
-      count: payments.length,
-      data: payments
+      data: contact
     });
   } catch (error) {
+    console.error('❌ Error fetching contact:', error);
     res.status(500).json({
       success: false,
-      message: 'Error fetching payments by email',
-      error: error.message
-    });
-  }
-});
-
-app.get('/api/contacts', async (req, res) => {
-  try {
-    const { status, search } = req.query;
-    let query = {};
-    
-    if (status && status !== 'all') {
-      query.status = status;
-    }
-    
-    if (search) {
-      query.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { email: { $regex: search, $options: 'i' } },
-        { subject: { $regex: search, $options: 'i' } },
-        { message: { $regex: search, $options: 'i' } }
-      ];
-    }
-    
-    const contacts = await Contact.find(query).sort({ submittedAt: -1 });
-    res.json({
-      success: true,
-      count: contacts.length,
-      data: contacts
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching contacts',
+      message: 'Error fetching contact',
       error: error.message
     });
   }
@@ -882,11 +1226,11 @@ app.get('/api/contacts', async (req, res) => {
 app.post('/api/admin/login', (req, res) => {
   const { username, password } = req.body;
 
-  // Simple authentication (use hashed passwords + DB in production)
+  // Simple authentication
   if (username === '221205' && password === 'Sitaram@2002') {
     res.json({
       success: true,
-      token: 'adminToken123', // static token for now
+      token: 'adminToken123',
       message: 'Login successful'
     });
   } else {
@@ -912,26 +1256,54 @@ const authenticateAdmin = (req, res, next) => {
   next();
 };
 
-// Protected admin API routes
+// GET dashboard statistics
 app.get('/api/admin/dashboard', authenticateAdmin, async (req, res) => {
   try {
     // Get counts
-    const admissionsCount = await Admission.countDocuments();
-    const feePaymentsCount = await FeePayment.countDocuments();
-    const contactsCount = await Contact.countDocuments();
-    
+    const [
+      totalAdmissions,
+      pendingAdmissions,
+      approvedAdmissions,
+      rejectedAdmissions,
+      totalFeePayments,
+      pendingFeePayments,
+      verifiedFeePayments,
+      rejectedFeePayments,
+      totalContacts,
+      unreadContacts
+    ] = await Promise.all([
+      Admission.countDocuments(),
+      Admission.countDocuments({ status: 'pending' }),
+      Admission.countDocuments({ status: 'approved' }),
+      Admission.countDocuments({ status: 'rejected' }),
+      FeePayment.countDocuments(),
+      FeePayment.countDocuments({ status: 'pending' }),
+      FeePayment.countDocuments({ status: 'verified' }),
+      FeePayment.countDocuments({ status: 'rejected' }),
+      Contact.countDocuments(),
+      Contact.countDocuments({ status: 'unread' })
+    ]);
+
     // Get recent data
     const recentAdmissions = await Admission.find()
       .sort({ submittedAt: -1 })
-      .limit(10)
+      .limit(5)
+      .select('name email admissionClass status submittedAt applicationNumber')
       .lean();
-    
+
     const recentFeePayments = await FeePayment.find()
       .sort({ submittedAt: -1 })
-      .limit(10)
+      .limit(5)
+      .select('studentName className amount status receiptNumber submittedAt cloudinaryFile')
       .lean();
-    
-    // Get status counts
+
+    const recentContacts = await Contact.find()
+      .sort({ submittedAt: -1 })
+      .limit(5)
+      .select('name email subject status submittedAt')
+      .lean();
+
+    // Get status distributions
     const admissionsByStatus = await Admission.aggregate([
       { $group: { _id: "$status", count: { $sum: 1 } } }
     ]);
@@ -939,7 +1311,7 @@ app.get('/api/admin/dashboard', authenticateAdmin, async (req, res) => {
     const paymentsByStatus = await FeePayment.aggregate([
       { $group: { _id: "$status", count: { $sum: 1 } } }
     ]);
-    
+
     // Get monthly data for charts
     const now = new Date();
     const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
@@ -956,27 +1328,116 @@ app.get('/api/admin/dashboard', authenticateAdmin, async (req, res) => {
       },
       { $sort: { "_id.year": 1, "_id.month": 1 } }
     ]);
-    
+
+    // Calculate total verified amount
+    const totalVerifiedAmount = await FeePayment.aggregate([
+      { $match: { status: 'verified' } },
+      { $group: { _id: null, total: { $sum: '$amount' } } }
+    ]);
+
     res.json({
       success: true,
       data: {
         counts: {
-          admissions: admissionsCount,
-          feePayments: feePaymentsCount,
-          contacts: contactsCount
+          admissions: totalAdmissions,
+          pendingAdmissions,
+          approvedAdmissions,
+          rejectedAdmissions,
+          feePayments: totalFeePayments,
+          pendingFeePayments,
+          verifiedFeePayments,
+          rejectedFeePayments,
+          contacts: totalContacts,
+          unreadContacts
+        },
+        amounts: {
+          totalVerified: totalVerifiedAmount[0]?.total || 0
         },
         recentAdmissions,
         recentFeePayments,
+        recentContacts,
         admissionsByStatus,
         paymentsByStatus,
         monthlyAdmissions
       }
     });
   } catch (error) {
-    console.error('Error fetching dashboard data:', error);
+    console.error('❌ Error fetching dashboard stats:', error);
     res.status(500).json({
       success: false,
-      message: 'Error fetching dashboard data',
+      message: 'Error fetching dashboard statistics',
+      error: error.message
+    });
+  }
+});
+
+// GET dashboard overview
+app.get('/api/dashboard/stats', async (req, res) => {
+  try {
+    const [
+      totalAdmissions,
+      pendingAdmissions,
+      approvedAdmissions,
+      totalFeePayments,
+      pendingFeePayments,
+      verifiedFeePayments,
+      totalContacts,
+      unreadContacts
+    ] = await Promise.all([
+      Admission.countDocuments(),
+      Admission.countDocuments({ status: 'pending' }),
+      Admission.countDocuments({ status: 'approved' }),
+      FeePayment.countDocuments(),
+      FeePayment.countDocuments({ status: 'pending' }),
+      FeePayment.countDocuments({ status: 'verified' }),
+      Contact.countDocuments(),
+      Contact.countDocuments({ status: 'unread' })
+    ]);
+
+    res.json({
+      success: true,
+      data: {
+        counts: {
+          admissions: totalAdmissions,
+          pendingAdmissions,
+          approvedAdmissions,
+          feePayments: totalFeePayments,
+          pendingFeePayments,
+          verifiedFeePayments,
+          contacts: totalContacts,
+          unreadContacts
+        }
+      }
+    });
+  } catch (error) {
+    console.error('❌ Error fetching dashboard overview:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching dashboard overview',
+      error: error.message
+    });
+  }
+});
+
+// Cloudinary test endpoint
+app.get('/api/cloudinary/test', async (req, res) => {
+  try {
+    const result = await cloudinary.api.resources({
+      type: 'upload',
+      max_results: 1
+    });
+    
+    res.json({
+      success: true,
+      message: 'Cloudinary connected successfully',
+      cloud_name: cloudinary.config().cloud_name,
+      resource_count: result.total_count
+    });
+  } catch (error) {
+    console.error('❌ Cloudinary test error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Cloudinary connection failed',
       error: error.message
     });
   }
@@ -990,81 +1451,89 @@ app.get('/api/health', (req, res) => {
     success: true, 
     message: 'Server is running!',
     database: dbStatus,
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
   });
 });
 
-// Route to serve the main page
+// Admin logout route
+app.post('/api/admin/logout', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Logged out successfully'
+  });
+});
+
+// Test admission endpoint
+app.get('/api/admission/test', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Admission endpoint is working',
+    endpoint: 'POST /api/admission',
+    required_fields: [
+      'name', 'dob', 'motherTongue', 'caste', 'religion',
+      'previousClass', 'admissionClass', 'previousSchool', 'admissionDate',
+      'fatherName', 'motherName', 'fatherContact', 'email',
+      'occupation', 'address', 'declaration'
+    ]
+  });
+});
+
+// Basic routes for React app compatibility
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'Public', 'index.html'));
-});
-
-// Route to serve admin login page
-app.get('/admin-login.html', (req, res) => {
-  res.sendFile(path.join(__dirname, 'Public', 'admin-login.html'));
-});
-
-// FIXED: Route to serve admin dashboard - Only serve the file, no redirect logic
-app.get('/admin.html', (req, res) => {
-  res.sendFile(path.join(__dirname, 'Public', 'admin.html'));
-});
-
-// Serve uploaded files
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-// Function to find available port
-const findAvailablePort = (desiredPort) => {
-  return new Promise((resolve, reject) => {
-    const server = http.createServer();
-    server.listen(desiredPort, () => {
-      const port = server.address().port;
-      server.close(() => resolve(port));
-    });
-    server.on('error', (err) => {
-      if (err.code === 'EADDRINUSE') {
-        // Port is in use, try the next one
-        findAvailablePort(desiredPort + 1).then(resolve);
-      } else {
-        reject(err);
-      }
-    });
-  });
-};
-
-// Start server on available port
-findAvailablePort(PORT).then(actualPort => {
-  app.listen(actualPort, () => {
-    console.log(`🚀 Server running on http://localhost:${actualPort}`);
-    console.log(`📋 API Health Check: http://localhost:${actualPort}/api/health`);
-    console.log(`📝 Admission Form: http://localhost:${actualPort}/admission_form.html`);
-    console.log(`💰 Fee Payment API: http://localhost:${actualPort}/api/fee-payment`);
-    console.log(`🔐 Admin Login: http://localhost:${actualPort}/admin-login.html`);
-    console.log(`🏠 Home Page: http://localhost:${actualPort}`);
-    
-    // Show MongoDB connection status
-    if (mongoose.connection.readyState === 1) {
-      console.log('✅ MongoDB Atlas is connected and ready');
-    } else {
-      console.log('❌ MongoDB is not connected');
+  res.json({
+    success: true,
+    message: 'SRIC Admissions API Server',
+    endpoints: {
+      admission: '/api/admission',
+      contact: '/api/contact',
+      feePayments: '/api/fee-payments',
+      admissions: '/api/admissions',
+      contacts: '/api/contacts',
+      adminLogin: '/api/admin/login',
+      adminDashboard: '/api/admin/dashboard',
+      health: '/api/health'
     }
   });
-}).catch(err => {
-  console.error('❌ Failed to start server:', err);
-});
-
-// Logout route
-app.post('/api/admin/logout', (req, res) => {
-    // In a real application, you would blacklist the token
-    // For this simple implementation, we just acknowledge the logout
-    res.json({
-        success: true,
-        message: 'Logged out successfully'
-    });
 });
 
 // 404 handler
 app.use((req, res) => {
   res.status(404).json({
     success: false,
-    message: 'Endpoint not found'
+    message: 'Endpoint not found',
+    requested_url: req.originalUrl
+  });
+});
+
+// Error handler
+app.use((err, req, res, next) => {
+  console.error('❌ Server error:', err);
+  res.status(500).json({
+    success: false,
+    message: 'Internal server error',
+    error: process.env.NODE_ENV === 'development' ? err.message : undefined
+  });
+});
+
+// Start server
+const server = app.listen(PORT, () => {
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`📋 API Health Check: http://localhost:${PORT}/api/health`);
+  console.log(`📝 Admission Form API: http://localhost:${PORT}/api/admission`);
+  console.log(`💰 Fee Payment API: http://localhost:${PORT}/api/fee-payments`);
+  console.log(`📞 Contact API: http://localhost:${PORT}/api/contact`);
+  console.log(`✅ MongoDB: ${mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected'}`);
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('SIGTERM signal received: closing HTTP server');
+  server.close(() => {
+    console.log('HTTP server closed');
+    mongoose.connection.close(false, () => {
+      console.log('MongoDB connection closed');
+      process.exit(0);
+    });
   });
 });

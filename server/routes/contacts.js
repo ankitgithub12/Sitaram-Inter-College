@@ -1,5 +1,4 @@
-[file name]: contacts.js
-[file content begin]
+
 const mongoose = require('mongoose');
 
 const contactSchema = new mongoose.Schema({
@@ -99,4 +98,3 @@ contactSchema.virtual('timeSinceSubmission').get(function() {
 const Contact = mongoose.model('Contact', contactSchema, 'contacts');
 
 module.exports = Contact;
-[file content end]
