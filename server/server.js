@@ -301,17 +301,15 @@ if (mongoose.models.FeePayment) {
   FeePayment = mongoose.model('FeePayment', feePaymentSchema, 'feePayments');
 }
 
-// ==================== ROUTER IMPORTS ====================
 
-// Import routers AFTER model definitions
-const feePaymentsRouter = require('./routes/feePayments');
-const contactsRouter = require('./routes/contacts');
-const admissionRouter = require('./routes/admission');
 
-// Use routers
-app.use('/api/admissions', admissionRouter);
-app.use('/api/contacts', contactsRouter);
-app.use('/api/fee-payments', feePaymentsRouter);
+const admissionRoutes = require('./routes/admission');
+const contactRoutes = require('./routes/contacts');
+const feePaymentRoutes = require('./routes/feePayments');
+
+app.use('/api/admissions', admissionRoutes);
+app.use('/api/contacts', contactRoutes);
+app.use('/api/fee-payments', feePaymentRoutes);
 
 // ==================== CLOUDINARY CONFIGURATION ====================
 
