@@ -44,7 +44,7 @@ const Admin = () => {
     total: 0
   });
 
-  const API_BASE_URL = 'http://localhost:5000';
+  const API_BASE_URL = 'https://sitaram-inter-college.onrender.com/';
 
   // Image Modal Functions
   const handleViewImage = (imageUrl, fileName) => {
