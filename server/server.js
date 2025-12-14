@@ -52,7 +52,7 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET || 'your_api_secret'
 });
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://SRIC:SRIC221205@cluster.fmt0jf7.mongodb.net/sric_admissions?retryWrites=true&w=majority&appName=Cluster';
+const MONGODB_URI = process.env.MONGODB_URI || 'MongoDB_Connection_String';
 
 // Connect to MongoDB
 mongoose.connect(MONGODB_URI)
