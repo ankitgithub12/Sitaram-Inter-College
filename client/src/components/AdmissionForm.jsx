@@ -35,7 +35,7 @@ const AdmissionForm = () => {
   const printContentRef = useRef(null);
 
   // API URL - make sure this matches your server URL
-  const API_URL = 'http://localhost:5000/api';
+  const API_URL = 'https://sitaram-inter-college.onrender.com/';
 
   // Show toast notification
   const showToast = (message, type = 'info') => {
@@ -489,7 +489,7 @@ const AdmissionForm = () => {
           showToast(`❌ ${errorData.message || 'Error submitting form'}`, 'error');
         }
       } else if (error.request) {
-        showToast('❌ Network error. Please check if the server is running at http://localhost:5000', 'error');
+        showToast('❌ Network error. Please check if the server is running at https://sitaram-inter-college.onrender.com/', 'error');
         console.log('Server might not be running. Please start it with: node server.js');
       } else {
         showToast(`❌ ${error.message}`, 'error');
