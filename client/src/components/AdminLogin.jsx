@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
@@ -12,16 +12,11 @@ const AdminLogin = () => {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [loginStep, setLoginStep] = useState(1); // 1: Credentials, 2: OTP
-  const [otp, setOtp] = useState('');
-  const [timer, setTimer] = useState(0);
-  const [otpSent, setOtpSent] = useState(false);
-  const [userEmail, setUserEmail] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
   
   const navigate = useNavigate();
-  const otpInputRefs = useRef([]);
 
-  // Hardcoded admin credentials for testing
+  // Hardcoded admin credentials (NOT displayed on screen)
   const adminCredentials = {
     username: '221205',
     password: 'Sitaram@2002',
@@ -36,17 +31,6 @@ const AdminLogin = () => {
     }
   }, [navigate]);
 
-  // Timer for OTP resend
-  useEffect(() => {
-    let interval;
-    if (timer > 0) {
-      interval = setInterval(() => {
-        setTimer(prev => prev - 1);
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [timer]);
-
   const showToast = (message, type = 'success') => {
     setToast({ show: true, message, type });
     setTimeout(() => setToast({ show: false, message: '', type: '' }), 3000);
@@ -57,110 +41,50 @@ const AdminLogin = () => {
       ...formData,
       [e.target.name]: e.target.value
     });
-  };
-
-  const handleOtpChange = (index, value) => {
-    // Only allow numbers
-    if (!/^\d*$/.test(value)) return;
-    
-    const newOtp = otp.split('');
-    newOtp[index] = value;
-    setOtp(newOtp.join(''));
-    
-    // Auto-focus next input
-    if (value && index < 5) {
-      otpInputRefs.current[index + 1]?.focus();
-    }
-  };
-
-  const handleOtpKeyDown = (index, e) => {
-    if (e.key === 'Backspace' && !otp[index] && index > 0) {
-      otpInputRefs.current[index - 1]?.focus();
-    }
-  };
-
-  const sendOtp = async (email) => {
-    try {
-      setIsLoading(true);
-      console.log('Sending OTP to:', email);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Generate random 6-digit OTP
-      const generatedOtp = Math.floor(100000 + Math.random() * 900000);
-      
-      // For testing - log OTP to console
-      console.log('OTP for testing:', generatedOtp);
-      
-      // Store OTP in localStorage for verification
-      localStorage.setItem('adminOTP', generatedOtp.toString());
-      localStorage.setItem('otpEmail', email);
-      
-      // Set timer for 2 minutes
-      setTimer(120);
-      setOtpSent(true);
-      setUserEmail(email);
-      showToast('OTP sent to your email', 'success');
-      
-    } catch (error) {
-      showToast('Failed to send OTP. Please try again.', 'error');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const verifyOtp = async () => {
-    if (otp.length !== 6) {
-      showToast('Please enter 6-digit OTP', 'error');
-      return;
-    }
-
-    const storedOtp = localStorage.getItem('adminOTP');
-    const storedEmail = localStorage.getItem('otpEmail');
-
-    if (storedOtp === otp && storedEmail === userEmail) {
-      // Get actual token from server
-      try {
-        const response = await axios.post('/api/admin/login', {
-          username: formData.username,
-          password: formData.password
-        });
-        
-        if (response.data.success && response.data.token) {
-          localStorage.setItem('adminToken', response.data.token);
-          showToast('Login successful! Redirecting...', 'success');
-          setTimeout(() => navigate('/admin'), 1000);
-        } else {
-          showToast('Login failed', 'error');
-        }
-      } catch (error) {
-        console.error('Login error:', error);
-        showToast('Login failed. Please try again.', 'error');
-      }
-    } else {
-      showToast('Invalid OTP. Please try again.', 'error');
+    // Clear error message when user starts typing
+    if (errorMessage) {
+      setErrorMessage('');
     }
   };
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    
+    // Basic validation
+    if (!formData.username.trim() || !formData.password.trim()) {
+      setErrorMessage('Please enter both username and password');
+      return;
+    }
+    
     setIsLoading(true);
+    setErrorMessage('');
 
     try {
-      // Validate credentials
-      if (formData.username === adminCredentials.username && 
-          formData.password === adminCredentials.password) {
-        
-        // Send OTP to registered email
-        await sendOtp(adminCredentials.email);
-        setLoginStep(2);
-        
+      // Try server authentication first
+      const response = await axios.post('/api/admin/login', {
+        username: formData.username,
+        password: formData.password
+      });
+      
+      if (response.data.success && response.data.token) {
+        localStorage.setItem('adminToken', response.data.token);
+        showToast('Login successful!', 'success');
+        setTimeout(() => navigate('/admin'), 1000);
       } else {
-        showToast('Invalid username or password', 'error');
+        setErrorMessage('Invalid username or password');
       }
     } catch (error) {
-      showToast('Login failed. Please try again.', 'error');
+      console.error('Login error:', error);
+      
+      // Fallback to client-side authentication if server is down
+      if (formData.username === adminCredentials.username && 
+          formData.password === adminCredentials.password) {
+        localStorage.setItem('adminToken', 'adminToken123');
+        showToast('Login successful!', 'success');
+        setTimeout(() => navigate('/admin'), 1000);
+      } else {
+        setErrorMessage('Invalid username or password');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -169,11 +93,13 @@ const AdminLogin = () => {
   const handleForgotPassword = async (e) => {
     e.preventDefault();
     if (!forgotPasswordEmail) {
-      showToast('Please enter your email', 'error');
+      setErrorMessage('Please enter your email');
       return;
     }
 
     setIsLoading(true);
+    setErrorMessage('');
+
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1500));
@@ -183,27 +109,13 @@ const AdminLogin = () => {
         setShowForgotPassword(false);
         setForgotPasswordEmail('');
       } else {
-        showToast('Email not found in our system', 'error');
+        setErrorMessage('Email not found in our system');
       }
     } catch (error) {
-      showToast('Error sending reset link', 'error');
+      setErrorMessage('Error sending reset link. Please try again.');
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const resendOtp = () => {
-    if (timer > 0) {
-      showToast(`Please wait ${timer} seconds before resending`, 'error');
-      return;
-    }
-    sendOtp(userEmail);
-  };
-
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
   return (
@@ -225,7 +137,7 @@ const AdminLogin = () => {
           }`}>
             <div className="flex items-center justify-between">
               <div className="flex items-center">
-                <span className={`mr-3 ${toast.type === 'success' ? 'text-green-300' : 'text-red-300'}`}>
+                <span className="mr-3 text-white">
                   {toast.type === 'success' ? '✓' : '✗'}
                 </span>
                 <span className="font-medium">{toast.message}</span>
@@ -246,18 +158,7 @@ const AdminLogin = () => {
           <div className="relative bg-gradient-to-r from-sricblue to-blue-800 text-white p-8 text-center">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-sricgold to-yellow-400"></div>
             
-            {/* Progress Steps */}
-            <div className="flex justify-center items-center mb-4">
-              <div className={`flex items-center justify-center w-8 h-8 rounded-full ${loginStep >= 1 ? 'bg-sricgold text-white' : 'bg-white/20 text-white'}`}>
-                1
-              </div>
-              <div className={`w-16 h-1 mx-2 ${loginStep >= 2 ? 'bg-sricgold' : 'bg-white/20'}`}></div>
-              <div className={`flex items-center justify-center w-8 h-8 rounded-full ${loginStep >= 2 ? 'bg-sricgold text-white' : 'bg-white/20 text-white'}`}>
-                2
-              </div>
-            </div>
-            
-            {/* Animated Logo */}
+            {/* Logo */}
             <div className="relative inline-block mb-4">
               <div className="absolute inset-0 bg-sricgold rounded-full animate-ping opacity-20"></div>
               <img 
@@ -268,21 +169,29 @@ const AdminLogin = () => {
             </div>
             
             <h1 className="text-3xl font-bold mb-2">SRIC Admin Portal</h1>
-            <p className="text-sricgold font-semibold flex items-center justify-center">
-              <span className="mr-2">🛡️</span>
-              {loginStep === 1 ? 'Secure Login' : 'OTP Verification'}
-            </p>
+            <p className="text-sricgold font-semibold">Restricted Access</p>
           </div>
 
-          {/* Step 1: Login Form */}
-          {!showForgotPassword && loginStep === 1 && (
+          {/* Login Form */}
+          {!showForgotPassword ? (
             <div className="p-8">
               <form onSubmit={handleLogin} className="space-y-6">
+                {/* Error Message */}
+                {errorMessage && (
+                  <div className="p-4 bg-red-50 border border-red-200 rounded-xl">
+                    <div className="flex items-start">
+                      <div className="bg-red-100 p-2 rounded-lg mr-3">
+                        <span className="text-red-800 font-bold">!</span>
+                      </div>
+                      <p className="text-red-700 font-medium">{errorMessage}</p>
+                    </div>
+                  </div>
+                )}
+
                 {/* Username Field */}
                 <div className="form-group">
-                  <label className="flex text-gray-700 font-semibold mb-3 items-center">
-                    <span className="mr-2 text-sricblue">👤</span>
-                    Username
+                  <label className="block text-gray-700 font-semibold mb-2">
+                    Admin Username
                   </label>
                   <div className="relative">
                     <input 
@@ -290,18 +199,16 @@ const AdminLogin = () => {
                       name="username"
                       value={formData.username}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 pl-12 border-2 border-gray-200 rounded-xl focus:border-sricblue focus:ring-2 focus:ring-blue-100 transition-all duration-300"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-sricblue focus:ring-2 focus:ring-blue-100 transition-all duration-300"
                       placeholder="Enter admin username"
                       required
                     />
-                    <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">👤</span>
                   </div>
                 </div>
 
                 {/* Password Field */}
                 <div className="form-group">
-                  <label className="flex text-gray-700 font-semibold mb-3 items-center">
-                    <span className="mr-2 text-sricblue">🔒</span>
+                  <label className="block text-gray-700 font-semibold mb-2">
                     Password
                   </label>
                   <div className="relative">
@@ -310,17 +217,16 @@ const AdminLogin = () => {
                       name="password"
                       value={formData.password}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 pl-12 pr-12 border-2 border-gray-200 rounded-xl focus:border-sricblue focus:ring-2 focus:ring-blue-100 transition-all duration-300"
+                      className="w-full px-4 py-3 pr-12 border-2 border-gray-200 rounded-xl focus:border-sricblue focus:ring-2 focus:ring-blue-100 transition-all duration-300"
                       placeholder="Enter your password"
                       required
                     />
-                    <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">🔒</span>
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-sricblue transition-colors"
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-sricblue transition-colors px-2 py-1 rounded text-sm font-medium"
                     >
-                      {showPassword ? '👁️‍🗨️' : '👁️'}
+                      {showPassword ? 'Hide' : 'Show'}
                     </button>
                   </div>
                 </div>
@@ -334,7 +240,7 @@ const AdminLogin = () => {
                   <button
                     type="button"
                     onClick={() => setShowForgotPassword(true)}
-                    className="text-sricblue hover:text-blue-700 font-medium transition-colors"
+                    className="text-sricblue hover:text-blue-700 font-medium transition-colors text-sm"
                   >
                     Forgot Password?
                   </button>
@@ -349,27 +255,24 @@ const AdminLogin = () => {
                   {isLoading ? (
                     <>
                       <span className="inline-block animate-spin mr-3">⟳</span>
-                      Verifying...
+                      Signing in...
                     </>
                   ) : (
-                    <>
-                      <span className="mr-3">🔐</span>
-                      Login & Send OTP
-                    </>
+                    'Sign In'
                   )}
                 </button>
               </form>
 
-              {/* Demo Credentials Note */}
-              <div className="mt-6 p-4 bg-yellow-50 rounded-xl border border-yellow-200">
+              {/* Security Notice (instead of credentials) */}
+              <div className="mt-6 p-4 bg-blue-50 rounded-xl border border-blue-200">
                 <div className="flex items-start">
-                  <span className="text-yellow-500 mt-1 mr-3">ℹ️</span>
+                  <div className="bg-blue-100 p-2 rounded-lg mr-3">
+                    <span className="text-blue-800 font-bold">⚠</span>
+                  </div>
                   <div>
-                    <p className="text-sm text-yellow-800 font-semibold mb-1">Demo Credentials:</p>
-                    <p className="text-sm text-yellow-700">Username: <strong>221205</strong></p>
-                    <p className="text-sm text-yellow-700">Password: <strong>Sitaram@2002</strong></p>
-                    <p className="text-sm text-yellow-700 mt-1">OTP will be sent to: <strong>sitaramintercollege1205@gmail.com</strong></p>
-                    <p className="text-xs text-yellow-600 mt-2">Check browser console for OTP during development</p>
+                    <p className="text-sm text-blue-800 font-semibold mb-1">Authorized Personnel Only</p>
+                    <p className="text-sm text-blue-700">This portal is restricted to authorized SRIC administrators only.</p>
+                    <p className="text-xs text-blue-600 mt-2">Contact system administrator for access credentials</p>
                   </div>
                 </div>
               </div>
@@ -385,127 +288,45 @@ const AdminLogin = () => {
                 </Link>
               </div>
             </div>
-          )}
-
-          {/* Step 2: OTP Verification */}
-          {!showForgotPassword && loginStep === 2 && (
-            <div className="p-8">
-              <div className="text-center mb-6">
-                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl text-sricblue">📱</span>
-                </div>
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">Enter OTP</h2>
-                <p className="text-gray-600 mb-4">
-                  We've sent a 6-digit OTP to <span className="font-semibold text-sricblue">{userEmail || adminCredentials.email}</span>
-                </p>
-                
-                {/* OTP Input Boxes */}
-                <div className="flex justify-center space-x-2 mb-6">
-                  {[...Array(6)].map((_, index) => (
-                    <input
-                      key={index}
-                      ref={(el) => otpInputRefs.current[index] = el}
-                      type="text"
-                      maxLength="1"
-                      value={otp[index] || ''}
-                      onChange={(e) => handleOtpChange(index, e.target.value)}
-                      onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                      className="w-14 h-14 text-2xl font-bold text-center border-2 border-gray-300 rounded-xl focus:border-sricblue focus:ring-2 focus:ring-blue-100 transition-all duration-300"
-                      autoFocus={index === 0}
-                    />
-                  ))}
-                </div>
-                
-                {/* Timer and Resend */}
-                <div className="mb-6">
-                  {timer > 0 ? (
-                    <p className="text-gray-600">
-                      OTP valid for: <span className="font-bold text-sricblue">{formatTime(timer)}</span>
-                    </p>
-                  ) : (
-                    <button
-                      onClick={resendOtp}
-                      className="text-sricblue hover:text-blue-700 font-medium transition-colors"
-                    >
-                      <span className="mr-2">↻</span>
-                      Resend OTP
-                    </button>
-                  )}
-                </div>
-                
-                {/* Verify Button */}
-                <button
-                  onClick={verifyOtp}
-                  disabled={isLoading || otp.length !== 6}
-                  className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-emerald-600 hover:to-green-500 text-white py-4 px-6 rounded-xl font-bold text-lg transition-all duration-300 transform hover:scale-105 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none mb-4"
-                >
-                  {isLoading ? (
-                    <>
-                      <span className="inline-block animate-spin mr-3">⟳</span>
-                      Verifying...
-                    </>
-                  ) : (
-                    <>
-                      <span className="mr-3">✓</span>
-                      Verify OTP
-                    </>
-                  )}
-                </button>
-                
-                {/* Back to Login */}
-                <button
-                  onClick={() => setLoginStep(1)}
-                  className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 py-3 px-6 rounded-xl font-medium transition-all duration-300"
-                >
-                  <span className="mr-2">←</span>
-                  Back to Login
-                </button>
-              </div>
-              
-              {/* OTP Info */}
-              <div className="mt-6 p-4 bg-blue-50 rounded-xl border border-blue-200">
-                <div className="flex items-start">
-                  <span className="text-blue-500 mt-1 mr-3">ℹ️</span>
-                  <div>
-                    <p className="text-sm text-blue-800 font-semibold mb-1">For Development:</p>
-                    <p className="text-sm text-blue-700">Check browser console for the OTP code</p>
-                    <p className="text-xs text-blue-600 mt-2">
-                      <span className="mr-1">💻</span>
-                      Press F12 → Console tab to see OTP
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Forgot Password Form */}
-          {showForgotPassword && (
+          ) : (
+            /* Forgot Password Form */
             <div className="p-8">
               <div className="text-center mb-6">
                 <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl text-orange-500">🔑</span>
+                  <span className="text-2xl text-orange-500 font-bold">?</span>
                 </div>
                 <h2 className="text-2xl font-bold text-gray-800 mb-2">Reset Password</h2>
                 <p className="text-gray-600">Enter your email to receive a reset link</p>
               </div>
 
+              {errorMessage && (
+                <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl">
+                  <div className="flex items-start">
+                    <div className="bg-red-100 p-2 rounded-lg mr-3">
+                      <span className="text-red-800 font-bold">!</span>
+                    </div>
+                    <p className="text-red-700 font-medium">{errorMessage}</p>
+                  </div>
+                </div>
+              )}
+
               <form onSubmit={handleForgotPassword} className="space-y-6">
                 <div className="form-group">
-                  <label className="flex text-gray-700 font-semibold mb-3 items-center">
-                    <span className="mr-2 text-sricblue">✉️</span>
-                    Email Address
+                  <label className="block text-gray-700 font-semibold mb-2">
+                    Registered Email Address
                   </label>
                   <div className="relative">
                     <input 
                       type="email" 
                       value={forgotPasswordEmail}
-                      onChange={(e) => setForgotPasswordEmail(e.target.value)}
-                      className="w-full px-4 py-3 pl-12 border-2 border-gray-200 rounded-xl focus:border-sricblue focus:ring-2 focus:ring-blue-100 transition-all duration-300"
+                      onChange={(e) => {
+                        setForgotPasswordEmail(e.target.value);
+                        if (errorMessage) setErrorMessage('');
+                      }}
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-sricblue focus:ring-2 focus:ring-blue-100 transition-all duration-300"
                       placeholder="Enter your registered email"
                       required
                     />
-                    <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">✉️</span>
                   </div>
                 </div>
 
@@ -514,7 +335,7 @@ const AdminLogin = () => {
                     type="button"
                     onClick={() => {
                       setShowForgotPassword(false);
-                      setLoginStep(1);
+                      setErrorMessage('');
                     }}
                     className="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-3 px-6 rounded-xl font-bold transition-all duration-300"
                   >
@@ -532,10 +353,7 @@ const AdminLogin = () => {
                         Sending...
                       </>
                     ) : (
-                      <>
-                        <span className="mr-2">✈️</span>
-                        Send Reset Link
-                      </>
+                      'Send Reset Link'
                     )}
                   </button>
                 </div>
@@ -544,7 +362,9 @@ const AdminLogin = () => {
               {/* Additional Help */}
               <div className="mt-6 p-4 bg-blue-50 rounded-xl border border-blue-200">
                 <div className="flex items-start">
-                  <span className="text-blue-500 mt-1 mr-3">ℹ️</span>
+                  <div className="bg-blue-100 p-2 rounded-lg mr-3">
+                    <span className="text-blue-800 font-bold">ℹ</span>
+                  </div>
                   <div>
                     <p className="text-sm text-blue-800">
                       If you don't receive the email within 5 minutes, check your spam folder or contact system administrator.
@@ -560,21 +380,21 @@ const AdminLogin = () => {
         <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4 text-center text-white/80">
           <div className="flex flex-col items-center">
             <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mb-2">
-              <span className="text-sricgold">🛡️</span>
+              <span className="text-sricgold font-bold">🔐</span>
             </div>
-            <p className="text-sm">Two-Factor Auth</p>
+            <p className="text-sm font-medium">Secure Access</p>
           </div>
           <div className="flex flex-col items-center">
             <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mb-2">
-              <span className="text-sricgold">✉️</span>
+              <span className="text-sricgold font-bold">📊</span>
             </div>
-            <p className="text-sm">Email OTP</p>
+            <p className="text-sm font-medium">Admin Dashboard</p>
           </div>
           <div className="flex flex-col items-center">
             <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mb-2">
-              <span className="text-sricgold">📊</span>
+              <span className="text-sricgold font-bold">🛡️</span>
             </div>
-            <p className="text-sm">Activity Logging</p>
+            <p className="text-sm font-medium">Data Protected</p>
           </div>
         </div>
       </div>

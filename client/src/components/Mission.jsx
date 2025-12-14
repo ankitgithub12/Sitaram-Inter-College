@@ -469,7 +469,7 @@ const Mission = () => {
               <li className="mobile-menu-item">
                 <Link 
                   to="/admin-login" 
-                  className="block admin-button text-white py-3 px-4 rounded-md text-center font-bold flex items-center justify-center space-x-2 bg-white bg-opacity-20 hover:bg-opacity-30 transition duration-300"
+                  className="flex admin-button text-white py-3 px-4 rounded-md text-center font-bold items-center justify-center space-x-2 bg-white bg-opacity-20 hover:bg-opacity-30 transition duration-300"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   <i className="fas fa-user-shield"></i>
@@ -830,7 +830,7 @@ const Mission = () => {
         </div>
       </footer>
 
-       <style jsx>{`
+      <style>{`
         .hero {
           background: linear-gradient(rgba(0, 35, 102, 0.85), rgba(0, 35, 102, 0.9)), url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1500&q=80');
           background-size: cover;

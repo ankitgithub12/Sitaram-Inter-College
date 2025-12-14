@@ -852,7 +852,7 @@ const Faculty = () => {
         </div>
       </footer>
 
-      <style jsx>{`
+      <style>{`
         .faculty-card {
           transition: all 0.3s ease;
           perspective: 1000px;

@@ -823,7 +823,7 @@ const Programs = () => {
       </footer>
 
       {/* Add custom styles for animations */}
-      <style jsx>{`
+      <style>{`
         .floating-animation {
           animation: float 6s ease-in-out infinite;
         }

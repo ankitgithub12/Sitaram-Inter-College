@@ -145,7 +145,7 @@ const Fees = () => {
       fees: [
         { name: 'Tuition Fee', amount: 7200, editable: true, min: 1000 },
         { name: 'Activity Fee', amount: 0, editable: true, min: 0 },
-        { name: 'Reg Fee', amount: 500, editable: true },
+        { name: 'Reg Fee', amount: 500, editable: true, },
         { name: 'HalfYearly+Yearly Exam fee', amount: 500, editable: true }
       ],
       note: 'Includes practical notebooks. Uniform costs extra (₹4,000).'
@@ -1925,7 +1925,7 @@ const submitPaymentToBackend = async () => {
                             </div>
                             <div className="flex justify-between">
                               <span className="font-semibold text-gray-700">Bank:</span>
-                              <span>Prathama U.P Gramin Bank</span>
+                              <span>Baroda Uttar Pradesh Gramin Bank (BUPGB)</span>
                             </div>
                             <div className="flex justify-between">
                               <span className="font-semibold text-gray-700">A/C No:</span>
@@ -1933,11 +1933,11 @@ const submitPaymentToBackend = async () => {
                             </div>
                             <div className="flex justify-between">
                               <span className="font-semibold text-gray-700">IFSC:</span>
-                              <span className="font-mono">PUNB0SUPGB5</span>
+                              <span className="font-mono">BARB0BUPGBX</span>
                             </div>
                           </div>
                           <p className="mt-4 text-sricblue font-medium">
-                            Please send the payment receipt to accounts@sricschool.edu.in after transfer
+                            Please send the payment receipt to sitaramintercollege1205@gmail.com after transfer
                           </p>
                         </div>
                         

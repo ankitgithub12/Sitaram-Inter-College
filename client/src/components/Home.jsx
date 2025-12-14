@@ -730,6 +730,218 @@ const Home = () => {
           </div>
         </div>
       </section>
+       <section className="py-20 relative overflow-hidden bg-gradient-to-br from-red-900 via-red-700 to-orange-800 text-white">
+        {/* Background decorative elements */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-10 left-10 w-20 h-20 bg-yellow-400 rounded-full"></div>
+          <div className="absolute bottom-10 right-10 w-16 h-16 bg-yellow-400 rounded-full"></div>
+          <div className="absolute top-1/2 left-1/4 w-12 h-12 bg-white rounded-full"></div>
+        </div>
+        
+        {/* Floating exam icons */}
+        <div className="absolute top-5 right-5 opacity-20">
+          <i className="fas fa-clock text-6xl"></i>
+        </div>
+        <div className="absolute bottom-5 left-5 opacity-20">
+          <i className="fas fa-calendar-check text-5xl"></i>
+        </div>
+        
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="max-w-5xl mx-auto">
+            {/* Header with animated decoration */}
+            <div className="text-center mb-12">
+              <div className="inline-block relative mb-4">
+                <h2 className="text-4xl md:text-5xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-yellow-300 to-yellow-100">
+                  अर्धवार्षिक परीक्षा समय सारणी
+                </h2>
+                <div className="h-1 w-24 bg-yellow-400 mx-auto mt-2 rounded-full"></div>
+                <div className="absolute -top-2 -right-2 w-6 h-6 bg-yellow-400 rounded-full animate-pulse"></div>
+                <div className="absolute -bottom-2 -left-2 w-4 h-4 bg-white rounded-full"></div>
+              </div>
+              <p className="text-xl md:text-2xl opacity-90">Half Yearly Examination Schedule 2025-26</p>
+              
+              {/* Live Status Badge */}
+              <div className="inline-flex items-center mt-4 bg-white bg-opacity-20 backdrop-blur-sm rounded-full px-4 py-2 border border-white border-opacity-30">
+                <span className="w-2 h-2 bg-red-400 rounded-full mr-2 animate-pulse"></span>
+                <span className="text-sm font-medium">Exams Currently Ongoing</span>
+              </div>
+            </div>
+            
+            {/* Notice Card with enhanced design */}
+            <div className="bg-white bg-opacity-15 backdrop-blur-lg rounded-2xl p-8 mb-10 border border-white border-opacity-20 shadow-2xl transform transition-transform duration-300 hover:scale-[1.02]">
+              <div className="flex items-start mb-6">
+                <div className="flex-shrink-0 bg-yellow-400 bg-opacity-20 p-3 rounded-full mr-4">
+                  <i className="fas fa-exclamation-triangle text-yellow-400 text-2xl"></i>
+                </div>
+                <div>
+                  <h3 className="text-2xl md:text-3xl font-bold mb-4 flex items-center">
+                    परीक्षा जारी है / Exams in Progress
+                    <span className="ml-3 px-2 py-1 bg-red-500 text-xs rounded-full animate-pulse">Live</span>
+                  </h3>
+                  
+                  <div className="space-y-6">
+                    {/* Notice in Hindi */}
+                    <div className="bg-white bg-opacity-10 rounded-xl p-5 border-l-4 border-yellow-400">
+                      <h4 className="font-bold text-lg mb-3 text-yellow-300">हिंदी में सूचना</h4>
+                      <p className="mb-4">सभी विद्यार्थियों को सूचित किया जाता है कि अर्धवार्षिक परीक्षाएं चल रही हैं।</p>
+                      <ul className="space-y-3">
+                        <li className="flex items-start">
+                          <i className="fas fa-calendar-day mt-1 mr-3 text-green-400"></i>
+                          <span>परीक्षा दिनांक: 11 दिसंबर 2025 - 26 दिसंबर 2025</span>
+                        </li>
+                        <li className="flex items-start">
+                          <i className="fas fa-clock mt-1 mr-3 text-green-400"></i>
+                          <span>समय: प्रातः 8:30 बजे से 11:30 बजे तक</span>
+                        </li>
+                        <li className="flex items-start">
+                          <i className="fas fa-map-marker-alt mt-1 mr-3 text-green-400"></i>
+                          <span>स्थान: संबंधित कक्षा कक्षों में</span>
+                        </li>
+                        <li className="flex items-start">
+                          <i className="fas fa-exclamation-circle mt-1 mr-3 text-red-400"></i>
+                          <span className="font-semibold">नोट: नियमित रूप से उपस्थिति अनिवार्य है।</span>
+                        </li>
+                      </ul>
+                    </div>
+                    
+                    {/* Notice in English */}
+                    <div className="bg-white bg-opacity-10 rounded-xl p-5 border-l-4 border-red-400">
+                      <h4 className="font-bold text-lg mb-3 text-red-300">Information in English</h4>
+                      <p className="mb-4">All students are informed that Half Yearly Examinations are currently underway.</p>
+                      <ul className="space-y-3">
+                        <li className="flex items-start">
+                          <i className="fas fa-calendar-day mt-1 mr-3 text-green-400"></i>
+                          <span>Exam Dates: 11th December 2025 - 26th December 2025</span>
+                        </li>
+                        <li className="flex items-start">
+                          <i className="fas fa-clock mt-1 mr-3 text-green-400"></i>
+                          <span>Time: 8:30 AM to 11:30 AM</span>
+                        </li>
+                        <li className="flex items-start">
+                          <i className="fas fa-map-marker-alt mt-1 mr-3 text-green-400"></i>
+                          <span>Venue: Respective Classrooms</span>
+                        </li>
+                        <li className="flex items-start">
+                          <i className="fas fa-exclamation-circle mt-1 mr-3 text-red-400"></i>
+                          <span className="font-semibold">Note: Regular attendance is mandatory.</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Fees Payment Button */}
+              <div className="mt-8 pt-6 border-t border-white border-opacity-20">
+                <div className="flex flex-col md:flex-row items-center justify-between">
+                  <div className="mb-4 md:mb-0">
+                    <h4 className="text-lg font-bold mb-2">PENDING FEES PAYMENT?</h4>
+                    <p className="text-sm opacity-90">Ensure your fees are paid to avoid any inconvenience during exams.</p>
+                  </div>
+                  <Link 
+                    to="/fees" 
+                    className="group relative bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-xl flex items-center"
+                  >
+                    <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+                    <div className="relative z-10 flex items-center justify-center">
+                      <i className="fas fa-rupee-sign mr-3 text-xl"></i>
+                      Pay Fees Now
+                      <i className="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform duration-300"></i>
+                    </div>
+                  </Link>
+                </div>
+              </div>
+            </div>
+            
+            {/* Quick Preview of Schedule */}
+            <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-2xl p-6 mb-10 border border-white border-opacity-20">
+              <h3 className="text-2xl font-bold mb-6 text-center">Upcoming Exam Schedule</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-white bg-opacity-15 rounded-xl p-4 text-center transform transition-transform hover:scale-105">
+                  <div className="text-yellow-300 text-2xl font-bold">20</div>
+                  <div className="text-sm">December</div>
+                  <div className="text-xs mt-2">गणित / Mathematics</div>
+                  <div className="text-xs text-yellow-300 mt-1">Class 9-12</div>
+                </div>
+                <div className="bg-white bg-opacity-15 rounded-xl p-4 text-center transform transition-transform hover:scale-105">
+                  <div className="text-yellow-300 text-2xl font-bold">12</div>
+                  <div className="text-sm">December</div>
+                  <div className="text-xs mt-2">विज्ञान / Science</div>
+                  <div className="text-xs text-yellow-300 mt-1">Class 9-10</div>
+                </div>
+                <div className="bg-white bg-opacity-15 rounded-xl p-4 text-center transform transition-transform hover:scale-105">
+                  <div className="text-yellow-300 text-2xl font-bold">12</div>
+                  <div className="text-sm">December</div>
+                  <div className="text-xs mt-2">भौतिकी / Physics</div>
+                  <div className="text-xs text-yellow-300 mt-1">Class 11-12</div>
+                </div>
+                <div className="bg-white bg-opacity-15 rounded-xl p-4 text-center transform transition-transform hover:scale-105">
+                  <div className="text-yellow-300 text-2xl font-bold">16</div>
+                  <div className="text-sm">December</div>
+                  <div className="text-xs mt-2">रसायन / Chemistry</div>
+                  <div className="text-xs text-yellow-300 mt-1">Class 11-12</div>
+                </div>
+              </div>
+              <p className="text-center mt-4 text-sm opacity-80">Time: 8:30 AM - 11:30 AM for all exams</p>
+            </div>
+            
+            {/* Action Buttons with enhanced design */}
+            <div className="flex flex-col md:flex-row justify-center gap-6">
+              <Link 
+                to="/calendar" 
+                className="group relative bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold py-4 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+                <div className="relative z-10 flex items-center justify-center">
+                  <i className="fas fa-calendar-alt mr-3 text-xl"></i>
+                  View Full Schedule
+                  <i className="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform duration-300"></i>
+                </div>
+              </Link>
+              
+              <a 
+                href="assets\Half Yearly Examination Date Sheet 2025.pdf" 
+                className="group relative bg-transparent border-2 border-white text-white font-bold py-4 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 hover:bg-white hover:text-red-700 overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="relative z-10 flex items-center justify-center">
+                  <i className="fas fa-download mr-3 text-xl"></i>
+                  Download Datesheet
+                  <i className="fas fa-external-link-alt ml-2 group-hover:translate-y-1 transition-transform duration-300"></i>
+                </div>
+              </a>
+              
+              {/* Fees Button */}
+              <Link 
+                to="/fees" 
+                className="group relative bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold py-4 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+                <div className="relative z-10 flex items-center justify-center">
+                  <i className="fas fa-rupee-sign mr-3 text-xl"></i>
+                  Pay Exam Fees
+                  <i className="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform duration-300"></i>
+                </div>
+              </Link>
+            </div>
+            
+            {/* Additional info */}
+            <div className="text-center mt-8 opacity-80">
+              <div className="flex flex-col md:flex-row items-center justify-center space-y-2 md:space-y-0 md:space-x-6">
+                <p className="text-sm flex items-center">
+                  <i className="fas fa-info-circle mr-2"></i>
+                  For exam-related queries, contact exam cell
+                </p>
+                <p className="text-sm flex items-center">
+                  <i className="fas fa-phone-alt mr-2"></i>
+                  Contact: +91 9756517750
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
 
       {/* Toppers Section */}
       <section className="py-16 bg-white">
