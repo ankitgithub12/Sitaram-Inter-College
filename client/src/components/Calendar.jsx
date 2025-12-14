@@ -23,7 +23,7 @@ const Calendar = () => {
     "2025-08-15": { title: "Independence Day", type: "holiday", color: "purple" },
     "2025-08-01": { title: "Monthly Tests Start", type: "exam", color: "green" },
     "2025-08-07": { title: "Monthly Tests End", type: "exam", color: "green" },
-    "2025-10-03": { title: "Parent Meeting", type: "parent", color: "red" },
+    "2025-10-02": { title: "Parent Meeting", type: "parent", color: "red" },
     "2025-10-03": { title: "Quarterly Exams Start", type: "exam", color: "green" },
     "2025-10-04": { title: "Quarterly Exams", type: "exam", color: "green" },
     "2025-10-06": { title: "Quarterly Exams", type: "exam", color: "green" },

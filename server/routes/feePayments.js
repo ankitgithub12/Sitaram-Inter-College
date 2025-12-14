@@ -1,4 +1,3 @@
-
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
@@ -7,74 +6,48 @@ const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const path = require('path');
 
-// Cloudinary Configuration
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET
+// Debug: Show current paths
+console.log('🔍 feePayments.js location:', __dirname);
+console.log('🔍 Expected .env location:', path.resolve(__dirname, '../.env'));
+
+// Load environment variables from server root
+const envPath = path.resolve(__dirname, '../.env');
+console.log('🔍 Loading .env from:', envPath);
+
+try {
+  require('dotenv').config({ path: envPath });
+  console.log('✅ .env loaded successfully');
+} catch (error) {
+  console.error('❌ Error loading .env:', error.message);
+}
+
+// Debug: Check if env variables are loaded
+console.log('🔍 CLOUDINARY_CLOUD_NAME:', process.env.CLOUDINARY_CLOUD_NAME ? 'Loaded' : 'Missing');
+console.log('🔍 CLOUDINARY_API_KEY:', process.env.CLOUDINARY_API_KEY ? 'Loaded' : 'Missing');
+console.log('🔍 CLOUDINARY_API_SECRET:', process.env.CLOUDINARY_API_SECRET ? 'Loaded' : 'Missing');
+
+// Cloudinary Configuration with detailed error reporting
+const cloudinaryConfig = {
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'your_cloud_name',
+  api_key: process.env.CLOUDINARY_API_KEY || 'your_api_key',
+  api_secret: process.env.CLOUDINARY_API_SECRET || 'your_api_secret'
+};
+
+console.log('🔧 Cloudinary Config:', {
+  cloud_name: cloudinaryConfig.cloud_name ? 'Set' : 'Missing',
+  api_key: cloudinaryConfig.api_key ? 'Set' : 'Missing',
+  api_secret: cloudinaryConfig.api_secret ? 'Set' : 'Missing'
 });
 
-// Define Fee Payment Schema
-const feePaymentSchema = new mongoose.Schema({
-  // Student Information
-  studentName: { type: String, required: true },
-  fatherName: { type: String, required: true },
-  mobile: { type: String, required: true },
-  email: { type: String, required: true },
-  className: { type: String, required: true },
-  classId: { type: String },
-  
-  // Payment Information
-  amount: { type: Number, required: true },
-  paymentMethod: { type: String, required: true },
-  transactionId: { type: String, required: true },
-  
-  // Receipt Information
-  receiptNumber: { 
-    type: String, 
-    required: true,
-    unique: true
-  },
-  receiptDate: { type: Date, required: true },
-  
-  // Cloudinary File Information
-  cloudinaryFile: {
-    public_id: { type: String },
-    secure_url: { type: String },
-    original_filename: { type: String },
-    format: { type: String },
-    resource_type: { type: String },
-    bytes: { type: Number },
-    width: { type: Number },
-    height: { type: Number },
-    created_at: { type: String }
-  },
-  
-  // Status field
-  status: { 
-    type: String, 
-    enum: ['pending', 'verified', 'rejected'], 
-    default: 'pending' 
-  },
-  
-  // Admin fields
-  verifiedBy: { type: String },
-  verificationNotes: { type: String },
-  verifiedAt: { type: Date },
-  
-  // Timestamps
-  submittedAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now }
-});
+try {
+  cloudinary.config(cloudinaryConfig);
+  console.log('✅ Cloudinary configured successfully');
+} catch (error) {
+  console.error('❌ Cloudinary configuration error:', error.message);
+}
 
-// Update timestamp on save
-feePaymentSchema.pre('save', function(next) {
-  this.updatedAt = new Date();
-  next();
-});
-
-// Create FeePayment model
-const FeePayment = mongoose.models.FeePayment || mongoose.model('FeePayment', feePaymentSchema, 'feePayments');
+// Get the already defined FeePayment model
+const FeePayment = mongoose.model('FeePayment');
 
 // Configure Cloudinary storage for file uploads
 const cloudinaryStorage = new CloudinaryStorage({
@@ -174,9 +147,19 @@ const handleFormData = (req, res, next) => {
 // Middleware to check admin authentication
 const authenticateAdmin = (req, res, next) => {
   const authHeader = req.headers.authorization;
-  const token = authHeader && authHeader.split(' ')[1];
+  console.log('Auth header:', authHeader);
   
-  if (!token || token !== 'adminToken123') {
+  if (!authHeader) {
+    return res.status(401).json({
+      success: false,
+      message: 'Authorization header missing'
+    });
+  }
+  
+  const token = authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : authHeader;
+  
+  // Simple token check
+  if (token !== 'adminToken123') {
     return res.status(401).json({
       success: false,
       message: 'Unauthorized access'
@@ -187,7 +170,7 @@ const authenticateAdmin = (req, res, next) => {
 };
 
 // POST create new fee payment with file upload - UPDATED VERSION
-router.post('/', handleFormData, upload.single('receipt'), async (req, res) => {
+router.post('/', handleFormData, upload.single('receiptFile'), async (req, res) => {
   try {
     console.log('📨 Received fee payment submission');
     console.log('Content-Type:', req.headers['content-type']);
@@ -277,17 +260,19 @@ router.post('/', handleFormData, upload.single('receipt'), async (req, res) => {
       });
     }
     
-    // Add Cloudinary file information
+    // Add Cloudinary file information (be tolerant to different storage returned shapes)
+    const secureUrl = req.file?.secure_url || req.file?.url || req.file?.path || req.file?.filename || null;
+    const publicId = req.file?.public_id || req.file?.publicId || req.file?.filename || null;
     paymentData.cloudinaryFile = {
-      public_id: req.file.public_id,
-      secure_url: req.file.secure_url,
-      original_filename: req.file.originalname,
-      format: req.file.format,
-      resource_type: req.file.resource_type,
-      bytes: req.file.size,
-      width: req.file.width || null,
-      height: req.file.height || null,
-      created_at: req.file.created_at || new Date().toISOString()
+      public_id: publicId,
+      secure_url: secureUrl,
+      original_filename: req.file?.originalname || req.file?.original_filename || null,
+      format: req.file?.format || null,
+      resource_type: req.file?.resource_type || (req.file?.mimetype && req.file.mimetype.startsWith('image/') ? 'image' : 'raw'),
+      bytes: req.file?.size || req.file?.bytes || null,
+      width: req.file?.width || null,
+      height: req.file?.height || null,
+      created_at: req.file?.created_at || new Date().toISOString()
     };
     
     // Ensure receiptDate is properly formatted
@@ -315,7 +300,7 @@ router.post('/', handleFormData, upload.single('receipt'), async (req, res) => {
     
     console.log(`✅ Fee payment saved: ${savedFeePayment.receiptNumber} for ${savedFeePayment.studentName}`);
     console.log(`   Amount: ₹${savedFeePayment.amount}, Class: ${savedFeePayment.className}`);
-    console.log(`   Cloudinary URL: ${savedFeePayment.cloudinaryFile?.secure_url}`);
+    console.log(`   Cloudinary URL: ${savedFeePayment.cloudinaryFile?.secure_url || savedFeePayment.receiptFile?.url}`);
     console.log(`   ID: ${savedFeePayment._id}`);
     
     res.status(201).json({
@@ -329,7 +314,7 @@ router.post('/', handleFormData, upload.single('receipt'), async (req, res) => {
         amount: savedFeePayment.amount,
         date: savedFeePayment.receiptDate,
         status: savedFeePayment.status,
-        receiptUrl: savedFeePayment.cloudinaryFile?.secure_url,
+        receiptUrl: savedFeePayment.cloudinaryFile?.secure_url || savedFeePayment.receiptFile?.url || null,
         cloudinaryId: savedFeePayment.cloudinaryFile?.public_id
       }
     });
@@ -463,9 +448,18 @@ router.get('/:id', authenticateAdmin, async (req, res) => {
       });
     }
     
+    // Debug Cloudinary URL and provide a normalized receiptUrl for clients
+    console.log('🔍 Cloudinary file details for payment:', payment._id);
+    console.log('🔍 Cloudinary secure_url:', payment.cloudinaryFile?.secure_url);
+    console.log('🔍 Cloudinary public_id:', payment.cloudinaryFile?.public_id);
+    console.log('🔍 Resource type:', payment.cloudinaryFile?.resource_type);
+
+    const receiptUrl = payment.cloudinaryFile?.secure_url || payment.receiptFile?.url || null;
+
     res.json({
       success: true,
-      data: payment
+      data: payment,
+      receiptUrl
     });
   } catch (error) {
     console.error('Error fetching fee payment:', error);
@@ -686,8 +680,9 @@ router.delete('/:id', authenticateAdmin, async (req, res) => {
     // Delete file from Cloudinary if it exists
     if (payment.cloudinaryFile && payment.cloudinaryFile.public_id) {
       try {
-        await cloudinary.uploader.destroy(payment.cloudinaryFile.public_id);
-        console.log(`✅ Deleted Cloudinary file: ${payment.cloudinaryFile.public_id}`);
+        console.log('🗑️ Deleting Cloudinary file:', payment.cloudinaryFile.public_id);
+        const result = await cloudinary.uploader.destroy(payment.cloudinaryFile.public_id);
+        console.log('✅ Cloudinary deletion result:', result);
       } catch (cloudinaryError) {
         console.error('Error deleting Cloudinary file:', cloudinaryError);
         // Continue with MongoDB deletion even if Cloudinary deletion fails
@@ -712,9 +707,17 @@ router.delete('/:id', authenticateAdmin, async (req, res) => {
 });
 
 // POST upload new receipt for existing payment (admin only)
-router.post('/:id/receipt', authenticateAdmin, upload.single('receipt'), async (req, res) => {
+router.post('/:id/receipt', authenticateAdmin, upload.single('receiptFile'), async (req, res) => {
   try {
     const { id } = req.params;
+
+    // Debug: log headers and file info for troubleshooting uploads
+    console.log('📥 Receipt upload request headers:', {
+      authorization: req.headers.authorization,
+      'content-type': req.headers['content-type']
+    });
+    console.log('📥 Received req.file:', req.file);
+    console.log('📥 Received req.body:', req.body);
     
     // Validate ID format
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -752,19 +755,23 @@ router.post('/:id/receipt', authenticateAdmin, upload.single('receipt'), async (
       }
     }
     
-    // Update with new Cloudinary file information
+    // Normalize and update with new Cloudinary file information
+    const secureUrl = req.file?.secure_url || req.file?.url || req.file?.path || req.file?.filename || null;
+    const publicId = req.file?.public_id || req.file?.publicId || req.file?.filename || null;
+
     const updateData = {
       cloudinaryFile: {
-        public_id: req.file.public_id,
-        secure_url: req.file.secure_url,
-        original_filename: req.file.originalname,
-        format: req.file.format,
-        resource_type: req.file.resource_type,
-        bytes: req.file.size,
-        width: req.file.width || null,
-        height: req.file.height || null,
-        created_at: req.file.created_at || new Date().toISOString()
-      }
+        public_id: publicId,
+        secure_url: secureUrl,
+        original_filename: req.file?.originalname || req.file?.original_filename || null,
+        format: req.file?.format || null,
+        resource_type: req.file?.resource_type || (req.file?.mimetype && req.file.mimetype.startsWith('image/') ? 'image' : 'raw'),
+        bytes: req.file?.size || req.file?.bytes || null,
+        width: req.file?.width || null,
+        height: req.file?.height || null,
+        created_at: req.file?.created_at || new Date().toISOString()
+      },
+      updatedAt: new Date()
     };
     
     const updatedFeePayment = await FeePayment.findByIdAndUpdate(

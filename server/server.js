@@ -8,12 +8,10 @@ const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
-
 const app = express();
 
 // Use environment variable for port or default to 5000
 const PORT = process.env.PORT || 5000;
-
 
 // CORS Configuration - Allow React frontend
 app.use(cors({
@@ -35,6 +33,7 @@ app.use((req, res, next) => {
   }
   next();
 });
+
 // Middleware
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -56,7 +55,6 @@ cloudinary.config({
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://SRIC:SRIC221205@cluster.fmt0jf7.mongodb.net/sric_admissions?retryWrites=true&w=majority&appName=Cluster';
 
 // Connect to MongoDB
-// Replace the MongoDB connection section with this:
 mongoose.connect(MONGODB_URI)
 .then(() => console.log('✅ Connected to MongoDB Atlas successfully'))
 .catch(err => {
@@ -64,6 +62,8 @@ mongoose.connect(MONGODB_URI)
   console.log('💡 Please check your MongoDB Atlas connection string in the .env file');
   console.log('💡 Make sure your IP is whitelisted in MongoDB Atlas');
 });
+
+// ==================== SCHEMA DEFINITIONS ====================
 
 // Define Admission Schema
 const admissionSchema = new mongoose.Schema({
@@ -151,14 +151,6 @@ admissionSchema.pre('save', function () {
   }
 });
 
-// Create indexes for better performance
-// admissionSchema.index({ email: 1 });
-// admissionSchema.index({ status: 1 });
-// admissionSchema.index({ submittedAt: -1 });
-// admissionSchema.index({ applicationNumber: 1 }, { unique: true });
-
-const Admission = mongoose.model('Application', admissionSchema, 'applications');
-
 // Define Contact Schema
 const contactSchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -202,13 +194,6 @@ const contactSchema = new mongoose.Schema({
 contactSchema.pre('save', function () {
   this.updatedAt = new Date();
 });
-
-
-// contactSchema.index({ email: 1 });
-// contactSchema.index({ status: 1 });
-// contactSchema.index({ submittedAt: -1 });
-
-const Contact = mongoose.model('Contact', contactSchema, 'contacts');
 
 // Define Fee Payment Schema
 const feePaymentSchema = new mongoose.Schema({
@@ -293,13 +278,42 @@ feePaymentSchema.pre('save', function () {
   this.updatedAt = new Date();
 });
 
+// ==================== MODEL DEFINITIONS ====================
 
-// feePaymentSchema.index({ email: 1 });
-// feePaymentSchema.index({ status: 1 });
-// feePaymentSchema.index({ receiptNumber: 1 }, { unique: true });
-// feePaymentSchema.index({ submittedAt: -1 });
+// Check if models already exist, if not create them
+let Application, Contact, FeePayment;
 
-const FeePayment = mongoose.model('FeePayment', feePaymentSchema, 'feePayments');
+if (mongoose.models.Application) {
+  Application = mongoose.models.Application;
+} else {
+  Application = mongoose.model('Application', admissionSchema, 'applications');
+}
+
+if (mongoose.models.Contact) {
+  Contact = mongoose.models.Contact;
+} else {
+  Contact = mongoose.model('Contact', contactSchema, 'contacts');
+}
+
+if (mongoose.models.FeePayment) {
+  FeePayment = mongoose.models.FeePayment;
+} else {
+  FeePayment = mongoose.model('FeePayment', feePaymentSchema, 'feePayments');
+}
+
+// ==================== ROUTER IMPORTS ====================
+
+// Import routers AFTER model definitions
+const feePaymentsRouter = require('./routes/feePayments');
+const contactsRouter = require('./routes/contacts');
+const admissionRouter = require('./routes/admission');
+
+// Use routers
+app.use('/api/admissions', admissionRouter);
+app.use('/api/contacts', contactsRouter);
+app.use('/api/fee-payments', feePaymentsRouter);
+
+// ==================== CLOUDINARY CONFIGURATION ====================
 
 // Configure Cloudinary storage for file uploads
 const cloudinaryStorage = new CloudinaryStorage({
@@ -407,7 +421,7 @@ app.post('/api/admission', async (req, res) => {
       });
     }
     
-    const newAdmission = new Admission(admissionData);
+    const newAdmission = new Application(admissionData);
     const savedAdmission = await newAdmission.save();
     
     console.log('✅ Data saved to MongoDB:', savedAdmission.applicationNumber);
@@ -510,42 +524,21 @@ app.post('/api/contact', async (req, res) => {
   }
 });
 
-// POST fee payment with file upload
-app.post("/api/fee-payments", async (req, res) => {
-  try {
-    console.log("📨 Received Fee Payment Data:", req.body);
-
-    const payment = new FeePayment({
-      studentName: req.body.studentName,
-      phone: req.body.phone,
-      course: req.body.course,
-      amount: req.body.amount,
-      transactionId: req.body.transactionId,
-    });
-
-    await payment.save();
-
-    return res.status(201).json({
-      success: true,
-      message: "Payment saved successfully",
-      data: payment,
-    });
-  } catch (error) {
-    console.error("❌ Error saving fee payment:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Server error while saving payment",
-    });
-  }
+// NOTE: Deprecated non-upload endpoint. Reject requests to prevent creating
+// fee payments without an attached receipt. Use `/api/fee-payments/upload`.
+app.post('/api/fee-payments', (req, res) => {
+  console.warn('⚠️ Rejected call to deprecated POST /api/fee-payments — receipts are required');
+  return res.status(410).json({
+    success: false,
+    message: 'This endpoint is deprecated. Use POST /api/fee-payments/upload with a receipt file (field name: receiptFile) to create fee payments.'
+  });
 });
+
 app.post('/api/fee-payments/upload', upload.single('receiptFile'), async (req, res) => {
   try {
     console.log('📨 Received fee payment data with file upload')
-    const paymentData = req.body
-      ;
+    const paymentData = req.body;
       
-
-
     // Validate required fields
     const requiredFields = ['studentName', 'fatherName', 'mobile', 'email', 'className', 'amount', 'paymentMethod', 'transactionId', 'receiptNumber'];
     const missingFields = requiredFields.filter(field => !paymentData[field]);
@@ -561,7 +554,7 @@ app.post('/api/fee-payments/upload', upload.single('receiptFile'), async (req, r
     if (!req.file) {
       return res.status(400).json({
         success: false,
-        message: 'Receipt file is required'
+        message: 'Receipt file is required (form field: receiptFile)'
       });
     }
     
@@ -574,6 +567,10 @@ app.post('/api/fee-payments/upload', upload.single('receiptFile'), async (req, r
       });
     }
     
+    // Normalize Cloudinary fields from multer-storage-cloudinary (be tolerant)
+    const secureUrl = req.file?.secure_url || req.file?.url || req.file?.path || req.file?.filename || null;
+    const publicId = req.file?.public_id || req.file?.publicId || req.file?.filename || null;
+
     // Prepare payment data
     const feePaymentData = {
       studentName: paymentData.studentName.trim(),
@@ -588,12 +585,12 @@ app.post('/api/fee-payments/upload', upload.single('receiptFile'), async (req, r
       receiptNumber: paymentData.receiptNumber.trim(),
       receiptDate: new Date(paymentData.receiptDate || Date.now()),
       cloudinaryFile: {
-        public_id: req.file.public_id,
-        secure_url: req.file.secure_url,
-        original_filename: req.file.originalname,
-        format: req.file.format,
-        resource_type: req.file.resource_type,
-        bytes: req.file.size,
+        public_id: publicId,
+        secure_url: secureUrl,
+        original_filename: req.file.originalname || req.file?.original_filename || null,
+        format: req.file.format || null,
+        resource_type: req.file.resource_type || (req.file?.mimetype && req.file.mimetype.startsWith('image/') ? 'image' : 'raw'),
+        bytes: req.file.size || req.file?.bytes || null,
         width: req.file.width || null,
         height: req.file.height || null,
         created_at: req.file.created_at || new Date().toISOString()
@@ -627,7 +624,7 @@ app.post('/api/fee-payments/upload', upload.single('receiptFile'), async (req, r
         amount: savedFeePayment.amount,
         date: savedFeePayment.receiptDate,
         status: savedFeePayment.status,
-        receiptUrl: savedFeePayment.cloudinaryFile.secure_url
+        receiptUrl: savedFeePayment.cloudinaryFile?.secure_url || null
       }
     });
     
@@ -699,12 +696,12 @@ app.get('/api/admissions', async (req, res) => {
     const skip = (pageNum - 1) * limitNum;
     
     const [admissions, total] = await Promise.all([
-      Admission.find(query)
+      Application.find(query)
         .sort(sort)
         .skip(skip)
         .limit(limitNum)
         .lean(),
-      Admission.countDocuments(query)
+      Application.countDocuments(query)
     ]);
     
     res.json({
@@ -850,7 +847,7 @@ app.put('/api/admissions/:id/status', async (req, res) => {
     const updateData = { status };
     if (adminNotes) updateData.adminNotes = adminNotes;
     
-    const updatedAdmission = await Admission.findByIdAndUpdate(
+    const updatedAdmission = await Application.findByIdAndUpdate(
       id,
       updateData,
       { new: true, runValidators: true }
@@ -1006,7 +1003,7 @@ app.delete('/api/admissions/:id', async (req, res) => {
       });
     }
     
-    const deletedAdmission = await Admission.findByIdAndDelete(id);
+    const deletedAdmission = await Application.findByIdAndDelete(id);
     
     if (!deletedAdmission) {
       return res.status(404).json({
@@ -1129,7 +1126,7 @@ app.get('/api/admissions/:id', async (req, res) => {
       });
     }
     
-    const admission = await Admission.findById(id);
+    const admission = await Application.findById(id);
     
     if (!admission) {
       return res.status(404).json({
@@ -1272,10 +1269,10 @@ app.get('/api/admin/dashboard', authenticateAdmin, async (req, res) => {
       totalContacts,
       unreadContacts
     ] = await Promise.all([
-      Admission.countDocuments(),
-      Admission.countDocuments({ status: 'pending' }),
-      Admission.countDocuments({ status: 'approved' }),
-      Admission.countDocuments({ status: 'rejected' }),
+      Application.countDocuments(),
+      Application.countDocuments({ status: 'pending' }),
+      Application.countDocuments({ status: 'approved' }),
+      Application.countDocuments({ status: 'rejected' }),
       FeePayment.countDocuments(),
       FeePayment.countDocuments({ status: 'pending' }),
       FeePayment.countDocuments({ status: 'verified' }),
@@ -1285,7 +1282,7 @@ app.get('/api/admin/dashboard', authenticateAdmin, async (req, res) => {
     ]);
 
     // Get recent data
-    const recentAdmissions = await Admission.find()
+    const recentAdmissions = await Application.find()
       .sort({ submittedAt: -1 })
       .limit(5)
       .select('name email admissionClass status submittedAt applicationNumber')
@@ -1304,7 +1301,7 @@ app.get('/api/admin/dashboard', authenticateAdmin, async (req, res) => {
       .lean();
 
     // Get status distributions
-    const admissionsByStatus = await Admission.aggregate([
+    const admissionsByStatus = await Application.aggregate([
       { $group: { _id: "$status", count: { $sum: 1 } } }
     ]);
     
@@ -1316,7 +1313,7 @@ app.get('/api/admin/dashboard', authenticateAdmin, async (req, res) => {
     const now = new Date();
     const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
     
-    const monthlyAdmissions = await Admission.aggregate([
+    const monthlyAdmissions = await Application.aggregate([
       { $match: { submittedAt: { $gte: sixMonthsAgo } } },
       { $group: {
           _id: { 
@@ -1384,9 +1381,9 @@ app.get('/api/dashboard/stats', async (req, res) => {
       totalContacts,
       unreadContacts
     ] = await Promise.all([
-      Admission.countDocuments(),
-      Admission.countDocuments({ status: 'pending' }),
-      Admission.countDocuments({ status: 'approved' }),
+      Application.countDocuments(),
+      Application.countDocuments({ status: 'pending' }),
+      Application.countDocuments({ status: 'approved' }),
       FeePayment.countDocuments(),
       FeePayment.countDocuments({ status: 'pending' }),
       FeePayment.countDocuments({ status: 'verified' }),

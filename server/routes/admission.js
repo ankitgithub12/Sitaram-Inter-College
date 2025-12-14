@@ -1,100 +1,208 @@
-
 const express = require('express');
 const router = express.Router();
-const Admission = require('../models/Admission'); // You'll need to create this model
+const mongoose = require('mongoose');
 
-// GET all admissions
-router.get('/', async (req, res) => {
-  try {
-    const admissions = await Admission.find().sort({ submittedAt: -1 });
-    res.json(admissions);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+// Get the already defined Application model
+const Admission = mongoose.model('Application');
+
+// Middleware to check admin authentication
+const authenticateAdmin = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  
+  if (!authHeader) {
+    return res.status(401).json({
+      success: false,
+      message: 'Authorization header missing'
+    });
   }
-});
+  
+  const token = authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : authHeader;
+  
+  if (token !== 'adminToken123') {
+    return res.status(401).json({
+      success: false,
+      message: 'Unauthorized access'
+    });
+  }
+  
+  next();
+};
 
-// POST new admission
-router.post('/', async (req, res) => {
+// GET all admissions with pagination and filtering
+router.get('/', authenticateAdmin, async (req, res) => {
   try {
-    // Format dates
-    const admissionData = {
-      ...req.body,
-      dob: new Date(req.body.dob),
-      admissionDate: new Date(req.body.admissionDate),
-      declaration: req.body.declaration === 'true' || req.body.declaration === true,
-      submittedAt: new Date()
-    };
-
-    const newAdmission = new Admission(admissionData);
-    const savedAdmission = await newAdmission.save();
+    const { status, search, page = 1, limit = 20, sort = '-submittedAt' } = req.query;
+    let query = {};
     
-    res.status(201).json({
+    if (status && status !== 'all') {
+      query.status = status;
+    }
+    
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } },
+        { applicationNumber: { $regex: search, $options: 'i' } },
+        { fatherName: { $regex: search, $options: 'i' } },
+        { fatherContact: { $regex: search, $options: 'i' } }
+      ];
+    }
+    
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
+    
+    const [admissions, total] = await Promise.all([
+      Admission.find(query)
+        .sort(sort)
+        .skip(skip)
+        .limit(limitNum)
+        .lean(),
+      Admission.countDocuments(query)
+    ]);
+    
+    res.json({
       success: true,
-      message: 'Admission form submitted successfully!',
-      data: savedAdmission
+      count: admissions.length,
+      total,
+      pages: Math.ceil(total / limitNum),
+      currentPage: pageNum,
+      data: admissions
     });
   } catch (error) {
-    console.error('Error saving admission:', error);
-    res.status(400).json({ 
+    console.error('❌ Error fetching admissions:', error);
+    res.status(500).json({
       success: false,
-      message: 'Error submitting form',
-      error: error.message 
+      message: 'Error fetching admissions',
+      error: error.message
     });
   }
 });
 
 // GET admission by ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', authenticateAdmin, async (req, res) => {
   try {
-    const admission = await Admission.findById(req.params.id);
-    if (!admission) {
-      return res.status(404).json({ error: 'Admission not found' });
+    const { id } = req.params;
+    
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid admission ID format'
+      });
     }
-    res.json(admission);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// UPDATE admission status
-router.put('/:id/status', async (req, res) => {
-  try {
-    const { status } = req.body;
-    const admission = await Admission.findByIdAndUpdate(
-      req.params.id,
-      { status },
-      { new: true }
-    );
+    
+    const admission = await Admission.findById(id);
     
     if (!admission) {
-      return res.status(404).json({ error: 'Admission not found' });
+      return res.status(404).json({
+        success: false,
+        message: 'Admission not found'
+      });
     }
     
     res.json({
       success: true,
-      message: 'Status updated successfully',
       data: admission
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('❌ Error fetching admission:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching admission',
+      error: error.message
+    });
+  }
+});
+
+// UPDATE admission status - FIXED ROUTE
+router.put('/:id/status', authenticateAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status, adminNotes } = req.body;
+    
+    console.log(`Updating admission ${id} to status: ${status}`);
+    
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid admission ID'
+      });
+    }
+    
+    const validStatuses = ['pending', 'approved', 'rejected'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid status'
+      });
+    }
+    
+    const updateData = { status };
+    if (adminNotes) updateData.adminNotes = adminNotes;
+    
+    const updatedAdmission = await Admission.findByIdAndUpdate(
+      id,
+      updateData,
+      { new: true, runValidators: true }
+    );
+    
+    if (!updatedAdmission) {
+      return res.status(404).json({
+        success: false,
+        message: 'Admission not found'
+      });
+    }
+    
+    res.json({
+      success: true,
+      message: `Admission ${status} successfully`,
+      data: updatedAdmission
+    });
+  } catch (error) {
+    console.error('❌ Error updating admission status:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error updating admission status',
+      error: error.message
+    });
   }
 });
 
 // DELETE admission
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authenticateAdmin, async (req, res) => {
   try {
-    const admission = await Admission.findByIdAndDelete(req.params.id);
+    const { id } = req.params;
     
-    if (!admission) {
-      return res.status(404).json({ error: 'Admission not found' });
+    console.log(`Deleting admission ${id}`);
+    
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid admission ID'
+      });
     }
     
-    res.json({ 
+    const deletedAdmission = await Admission.findByIdAndDelete(id);
+    
+    if (!deletedAdmission) {
+      return res.status(404).json({
+        success: false,
+        message: 'Admission not found'
+      });
+    }
+    
+    res.json({
       success: true,
-      message: 'Admission deleted successfully' 
+      message: 'Admission deleted successfully',
+      data: { id: deletedAdmission._id }
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('❌ Error deleting admission:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error deleting admission',
+      error: error.message
+    });
   }
 });
 
