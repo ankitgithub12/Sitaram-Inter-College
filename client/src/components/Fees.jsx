@@ -24,7 +24,7 @@ const Fees = () => {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [receiptDetails, setReceiptDetails] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const API_BASE_URL = 'http://localhost:5000';
+  const API_BASE_URL = 'https://sitaram-inter-college.onrender.com/';
 
   const fileInputRef = useRef(null);
   const bankFileInputRef = useRef(null);
@@ -455,10 +455,11 @@ const submitPaymentToBackend = async () => {
     }
     
     // Send to backend
-    const response = await fetch(`${API_BASE_URL}/api/fee-payments/upload`, {
-      method: 'POST',
-      body: formDataToSend,
-    });
+    const response = await fetch('https://sitaram-inter-college.onrender.com/api/fee-payments/upload', {
+  method: 'POST',
+  body: formDataToSend,
+});
+
     
     if (!response.ok) {
       const errorData = await response.json();
