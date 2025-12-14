@@ -14,7 +14,7 @@ const Contact = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [toast, setToast] = useState({ show: false, message: '', type: '' });
   const [openFaq, setOpenFaq] = useState(null);
-  const [apiUrl] = useState('http://localhost:5000/api');
+  const [apiUrl] = useState('https://sitaram-inter-college.onrender.com/');
   
   // Navbar state
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
