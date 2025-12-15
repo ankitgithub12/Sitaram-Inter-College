@@ -47,6 +47,39 @@ router.post('/', async (req, res) => {
     });
   }
 });
+// PUBLIC: Get admission for PRINT (NO AUTH)
+router.get('/print/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid admission ID'
+      });
+    }
+
+    const admission = await Admission.findById(id).lean();
+
+    if (!admission) {
+      return res.status(404).json({
+        success: false,
+        message: 'Admission not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: admission
+    });
+  } catch (error) {
+    console.error('❌ Error loading print data:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error loading print data'
+    });
+  }
+});
 
 
 // GET all admissions with pagination and filtering
