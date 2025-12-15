@@ -24,7 +24,7 @@ const Fees = () => {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [receiptDetails, setReceiptDetails] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const API_BASE_URL = 'https://sitaram-inter-college.onrender.com/';
+  const API_BASE_URL = 'https://sitaram-inter-college.onrender.com';
 
   const fileInputRef = useRef(null);
   const bankFileInputRef = useRef(null);
