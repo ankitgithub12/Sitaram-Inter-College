@@ -27,6 +27,27 @@ const authenticateAdmin = (req, res, next) => {
   
   next();
 };
+// CREATE admission (PUBLIC - NO AUTH)
+router.post('/', async (req, res) => {
+  try {
+    const admission = new Admission(req.body);
+    await admission.save();
+
+    res.status(201).json({
+      success: true,
+      message: 'Admission submitted successfully',
+      data: admission
+    });
+  } catch (error) {
+    console.error('❌ Error creating admission:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error submitting admission',
+      error: error.message
+    });
+  }
+});
+
 
 // GET all admissions with pagination and filtering
 router.get('/', authenticateAdmin, async (req, res) => {
