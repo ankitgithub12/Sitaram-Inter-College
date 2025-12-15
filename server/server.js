@@ -15,11 +15,19 @@ const PORT = process.env.PORT || 5000;
 
 // CORS Configuration - Allow React frontend
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:5174'],
+  origin: [
+    'http://localhost:3000',
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'https://sric-fdq2.onrender.com'
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
 }));
+
+app.options('*', cors());
+
 
 // Custom OPTIONS handler for preflight requests
 app.use((req, res, next) => {
