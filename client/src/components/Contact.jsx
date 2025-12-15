@@ -80,7 +80,7 @@ const Contact = () => {
     try {
       console.log('Submitting contact form:', formData);
 
-      const response = await axios.post(`${apiUrl}/contact`, formData, {
+      const response = await axios.post(`${apiUrl}/api/contact`, formData, {
         headers: {
           'Content-Type': 'application/json'
         }
