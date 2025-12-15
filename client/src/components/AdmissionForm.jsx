@@ -422,12 +422,13 @@ const AdmissionForm = () => {
       console.log('Data:', submissionData);
 
       // Send POST request to backend
-      const response = await axios.post(`${API_URL}/admission`, submissionData, {
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        timeout: 30000
-      });
+     const response = await axios.post(`${API_URL}/api/admissions`, submissionData, {
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  timeout: 30000
+});
+
 
       console.log('Response:', response.data);
 
