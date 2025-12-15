@@ -483,7 +483,7 @@ const Home = () => {
               Apply Now
             </Link>
             <Link 
-              to="/about" 
+              to="/mission" 
               className="bg-transparent border-2 border-white hover:bg-white hover:text-sricblue font-semibold py-3 px-6 rounded-lg transition duration-300 transform hover:scale-105"
             >
               Learn More
