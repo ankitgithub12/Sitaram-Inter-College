@@ -501,7 +501,8 @@ const AdmissionForm = () => {
   };
 
   // Check server connection on mount
-  useEffect(() => {
+ // Check server connection on mount
+useEffect(() => {
   const checkServer = async () => {
     try {
       await axios.get(`${API_URL}/api/health`, { timeout: 5000 });
@@ -514,6 +515,7 @@ const AdmissionForm = () => {
 
   checkServer();
 }, []);
+
     
     // Set default dates
     const today = getToday();
