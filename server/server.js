@@ -318,6 +318,14 @@ const feePaymentRoutes = require('./routes/feePayments');
 app.use('/api/admissions', admissionRoutes);
 app.use('/api/contacts', contactRoutes);
 app.use('/api/fee-payments', feePaymentRoutes);
+const path = require('path');
+
+// Serve static files from React build
+app.use(express.static(path.join(__dirname, 'client/build')));
+
+// Catch-all: send index.html for any non-API route
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
 
 // ==================== CLOUDINARY CONFIGURATION ====================
 
