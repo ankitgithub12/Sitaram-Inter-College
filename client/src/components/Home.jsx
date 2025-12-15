@@ -1222,7 +1222,7 @@ const Home = () => {
           {/* View more button */}
           <div className="text-center mt-12">
             <Link 
-              to="/testimonials" 
+              to="/history" 
               className="px-8 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-300 shadow-md hover:shadow-lg"
             >
               View More Testimonials
