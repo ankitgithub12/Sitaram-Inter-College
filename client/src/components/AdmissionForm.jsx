@@ -35,7 +35,7 @@ const AdmissionForm = () => {
   const printContentRef = useRef(null);
 
   // API URL - make sure this matches your server URL
-  const API_URL = 'https://sitaram-inter-college.onrender.com/';
+  const API_URL = 'https://sitaram-inter-college.onrender.com';
 
   // Show toast notification
   const showToast = (message, type = 'info') => {
