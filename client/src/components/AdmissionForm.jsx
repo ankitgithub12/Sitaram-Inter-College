@@ -346,7 +346,7 @@ const AdmissionForm = () => {
     }
   };
 
-  // Form submission to backend - FIXED VERSION
+  // Form submission to backend
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -418,17 +418,16 @@ const AdmissionForm = () => {
         declaration: formData.declaration
       };
 
-      console.log('Submitting data to:', `${API_URL}/admission`);
+      console.log('Submitting data to:', `${API_URL}/admissions`);
       console.log('Data:', submissionData);
 
       // Send POST request to backend
-     const response = await axios.post(`${API_URL}/api/admissions`, submissionData, {
-  headers: {
-    'Content-Type': 'application/json'
-  },
-  timeout: 30000
-});
-
+      const response = await axios.post(`${API_URL}/admissions`, submissionData, {
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        timeout: 30000
+      });
 
       console.log('Response:', response.data);
 
@@ -501,22 +500,17 @@ const AdmissionForm = () => {
   };
 
   // Check server connection on mount
- // Check server connection on mount
-useEffect(() => {
-  const checkServer = async () => {
-    try {
-      await axios.get(`${API_URL}/api/health`, { timeout: 5000 });
-      console.log('Server connection successful');
-    } catch (error) {
-      console.warn('Server not reachable:', error.message);
-      showToast('⚠️ Server not connected. Please start the backend server.', 'error');
-    }
-  };
+  useEffect(() => {
+    const checkServer = async () => {
+      try {
+        await axios.get(`${API_URL}/health`, { timeout: 5000 });
+        console.log('Server connection successful');
+      } catch (error) {
+        console.warn('Server not reachable:', error.message);
+        showToast('⚠️ Server not connected. Please start the backend server.', 'error');
+      }
+    };
 
-  checkServer();
-}, []);
-
-    
     // Set default dates
     const today = getToday();
     const maxDob = getMaxDOB();
@@ -537,6 +531,8 @@ useEffect(() => {
         setApplicationNumber(lastAppNumber);
       }
     }
+
+    checkServer();
   }, []);
 
   const classCategories = [
