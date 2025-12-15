@@ -502,17 +502,18 @@ const AdmissionForm = () => {
 
   // Check server connection on mount
   useEffect(() => {
-    const checkServer = async () => {
-      try {
-        await axios.get(`${API_URL}/health`, { timeout: 5000 });
-        console.log('Server connection successful');
-      } catch (error) {
-        console.warn('Server not reachable:', error.message);
-        showToast('⚠️ Server not connected. Please start the backend server.', 'error');
-      }
-    };
-    
-    checkServer();
+  const checkServer = async () => {
+    try {
+      await axios.get(`${API_URL}/api/health`, { timeout: 5000 });
+      console.log('Server connection successful');
+    } catch (error) {
+      console.warn('Server not reachable:', error.message);
+      showToast('⚠️ Server not connected. Please start the backend server.', 'error');
+    }
+  };
+
+  checkServer();
+}, []);
     
     // Set default dates
     const today = getToday();
