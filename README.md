@@ -1,94 +1,115 @@
-🎓 SRIC Senior Secondary School - Admissions & Admin Portal
-📋 Project Overview
-A comprehensive full-stack web application for Sitaram Inter College that manages online admissions, fee payments, contact inquiries, and provides a secure admin dashboard for school administration.
+# 🎓 SRIC Senior Secondary School  
+## 🌐 Admissions & Administration Portal
 
-🌐 Live Deployment
-Backend API: https://sitaram-inter-college.onrender.com
+![Build](https://img.shields.io/badge/build-passing-brightgreen)
+![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![Node](https://img.shields.io/badge/node-18+-green)
+![React](https://img.shields.io/badge/react-18+-61DAFB)
+![MongoDB](https://img.shields.io/badge/database-MongoDB-green)
+![License](https://img.shields.io/badge/license-Proprietary-red)
 
-Frontend Website: https://sric-fdq2.onrender.com (or your frontend URL)
+> **A secure, scalable, and fully digital school management system** built for **Sitaram Inter College** to streamline admissions, fee payments, communication, and administrative workflows.
 
-✨ Key Features
-🎯 For Students & Parents
-📝 Online Admission Form - Digital application submission
+---
 
-💰 Fee Payment Portal - Secure online payments with receipt upload
+## 🚀 Project Overview
 
-📞 Contact System - Direct communication with school administration
+The **SRIC Admissions & Admin Portal** is a **full-stack web application** designed to digitize and automate critical school operations:
 
-📅 Exam Schedule Viewer - Access to quarterly and half-yearly exam dates
+- Online student admissions  
+- Fee payment and receipt verification  
+- Contact and inquiry management  
+- Exam schedule publishing  
+- Academic toppers showcase  
+- Secure admin dashboard with analytics  
 
-🏆 Toppers Display - Showcase of academic achievers with certificates
+This system ensures **efficiency, transparency, and enterprise-grade security**.
 
-🔐 For Administrators
-🛡️ Secure Admin Login - Database-authenticated access with bcrypt encryption
+---
 
-📊 Dashboard Analytics - Real-time statistics and insights
+## 🌐 Live Deployment
 
-📋 Admissions Management - View, approve, reject applications
+🔗 **Backend API**  
+👉 https://sitaram-inter-college.onrender.com  
 
-💰 Fee Payment Verification - Validate and manage payment receipts
+🔗 **Frontend Website**  
+👉 https://sric-fdq2.onrender.com  
 
-📩 Contact Management - Respond to inquiries and messages
+---
 
-📈 Data Reports - Generate insights and status distributions
+## ✨ Key Features
 
-🛠️ Technology Stack
-Backend (Node.js/Express)
-Runtime: Node.js 18+
+### 🎯 For Students & Parents
 
-Framework: Express.js
+- 📝 **Online Admission Form** – Digital application submission  
+- 💰 **Fee Payment Portal** – Receipt upload & tracking  
+- 📞 **Contact System** – Direct communication with administration  
+- 📅 **Exam Schedule Viewer** – Quarterly & half-yearly exams  
+- 🏆 **Toppers Display** – Academic achievers with certificates  
 
-Database: MongoDB Atlas (NoSQL)
+---
 
-Authentication: Bcrypt.js + JWT tokens
+### 🔐 For Administrators
 
-File Storage: Cloudinary (for receipt uploads)
+- 🛡️ **Secure Admin Login** – JWT + bcrypt authentication  
+- 📊 **Dashboard Analytics** – Real-time insights  
+- 📋 **Admissions Management** – Approve / reject applications  
+- 💰 **Fee Verification** – Validate payment receipts  
+- 📩 **Contact Management** – Respond & archive messages  
+- 📈 **Reports & Statistics** – Status distributions  
 
-Middleware: CORS, Body-parser, Multer
+---
 
-Frontend (React)
-Framework: React 18+
+## 🛠️ Technology Stack
 
-Routing: React Router DOM
+### Backend
+- Node.js 18+
+- Express.js
+- MongoDB Atlas
+- JWT Authentication
+- Bcrypt.js
+- Multer & Cloudinary
+- CORS & Body-Parser
 
-HTTP Client: Axios
+### Frontend
+- React 18+
+- React Router DOM
+- Axios
+- Tailwind CSS
+- Font Awesome
 
-Styling: Tailwind CSS
+### DevOps
+- Render.com
+- Environment Variables
+- Git & GitHub
 
-Icons: Font Awesome
+---
 
-DevOps & Deployment
-Hosting: Render.com
+## 📁 Project Structure
 
-Environment: .env configuration
-
-Version Control: Git + GitHub
-
-📁 Project Structure
-text
+```text
 SRIC-ADMISSIONS/
 ├── client/                    # React Frontend
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── Home.jsx      # Landing page
-│   │   │   ├── AdminLogin.jsx # Admin authentication
-│   │   │   └── AdminDashboard.jsx # Admin panel
-│   │   ├── App.jsx           # Main app router
-│   │   ├── config.js         # API configuration
-│   │   └── index.js          # Entry point
+│   │   │   ├── Home.jsx
+│   │   │   ├── AdminLogin.jsx
+│   │   │   └── AdminDashboard.jsx
+│   │   ├── App.jsx
+│   │   ├── config.js
+│   │   └── index.js
 │   └── package.json
 │
 ├── server/                    # Node.js Backend
-│   ├── server.js             # Main server file
-│   ├── models/               # MongoDB schemas
-│   │   ├── Admin.js
-│   │   ├── Application.js
+│   ├── server.js
+│   ├── models/
+│   │   ├── Admission.js
 │   │   ├── Contact.js
 │   │   └── FeePayment.js
-│   ├── routes/               # API routes
+│   ├── routes/
 │   └── package.json
 │
-└── README.md                 # This file
+└── README.md
 🚀 Getting Started
 Prerequisites
 Node.js 18+ installed
