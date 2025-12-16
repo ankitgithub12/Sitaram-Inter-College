@@ -110,3 +110,127 @@ SRIC-ADMISSIONS/
 │   └── package.json
 │
 └── README.md
+📸 Screenshots
+
+Add screenshots by uploading images to a /screenshots folder and updating paths below.
+
+🏠 Home Page
+
+📝 Admission Form
+
+🔐 Admin Login
+
+📊 Admin Dashboard
+
+💰 Fee Verification Panel
+
+🚀 Getting Started
+Prerequisites
+
+Node.js 18+
+
+MongoDB Atlas
+
+Cloudinary Account
+
+Git
+
+Backend Setup
+git clone <repository-url>
+cd sric-admissions/server
+npm install
+
+Create .env file:
+PORT=5000
+MONGODB_URI=your_mongodb_connection_string
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+JWT_SECRET=your_secret_key
+
+Start server:
+npm start
+
+Frontend Setup
+cd ../client
+npm install
+
+Run app:
+npm run dev
+🔐 Admin Credentials
+
+Default admin is auto-created on first server start.
+
+Username: XXXXXX
+
+Password: XXXXXX
+
+Email: sitaramintercollege1205@gmail.com
+
+⚠️ Change credentials after deployment
+
+📊 API Endpoints
+Public
+
+GET /api/health
+
+POST /api/admission
+
+POST /api/contact
+
+POST /api/fee-payments/upload
+
+Admin
+
+POST /api/admin/login
+
+GET /api/admin/dashboard
+
+GET /api/admin/profile
+
+PUT /api/admissions/:id/status
+
+PUT /api/fee-payments/:id/status
+
+PUT /api/contacts/:id/status
+
+🛡️ Security Features
+
+Password hashing with bcrypt
+
+JWT-based authentication
+
+Account lock after 5 failed attempts
+
+Secure CORS configuration
+
+File upload validation
+
+Input sanitization
+
+Role-based access control
+
+📞 Support & Contact
+
+📧 Email: sitaramintercollege1205@gmail.com
+
+📱 Phone: +91 9756517750
+📍 Address:
+Sabdalpur Sharki, Mathana Road, Hasanpur,
+Amroha – 244242 (U.P.)
+
+📄 License
+
+© 2025 Sitaram Inter College
+All Rights Reserved.
+
+🎯 Project Status
+
+✅ Production Ready
+
+🔒 Enterprise-Grade Security
+
+📅 Last Updated: December 2025
+
+👨‍💻 Developed By: Ankit Kumar
+
