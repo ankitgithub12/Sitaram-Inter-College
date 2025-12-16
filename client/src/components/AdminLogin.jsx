@@ -3,6 +3,9 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
+// ✅ Backend API base URL - DIRECTLY IN THE FILE
+const API_BASE_URL = 'https://sitaram-inter-college.onrender.com';
+
 const AdminLogin = () => {
   const [formData, setFormData] = useState({
     username: '',
@@ -32,13 +35,14 @@ const AdminLogin = () => {
 
   const checkServerHealth = async () => {
     try {
-      const response = await axios.get('/api/health');
+      const response = await axios.get(`${API_BASE_URL}/api/health`);
       if (response.data.success) {
         setServerStatus('online');
       } else {
         setServerStatus('offline');
       }
     } catch (error) {
+      console.error('Health check error:', error);
       setServerStatus('offline');
     }
   };
@@ -76,8 +80,8 @@ const AdminLogin = () => {
     setConnectionError(false);
 
     try {
-      // Always try server authentication
-      const response = await axios.post('/api/admin/login', {
+      // ✅ Using correct backend URL
+      const response = await axios.post(`${API_BASE_URL}/api/admin/login`, {
         username: formData.username,
         password: formData.password
       });
@@ -95,7 +99,6 @@ const AdminLogin = () => {
       
       // Handle specific error cases
       if (error.response) {
-        // Server responded with error status
         const { status, data } = error.response;
         
         if (status === 401) {
@@ -108,11 +111,9 @@ const AdminLogin = () => {
           setErrorMessage('Server error. Please try again.');
         }
       } else if (error.request) {
-        // Request was made but no response received
         setConnectionError(true);
         setErrorMessage('Cannot connect to server. Please check your internet connection and try again.');
       } else {
-        // Other errors
         setErrorMessage('An error occurred. Please try again.');
       }
     } finally {
@@ -125,8 +126,7 @@ const AdminLogin = () => {
     setErrorMessage('');
     setServerStatus('checking');
     
-    // Retry server health check
-    axios.get('/api/health')
+    axios.get(`${API_BASE_URL}/api/health`)
       .then((response) => {
         if (response.data.success) {
           setServerStatus('online');
@@ -351,41 +351,23 @@ const AdminLogin = () => {
           </div>
         </div>
 
-        {/* Security Features Info */}
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4 text-center text-white/80">
-          <div className="flex flex-col items-center">
-            <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mb-2">
-              <span className="text-sricgold font-bold">🔒</span>
-            </div>
-            <p className="text-sm font-medium">Bcrypt Encrypted</p>
-          </div>
-          <div className="flex flex-col items-center">
-            <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mb-2">
-              <span className="text-sricgold font-bold">⚡</span>
-            </div>
-            <p className="text-sm font-medium">Database Auth</p>
-          </div>
-          <div className="flex flex-col items-center">
-            <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mb-2">
-              <span className="text-sricgold font-bold">🛡️</span>
-            </div>
-            <p className="text-sm font-medium">Account Lock</p>
-          </div>
-        </div>
-
         {/* Server Status */}
-        <div className="mt-4 text-center">
-          <div className="inline-flex items-center bg-black/20 backdrop-blur-sm px-4 py-2 rounded-full">
+        <div className="mt-8 text-center">
+          <div className="inline-flex items-center bg-black/20 backdrop-blur-sm px-4 py-2 rounded-full mb-2">
             <div className={`w-2 h-2 rounded-full mr-2 ${
               serverStatus === 'online' ? 'bg-green-500' : 
               serverStatus === 'offline' ? 'bg-red-500 animate-pulse' : 
               'bg-yellow-500 animate-pulse'
             }`}></div>
             <span className="text-white/90 text-sm">
-              {serverStatus === 'online' ? 'Server Online' : 
-               serverStatus === 'offline' ? 'Server Offline' : 
+              {serverStatus === 'online' ? 'Backend Server Online' : 
+               serverStatus === 'offline' ? 'Backend Server Offline' : 
                'Checking Server...'}
             </span>
+          </div>
+          
+          <div className="text-white/70 text-xs">
+            Backend: sitaram-inter-college.onrender.com
           </div>
         </div>
 
