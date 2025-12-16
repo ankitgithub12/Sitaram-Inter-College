@@ -34,7 +34,7 @@ app.use((req, res, next) => {
   if (req.method === 'OPTIONS') {
     res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept');
+    res.header('Access-Control-Allow-Headers', 'Content-Type', 'Authorization', 'Accept');
     res.header('Access-Control-Allow-Credentials', 'true');
     res.status(200).end();
     return;
@@ -435,9 +435,8 @@ async function initializeDefaultAdmin() {
       
       await defaultAdmin.save();
       console.log('✅ Default admin created successfully');
-      console.log('🔑 Username: 221205');
-      console.log('🔑 Password: Sitaram@2002');
-      console.log('📧 Email: sitaramintercollege1205@gmail.com');
+      console.log('📧 Admin email: sitaramintercollege1205@gmail.com');
+      console.log('🔐 Password securely hashed with bcrypt');
     } else {
       console.log('✅ Default admin already exists');
     }
@@ -1407,8 +1406,7 @@ app.post('/api/admin/login', async (req, res) => {
       console.warn(`⚠️ Failed password attempt for admin: ${username}`);
       return res.status(401).json({
         success: false,
-        message: 'Invalid username or password',
-        attemptsRemaining: 5 - admin.loginAttempts
+        message: 'Invalid username or password'
       });
     }
 
@@ -1458,7 +1456,7 @@ const authenticateAdmin = async (req, res, next) => {
       });
     }
 
-    // Simple token validation (you can enhance this with JWT later)
+    // Simple token validation
     const tokenParts = token.split('_');
     if (tokenParts.length !== 3 || tokenParts[0] !== 'admin') {
       return res.status(401).json({
