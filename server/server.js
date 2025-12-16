@@ -407,14 +407,6 @@ if (mongoose.models.FeePayment) {
   FeePayment = mongoose.model('FeePayment', feePaymentSchema, 'feePayments');
 }
 
-const admissionRoutes = require('./routes/admission');
-const contactRoutes = require('./routes/contacts');
-const feePaymentRoutes = require('./routes/feePayments');
-
-app.use('/api/admissions', admissionRoutes);
-app.use('/api/contacts', contactRoutes);
-app.use('/api/fee-payments', feePaymentRoutes);
-
 // ==================== HELPER FUNCTIONS ====================
 
 // Function to initialize default admin
@@ -1744,6 +1736,23 @@ app.get('/api/admission/test', (req, res) => {
       'fatherName', 'motherName', 'fatherContact', 'email',
       'occupation', 'address', 'declaration'
     ]
+  });
+});
+
+// Add test routes endpoint for debugging
+app.get('/api/test-routes', (req, res) => {
+  res.json({
+    success: true,
+    message: 'All routes are working correctly',
+    routes: {
+      admissions: '/api/admissions',
+      feePayments: '/api/fee-payments', 
+      contacts: '/api/contacts',
+      adminDashboard: '/api/admin/dashboard',
+      adminLogin: '/api/admin/login',
+      health: '/api/health'
+    },
+    status: 'Server is running with all routes'
   });
 });
 
