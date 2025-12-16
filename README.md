@@ -1,236 +1,351 @@
-# 🎓 SRIC Senior Secondary School  
-## 🌐 Admissions & Administration Portal
+🎓 SRIC Senior Secondary School - Admissions & Admin Portal
+📋 Project Overview
+A comprehensive full-stack web application for Sitaram Inter College that manages online admissions, fee payments, contact inquiries, and provides a secure admin dashboard for school administration.
 
-![Build](https://img.shields.io/badge/build-passing-brightgreen)
-![Version](https://img.shields.io/badge/version-1.0.0-blue)
-![Node](https://img.shields.io/badge/node-18+-green)
-![React](https://img.shields.io/badge/react-18+-61DAFB)
-![MongoDB](https://img.shields.io/badge/database-MongoDB-green)
-![License](https://img.shields.io/badge/license-Proprietary-red)
+🌐 Live Deployment
+Backend API: https://sitaram-inter-college.onrender.com
 
-> **A secure, scalable, and fully digital school management system** built for **Sitaram Inter College** to streamline admissions, fee payments, communication, and administrative workflows.
+Frontend Website: https://sric-fdq2.onrender.com (or your frontend URL)
 
----
+✨ Key Features
+🎯 For Students & Parents
+📝 Online Admission Form - Digital application submission
 
-## 🚀 Project Overview
+💰 Fee Payment Portal - Secure online payments with receipt upload
 
-The **SRIC Admissions & Admin Portal** is a **full-stack web application** designed to digitize and automate critical school operations:
+📞 Contact System - Direct communication with school administration
 
-- Online student admissions  
-- Fee payment and receipt verification  
-- Contact and inquiry management  
-- Exam schedule publishing  
-- Academic toppers showcase  
-- Secure admin dashboard with analytics  
+📅 Exam Schedule Viewer - Access to quarterly and half-yearly exam dates
 
-This system ensures **efficiency, transparency, and enterprise-grade security**.
+🏆 Toppers Display - Showcase of academic achievers with certificates
 
----
+🔐 For Administrators
+🛡️ Secure Admin Login - Database-authenticated access with bcrypt encryption
 
-## 🌐 Live Deployment
+📊 Dashboard Analytics - Real-time statistics and insights
 
-🔗 **Backend API**  
-👉 https://sitaram-inter-college.onrender.com  
+📋 Admissions Management - View, approve, reject applications
 
-🔗 **Frontend Website**  
-👉 https://sric-fdq2.onrender.com  
+💰 Fee Payment Verification - Validate and manage payment receipts
 
----
+📩 Contact Management - Respond to inquiries and messages
 
-## ✨ Key Features
+📈 Data Reports - Generate insights and status distributions
 
-### 🎯 For Students & Parents
+🛠️ Technology Stack
+Backend (Node.js/Express)
+Runtime: Node.js 18+
 
-- 📝 **Online Admission Form** – Digital application submission  
-- 💰 **Fee Payment Portal** – Receipt upload & tracking  
-- 📞 **Contact System** – Direct communication with administration  
-- 📅 **Exam Schedule Viewer** – Quarterly & half-yearly exams  
-- 🏆 **Toppers Display** – Academic achievers with certificates  
+Framework: Express.js
 
----
+Database: MongoDB Atlas (NoSQL)
 
-### 🔐 For Administrators
+Authentication: Bcrypt.js + JWT tokens
 
-- 🛡️ **Secure Admin Login** – JWT + bcrypt authentication  
-- 📊 **Dashboard Analytics** – Real-time insights  
-- 📋 **Admissions Management** – Approve / reject applications  
-- 💰 **Fee Verification** – Validate payment receipts  
-- 📩 **Contact Management** – Respond & archive messages  
-- 📈 **Reports & Statistics** – Status distributions  
+File Storage: Cloudinary (for receipt uploads)
 
----
+Middleware: CORS, Body-parser, Multer
 
-## 🛠️ Technology Stack
+Frontend (React)
+Framework: React 18+
 
-### Backend
-- Node.js 18+
-- Express.js
-- MongoDB Atlas
-- JWT Authentication
-- Bcrypt.js
-- Multer & Cloudinary
-- CORS & Body-Parser
+Routing: React Router DOM
 
-### Frontend
-- React 18+
-- React Router DOM
-- Axios
-- Tailwind CSS
-- Font Awesome
+HTTP Client: Axios
 
-### DevOps
-- Render.com
-- Environment Variables
-- Git & GitHub
+Styling: Tailwind CSS
 
----
+Icons: Font Awesome
 
-## 📁 Project Structure
+DevOps & Deployment
+Hosting: Render.com
 
-```text
+Environment: .env configuration
+
+Version Control: Git + GitHub
+
+📁 Project Structure
+text
 SRIC-ADMISSIONS/
 ├── client/                    # React Frontend
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── Home.jsx
-│   │   │   ├── AdminLogin.jsx
-│   │   │   └── AdminDashboard.jsx
-│   │   ├── App.jsx
-│   │   ├── config.js
-│   │   └── index.js
+│   │   │   ├── Home.jsx      # Landing page
+│   │   │   ├── AdminLogin.jsx # Admin authentication
+│   │   │   └── AdminDashboard.jsx # Admin panel
+│   │   ├── App.jsx           # Main app router
+│   │   ├── config.js         # API configuration
+│   │   └── index.js          # Entry point
 │   └── package.json
 │
 ├── server/                    # Node.js Backend
-│   ├── server.js
-│   ├── routes/
-│   │   ├── Admission.js
+│   ├── server.js             # Main server file
+│   ├── models/               # MongoDB schemas
+│   │   ├── Admin.js
+│   │   ├── Application.js
 │   │   ├── Contact.js
 │   │   └── FeePayment.js
-│   ├── routes/
+│   ├── routes/               # API routes
 │   └── package.json
 │
-└── README.md
-📸 Screenshots
-
-Add screenshots by uploading images to a /screenshots folder and updating paths below.
-
-🏠 Home Page
-
-📝 Admission Form
-
-🔐 Admin Login
-
-📊 Admin Dashboard
-
-💰 Fee Verification Panel
-
+└── README.md                 # This file
 🚀 Getting Started
 Prerequisites
+Node.js 18+ installed
 
-Node.js 18+
+MongoDB Atlas account
 
-MongoDB Atlas
+Cloudinary account
 
-Cloudinary Account
-
-Git
+Git installed
 
 Backend Setup
+Clone the repository
+
+bash
 git clone <repository-url>
 cd sric-admissions/server
-npm install
+Install dependencies
 
-Create .env file:
+bash
+npm install
+Configure environment variables (create .env file)
+
+env
 PORT=5000
 MONGODB_URI=your_mongodb_connection_string
 CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
-JWT_SECRET=your_secret_key
+Start the server
 
-Start server:
+bash
 npm start
-
+# Server runs on http://localhost:5000
 Frontend Setup
+Navigate to client directory
+
+bash
 cd ../client
+Install dependencies
+
+bash
 npm install
+Configure API endpoint (in src/config.js)
 
-Run app:
-npm run dev
+javascript
+const API_BASE_URL = 'http://localhost:5000'; // For development
+// or 'https://sitaram-inter-college.onrender.com' for production
+Start the React app
+
+bash
+npm start
+# App runs on http://localhost:3000
 🔐 Admin Credentials
+Default admin credentials (auto-created on first server startup):
 
-Default admin is auto-created on first server start.
-
-Username: XXXXXX
+Username: XXXXX
 
 Password: XXXXXX
 
 Email: sitaramintercollege1205@gmail.com
 
-⚠️ Change credentials after deployment
+⚠️ Security Note: Passwords are hashed with bcrypt and stored securely in the database.
 
 📊 API Endpoints
-Public
+Public Endpoints
+GET /api/health - Server health check
 
-GET /api/health
+POST /api/admission - Submit admission form
 
-POST /api/admission
+POST /api/contact - Submit contact form
 
-POST /api/contact
+POST /api/fee-payments/upload - Submit fee payment with receipt
 
-POST /api/fee-payments/upload
+GET /api/admissions - Get all admissions (filterable)
 
-Admin
+GET /api/fee-payments - Get all fee payments
 
-POST /api/admin/login
+GET /api/contacts - Get all contacts
 
-GET /api/admin/dashboard
+Admin Endpoints (Requires Authentication)
+POST /api/admin/login - Admin authentication
 
-GET /api/admin/profile
+GET /api/admin/dashboard - Dashboard statistics
 
-PUT /api/admissions/:id/status
+PUT /api/admissions/:id/status - Update admission status
 
-PUT /api/fee-payments/:id/status
+PUT /api/fee-payments/:id/status - Verify/reject payments
 
-PUT /api/contacts/:id/status
+PUT /api/contacts/:id/status - Update contact status
+
+GET /api/admin/profile - Get admin profile
+
+🔧 Database Schemas
+Admin Schema
+username (String, Unique) - Admin login username
+
+password (String) - Hashed password
+
+email (String, Unique) - Contact email
+
+role (String) - Admin role (admin/superadmin/viewer)
+
+lastLogin (Date) - Last login timestamp
+
+loginAttempts (Number) - Failed login attempts
+
+lockUntil (Date) - Account lock timestamp
+
+Admission Schema
+Student personal information
+
+Parent/guardian details
+
+Academic information
+
+Application status (pending/approved/rejected)
+
+Auto-generated application number (SRICYYXXXXX)
+
+Fee Payment Schema
+Payment details
+
+Receipt information
+
+Cloudinary file metadata
+
+Verification status (pending/verified/rejected)
+
+Contact Schema
+Inquiry information
+
+Response tracking
+
+Status management (unread/read/replied/archived)
+
+🌐 Deployment Guide
+Deploying to Render
+Push code to GitHub repository
+
+Create new Web Service on Render
+
+Connect your GitHub repository
+
+Configure settings:
+
+Root Directory: server/ (for backend)
+
+Build Command: npm install
+
+Start Command: node server.js
+
+Add environment variables (same as local .env)
+
+Deploy
+
+Frontend Deployment
+Create Static Site on Render
+
+Connect frontend repository
+
+Build Command: npm run build
+
+Publish Directory: build/
 
 🛡️ Security Features
+Password Encryption: Bcrypt hashing with salt rounds
 
-Password hashing with bcrypt
+Account Lockout: 5 failed attempts lock account for 15 minutes
 
-JWT-based authentication
+CORS Configuration: Whitelisted domains only
 
-Account lock after 5 failed attempts
+File Upload Validation: MIME type and size restrictions
 
-Secure CORS configuration
+Input Sanitization: Trim and validation on all inputs
 
-File upload validation
+Token-based Authentication: Secure admin sessions
 
-Input sanitization
+📱 Frontend Components
+Home Page (Home.jsx)
+Responsive navigation with mobile menu
 
-Role-based access control
+Hero section with call-to-action
 
+Exam schedule display
+
+Academic toppers showcase
+
+Testimonials from alumni
+
+Programs and features overview
+
+Contact information
+
+Admin Login (AdminLogin.jsx)
+Secure login form
+
+Password visibility toggle
+
+Connection status indicator
+
+Error handling with toast notifications
+
+Server health check
+
+Admin Dashboard (AdminDashboard.jsx)
+Statistics overview cards
+
+Data tables with pagination
+
+Status management controls
+
+Search and filter functionality
+
+Export capabilities
+
+🔄 Workflow
+Student applies → Admission form submission
+
+Admin reviews → Application status update
+
+Student pays fees → Receipt upload and verification
+
+Admin verifies → Payment confirmation
+
+Contact inquiries → Communication and response
+
+🐛 Troubleshooting
+Common Issues & Solutions
+Issue	Solution
+404 errors on API calls	Check API_BASE_URL for trailing slashes
+MongoDB connection failed	Verify connection string and IP whitelist
+File upload errors	Check Cloudinary credentials and file size limits
+Admin login fails	Ensure default admin is created in database
+CORS errors	Update CORS origin configuration in server.js
+Development Commands
+bash
+# Backend
+npm start          # Start server
+npm run dev        # Start with nodemon (development)
+
+# Frontend
+npm start          # Start React app
+npm run build      # Create production build
 📞 Support & Contact
+For technical support or inquiries:
 
-📧 Email: sitaramintercollege1205@gmail.com
+Email: sitaramintercollege1205@gmail.com
 
-📱 Phone: +91 9756517750
-📍 Address:
-Sabdalpur Sharki, Mathana Road, Hasanpur,
-Amroha – 244242 (U.P.)
+Phone: +91 9756517750
+
+Address: Sabdalpur Sharki, Mathana Road Hasanpur, Amroha 244242
 
 📄 License
+This project is developed for Sitaram Inter College. All rights reserved.
 
-© 2025 Sitaram Inter College
-All Rights Reserved.
-
-🎯 Project Status
-
-✅ Production Ready
-
-🔒 Enterprise-Grade Security
-
+🎯 Project Status: Production Ready
+🔒 Security Level: Enterprise Grade
 📅 Last Updated: December 2025
-
-👨‍💻 Developed By: Ankit Kumar
+👨‍💻 Developed By: SRIC IT Team
 
