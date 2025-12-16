@@ -20,7 +20,8 @@ app.use(cors({
     'http://localhost:3000',
     'http://localhost:5173',
     'http://localhost:5174',
-    'https://sric-fdq2.onrender.com'
+    'https://sric-fdq2.onrender.com',
+    'https://sitaram-inter-college.onrender.com'
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
