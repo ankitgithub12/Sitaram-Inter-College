@@ -7,6 +7,7 @@ const fs = require('fs');
 const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const bcrypt = require('bcryptjs');
 
 const app = express();
 
@@ -27,7 +28,6 @@ app.use(cors({
 }));
 
 app.options('*', cors());
-
 
 // Custom OPTIONS handler for preflight requests
 app.use((req, res, next) => {
@@ -64,7 +64,11 @@ const MONGODB_URI = process.env.MONGODB_URI || 'MongoDB_Connection_String';
 
 // Connect to MongoDB
 mongoose.connect(MONGODB_URI)
-.then(() => console.log('✅ Connected to MongoDB Atlas successfully'))
+.then(() => {
+  console.log('✅ Connected to MongoDB Atlas successfully');
+  // Initialize default admin after successful connection
+  initializeDefaultAdmin();
+})
 .catch(err => {
   console.log('❌ MongoDB connection error:', err.message);
   console.log('💡 Please check your MongoDB Atlas connection string in the .env file');
@@ -72,6 +76,93 @@ mongoose.connect(MONGODB_URI)
 });
 
 // ==================== SCHEMA DEFINITIONS ====================
+
+// Define Admin Schema
+const adminSchema = new mongoose.Schema({
+  username: { 
+    type: String, 
+    required: true, 
+    unique: true,
+    trim: true,
+    lowercase: true
+  },
+  password: { 
+    type: String, 
+    required: true 
+  },
+  email: { 
+    type: String, 
+    required: true,
+    unique: true,
+    lowercase: true,
+    trim: true
+  },
+  name: { 
+    type: String, 
+    required: true,
+    trim: true
+  },
+  role: { 
+    type: String, 
+    enum: ['admin', 'superadmin', 'viewer'],
+    default: 'admin'
+  },
+  isActive: { 
+    type: Boolean, 
+    default: true 
+  },
+  lastLogin: { 
+    type: Date 
+  },
+  loginAttempts: { 
+    type: Number, 
+    default: 0 
+  },
+  lockUntil: { 
+    type: Date 
+  },
+  createdAt: { 
+    type: Date, 
+    default: Date.now 
+  },
+  updatedAt: { 
+    type: Date, 
+    default: Date.now 
+  }
+});
+
+// Update timestamp on save
+adminSchema.pre('save', function (next) {
+  this.updatedAt = new Date();
+  next();
+});
+
+// Hash password before saving
+adminSchema.pre('save', async function (next) {
+  if (!this.isModified('password')) return next();
+  
+  try {
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Compare password method
+adminSchema.methods.comparePassword = async function (candidatePassword) {
+  try {
+    return await bcrypt.compare(candidatePassword, this.password);
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Method to check if account is locked
+adminSchema.methods.isLocked = function () {
+  return this.lockUntil && this.lockUntil > Date.now();
+};
 
 // Define Admission Schema
 const admissionSchema = new mongoose.Schema({
@@ -289,7 +380,13 @@ feePaymentSchema.pre('save', function () {
 // ==================== MODEL DEFINITIONS ====================
 
 // Check if models already exist, if not create them
-let Application, Contact, FeePayment;
+let Admin, Application, Contact, FeePayment;
+
+if (mongoose.models.Admin) {
+  Admin = mongoose.models.Admin;
+} else {
+  Admin = mongoose.model('Admin', adminSchema, 'admins');
+}
 
 if (mongoose.models.Application) {
   Application = mongoose.models.Application;
@@ -309,8 +406,6 @@ if (mongoose.models.FeePayment) {
   FeePayment = mongoose.model('FeePayment', feePaymentSchema, 'feePayments');
 }
 
-
-
 const admissionRoutes = require('./routes/admission');
 const contactRoutes = require('./routes/contacts');
 const feePaymentRoutes = require('./routes/feePayments');
@@ -319,6 +414,37 @@ app.use('/api/admissions', admissionRoutes);
 app.use('/api/contacts', contactRoutes);
 app.use('/api/fee-payments', feePaymentRoutes);
 
+// ==================== HELPER FUNCTIONS ====================
+
+// Function to initialize default admin
+async function initializeDefaultAdmin() {
+  try {
+    // Check if default admin exists
+    const existingAdmin = await Admin.findOne({ username: '221205' });
+    
+    if (!existingAdmin) {
+      // Create default admin with fixed credentials
+      const defaultAdmin = new Admin({
+        username: '221205',
+        password: 'Sitaram@2002', // Will be hashed by the pre-save hook
+        email: 'sitaramintercollege1205@gmail.com',
+        name: 'SRIC Admin',
+        role: 'superadmin',
+        isActive: true
+      });
+      
+      await defaultAdmin.save();
+      console.log('✅ Default admin created successfully');
+      console.log('🔑 Username: 221205');
+      console.log('🔑 Password: Sitaram@2002');
+      console.log('📧 Email: sitaramintercollege1205@gmail.com');
+    } else {
+      console.log('✅ Default admin already exists');
+    }
+  } catch (error) {
+    console.error('❌ Error initializing default admin:', error.message);
+  }
+}
 
 // ==================== CLOUDINARY CONFIGURATION ====================
 
@@ -1226,38 +1352,150 @@ app.get('/api/contacts/:id', async (req, res) => {
   }
 });
 
-// Admin authentication route
-app.post('/api/admin/login', (req, res) => {
-  const { username, password } = req.body;
+// ==================== ADMIN AUTHENTICATION ROUTES ====================
 
-  // Simple authentication
-  if (username === '221205' && password === 'Sitaram@2002') {
+// Admin login route
+app.post('/api/admin/login', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    // Validate input
+    if (!username || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Username and password are required'
+      });
+    }
+
+    // Find admin by username
+    const admin = await Admin.findOne({ 
+      username: username.toLowerCase().trim(),
+      isActive: true 
+    });
+
+    if (!admin) {
+      console.warn(`⚠️ Failed login attempt for username: ${username}`);
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid username or password'
+      });
+    }
+
+    // Check if account is locked
+    if (admin.isLocked()) {
+      return res.status(423).json({
+        success: false,
+        message: 'Account is locked. Please try again later.',
+        lockedUntil: admin.lockUntil
+      });
+    }
+
+    // Compare password
+    const isPasswordValid = await admin.comparePassword(password);
+    
+    if (!isPasswordValid) {
+      // Increment login attempts
+      admin.loginAttempts += 1;
+      
+      // Lock account after 5 failed attempts for 15 minutes
+      if (admin.loginAttempts >= 5) {
+        admin.lockUntil = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+      }
+      
+      await admin.save();
+      
+      console.warn(`⚠️ Failed password attempt for admin: ${username}`);
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid username or password',
+        attemptsRemaining: 5 - admin.loginAttempts
+      });
+    }
+
+    // Reset login attempts on successful login
+    admin.loginAttempts = 0;
+    admin.lockUntil = undefined;
+    admin.lastLogin = new Date();
+    await admin.save();
+
+    // Generate token (for now, use simple token)
+    const token = `admin_${admin._id}_${Date.now()}`;
+
+    console.log(`✅ Admin logged in: ${username}`);
+
     res.json({
       success: true,
-      token: 'adminToken123',
-      message: 'Login successful'
+      token: token,
+      message: 'Login successful',
+      admin: {
+        id: admin._id,
+        username: admin.username,
+        name: admin.name,
+        email: admin.email,
+        role: admin.role,
+        lastLogin: admin.lastLogin
+      }
     });
-  } else {
-    res.status(401).json({
+  } catch (error) {
+    console.error('❌ Admin login error:', error);
+    res.status(500).json({
       success: false,
-      message: 'Invalid username or password'
+      message: 'Server error during authentication'
     });
   }
 });
 
 // Middleware to check admin authentication
-const authenticateAdmin = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  const token = authHeader && authHeader.split(' ')[1];
-  
-  if (!token || token !== 'adminToken123') {
-    return res.status(401).json({
+const authenticateAdmin = async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+    const token = authHeader && authHeader.split(' ')[1];
+    
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: 'Access token required'
+      });
+    }
+
+    // Simple token validation (you can enhance this with JWT later)
+    const tokenParts = token.split('_');
+    if (tokenParts.length !== 3 || tokenParts[0] !== 'admin') {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid token format'
+      });
+    }
+
+    const adminId = tokenParts[1];
+    
+    // Find admin by ID
+    const admin = await Admin.findById(adminId);
+    
+    if (!admin || !admin.isActive) {
+      return res.status(401).json({
+        success: false,
+        message: 'Admin not found or inactive'
+      });
+    }
+
+    // Attach admin info to request
+    req.admin = {
+      id: admin._id,
+      username: admin.username,
+      name: admin.name,
+      email: admin.email,
+      role: admin.role
+    };
+    
+    next();
+  } catch (error) {
+    console.error('❌ Admin authentication error:', error);
+    res.status(500).json({
       success: false,
-      message: 'Unauthorized access'
+      message: 'Authentication error'
     });
   }
-  
-  next();
 };
 
 // GET dashboard statistics
@@ -1423,6 +1661,41 @@ app.get('/api/dashboard/stats', async (req, res) => {
   }
 });
 
+// Admin logout route
+app.post('/api/admin/logout', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Logged out successfully'
+  });
+});
+
+// Get admin profile
+app.get('/api/admin/profile', authenticateAdmin, async (req, res) => {
+  try {
+    const admin = await Admin.findById(req.admin.id).select('-password -loginAttempts -lockUntil');
+    
+    if (!admin) {
+      return res.status(404).json({
+        success: false,
+        message: 'Admin not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: admin
+    });
+  } catch (error) {
+    console.error('❌ Error fetching admin profile:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching profile'
+    });
+  }
+});
+
+// ==================== ADDITIONAL ROUTES ====================
+
 // Cloudinary test endpoint
 app.get('/api/cloudinary/test', async (req, res) => {
   try {
@@ -1457,14 +1730,6 @@ app.get('/api/health', (req, res) => {
     database: dbStatus,
     timestamp: new Date().toISOString(),
     uptime: process.uptime()
-  });
-});
-
-// Admin logout route
-app.post('/api/admin/logout', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Logged out successfully'
   });
 });
 
@@ -1527,6 +1792,7 @@ const server = app.listen(PORT, () => {
   console.log(`📝 Admission Form API: http://localhost:${PORT}/api/admission`);
   console.log(`💰 Fee Payment API: http://localhost:${PORT}/api/fee-payments`);
   console.log(`📞 Contact API: http://localhost:${PORT}/api/contact`);
+  console.log(`👑 Admin Login: http://localhost:${PORT}/api/admin/login`);
   console.log(`✅ MongoDB: ${mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected'}`);
 });
 
