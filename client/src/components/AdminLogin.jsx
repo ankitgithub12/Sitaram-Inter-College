@@ -13,8 +13,14 @@ const AdminLogin = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [connectionError, setConnectionError] = useState(false);
+  const [serverStatus, setServerStatus] = useState('checking');
   
   const navigate = useNavigate();
+
+  // Check server health on component mount
+  useEffect(() => {
+    checkServerHealth();
+  }, []);
 
   // Check if already logged in
   useEffect(() => {
@@ -23,6 +29,19 @@ const AdminLogin = () => {
       navigate('/admin');
     }
   }, [navigate]);
+
+  const checkServerHealth = async () => {
+    try {
+      const response = await axios.get('/api/health');
+      if (response.data.success) {
+        setServerStatus('online');
+      } else {
+        setServerStatus('offline');
+      }
+    } catch (error) {
+      setServerStatus('offline');
+    }
+  };
 
   const showToast = (message, type = 'success') => {
     setToast({ show: true, message, type });
@@ -57,7 +76,7 @@ const AdminLogin = () => {
     setConnectionError(false);
 
     try {
-      // Always try server authentication first
+      // Always try server authentication
       const response = await axios.post('/api/admin/login', {
         username: formData.username,
         password: formData.password
@@ -80,7 +99,7 @@ const AdminLogin = () => {
         const { status, data } = error.response;
         
         if (status === 401) {
-          setErrorMessage(data.message || 'Invalid username or password');
+          setErrorMessage('Invalid username or password');
         } else if (status === 423) {
           setErrorMessage('Account is temporarily locked. Please try again later.');
         } else if (status === 400) {
@@ -104,13 +123,22 @@ const AdminLogin = () => {
   const handleRetryConnection = () => {
     setConnectionError(false);
     setErrorMessage('');
+    setServerStatus('checking');
+    
     // Retry server health check
     axios.get('/api/health')
-      .then(() => {
-        setConnectionError(false);
-        showToast('Connected to server!', 'success');
+      .then((response) => {
+        if (response.data.success) {
+          setServerStatus('online');
+          setConnectionError(false);
+          showToast('Connected to server!', 'success');
+        } else {
+          setServerStatus('offline');
+          setErrorMessage('Server is not responding properly.');
+        }
       })
       .catch(() => {
+        setServerStatus('offline');
         setErrorMessage('Still cannot connect to server. Please contact administrator.');
       });
   };
@@ -166,7 +194,7 @@ const AdminLogin = () => {
             </div>
             
             <h1 className="text-3xl font-bold mb-2">SRIC Admin Portal</h1>
-            <p className="text-sricgold font-semibold">Database Authenticated Access</p>
+            <p className="text-sricgold font-semibold">Secure Database Authentication</p>
           </div>
 
           {/* Login Form */}
@@ -221,6 +249,7 @@ const AdminLogin = () => {
                     placeholder="Enter admin username"
                     required
                     disabled={isLoading}
+                    autoComplete="username"
                   />
                 </div>
               </div>
@@ -240,6 +269,7 @@ const AdminLogin = () => {
                     placeholder="Enter your password"
                     required
                     disabled={isLoading}
+                    autoComplete="current-password"
                   />
                   <button
                     type="button"
@@ -250,6 +280,17 @@ const AdminLogin = () => {
                     {showPassword ? 'Hide' : 'Show'}
                   </button>
                 </div>
+              </div>
+
+              {/* Remember Me */}
+              <div className="flex items-center">
+                <label className="flex items-center text-gray-600 cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    className="rounded border-gray-300 text-sricblue focus:ring-sricblue mr-2" 
+                  />
+                  Remember me
+                </label>
               </div>
 
               {/* Login Button */}
@@ -276,24 +317,23 @@ const AdminLogin = () => {
                   <span className="text-blue-800 font-bold">🔐</span>
                 </div>
                 <div>
-                  <p className="text-sm text-blue-800 font-semibold mb-1">Secure Database Authentication</p>
-                  <p className="text-sm text-blue-700">Credentials are securely stored and validated from the database.</p>
-                  <p className="text-xs text-blue-600 mt-2">Default credentials are created automatically on first run</p>
+                  <p className="text-sm text-blue-800 font-semibold mb-1">Secure Authentication System</p>
+                  <p className="text-sm text-blue-700">Credentials are securely stored with bcrypt encryption in the database.</p>
+                  <p className="text-xs text-blue-600 mt-2">Contact system administrator for access credentials</p>
                 </div>
               </div>
             </div>
 
-            {/* Admin Credentials Hint (Optional - Remove in production) */}
-            <div className="mt-4 p-4 bg-yellow-50 rounded-xl border border-yellow-200">
+            {/* Emergency Contact Info */}
+            <div className="mt-4 p-4 bg-green-50 rounded-xl border border-green-200">
               <div className="flex items-start">
-                <div className="bg-yellow-100 p-2 rounded-lg mr-3">
-                  <span className="text-yellow-800 font-bold">ℹ</span>
+                <div className="bg-green-100 p-2 rounded-lg mr-3">
+                  <span className="text-green-800 font-bold">📞</span>
                 </div>
                 <div>
-                  <p className="text-sm text-yellow-800 font-semibold mb-1">Default Admin Credentials</p>
-                  <p className="text-sm text-yellow-700">Username: <span className="font-mono">221205</span></p>
-                  <p className="text-sm text-yellow-700">Password: <span className="font-mono">Sitaram@2002</span></p>
-                  <p className="text-xs text-yellow-600 mt-2">Stored securely in MongoDB database with bcrypt hashing</p>
+                  <p className="text-sm text-green-800 font-semibold mb-1">Need Access?</p>
+                  <p className="text-sm text-green-700">Contact the system administrator at:</p>
+                  <p className="text-sm text-green-700 font-mono mt-1">sitaramintercollege1205@gmail.com</p>
                 </div>
               </div>
             </div>
@@ -315,15 +355,15 @@ const AdminLogin = () => {
         <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4 text-center text-white/80">
           <div className="flex flex-col items-center">
             <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mb-2">
-              <span className="text-sricgold font-bold">🔐</span>
+              <span className="text-sricgold font-bold">🔒</span>
             </div>
-            <p className="text-sm font-medium">Database Auth</p>
+            <p className="text-sm font-medium">Bcrypt Encrypted</p>
           </div>
           <div className="flex flex-col items-center">
             <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mb-2">
               <span className="text-sricgold font-bold">⚡</span>
             </div>
-            <p className="text-sm font-medium">Bcrypt Hashed</p>
+            <p className="text-sm font-medium">Database Auth</p>
           </div>
           <div className="flex flex-col items-center">
             <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mb-2">
@@ -336,11 +376,22 @@ const AdminLogin = () => {
         {/* Server Status */}
         <div className="mt-4 text-center">
           <div className="inline-flex items-center bg-black/20 backdrop-blur-sm px-4 py-2 rounded-full">
-            <div className={`w-2 h-2 rounded-full mr-2 ${connectionError ? 'bg-red-500' : 'bg-green-500'}`}></div>
+            <div className={`w-2 h-2 rounded-full mr-2 ${
+              serverStatus === 'online' ? 'bg-green-500' : 
+              serverStatus === 'offline' ? 'bg-red-500 animate-pulse' : 
+              'bg-yellow-500 animate-pulse'
+            }`}></div>
             <span className="text-white/90 text-sm">
-              {connectionError ? 'Server Offline' : 'Server Online'}
+              {serverStatus === 'online' ? 'Server Online' : 
+               serverStatus === 'offline' ? 'Server Offline' : 
+               'Checking Server...'}
             </span>
           </div>
+        </div>
+
+        {/* Version Info */}
+        <div className="mt-4 text-center text-white/60 text-xs">
+          Secure Admin Portal • Database Authentication v1.0
         </div>
       </div>
     </div>
@@ -348,3 +399,4 @@ const AdminLogin = () => {
 };
 
 export default AdminLogin;
+
