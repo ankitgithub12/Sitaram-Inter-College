@@ -65,7 +65,7 @@ Environment: .env configuration
 Version Control: Git + GitHub
 
 📁 Project Structure
-text
+
 SRIC-ADMISSIONS/
 ├── client/                    # React Frontend
 │   ├── src/
