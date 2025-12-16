@@ -13,12 +13,13 @@ import {
   Trash2, Edit, EyeIcon, Check, X, MessageSquare,
   Phone, MapPin, Calendar as CalendarIcon, BookOpen,
   Archive, Image as ImageIcon, ExternalLink, File, Maximize2,
-  ZoomIn, ZoomOut, RotateCcw
+  ZoomIn, ZoomOut, RotateCcw, Menu, X as XIcon
 } from 'lucide-react';
 
 const Admin = () => {
   const navigate = useNavigate();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentTab, setCurrentTab] = useState('dashboard');
   const [admissionsData, setAdmissionsData] = useState([]);
   const [feesData, setFeesData] = useState([]);
@@ -82,6 +83,21 @@ const Admin = () => {
       zoom: 1
     }));
   };
+
+  // Handle window resize for responsive behavior
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setSidebarCollapsed(true);
+      } else {
+        setSidebarCollapsed(false);
+      }
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const fetchWithAuth = async (url, options = {}) => {
     const token = localStorage.getItem('adminToken');
@@ -615,7 +631,8 @@ const Admin = () => {
     return (
       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.bg} ${config.text}`}>
         <Icon className="w-3 h-3 mr-1" />
-        {config.label}
+        <span className="hidden sm:inline">{config.label}</span>
+        <span className="sm:hidden">{config.label.charAt(0)}</span>
       </span>
     );
   };
@@ -651,25 +668,25 @@ const Admin = () => {
   };
 
   const renderAdmissionDetails = (admission) => (
-    <div className="bg-white rounded-xl shadow-lg p-6">
-      <div className="flex justify-between items-start mb-6">
-        <div>
-          <h3 className="text-xl font-bold text-gray-900">{admission.name}</h3>
-          <p className="text-gray-600">{admission.email}</p>
-          <div className="mt-2">{renderStatusBadge(admission.status)}</div>
+    <div className="bg-white rounded-xl shadow-lg p-4 md:p-6">
+      <div className="flex justify-between items-start mb-4 md:mb-6">
+        <div className="flex-1">
+          <h3 className="text-lg md:text-xl font-bold text-gray-900">{admission.name}</h3>
+          <p className="text-gray-600 text-sm md:text-base">{admission.email}</p>
+          <div className="mt-1 md:mt-2">{renderStatusBadge(admission.status)}</div>
         </div>
         <button
           onClick={() => setViewDetails(null)}
-          className="text-gray-400 hover:text-gray-600"
+          className="text-gray-400 hover:text-gray-600 ml-2"
         >
-          <X className="w-6 h-6" />
+          <X className="w-5 h-5 md:w-6 md:h-6" />
         </button>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
         <div>
-          <h4 className="font-semibold text-gray-700 mb-3">Student Information</h4>
-          <div className="space-y-2">
+          <h4 className="font-semibold text-gray-700 mb-2 md:mb-3">Student Information</h4>
+          <div className="space-y-1 md:space-y-2 text-sm md:text-base">
             <p><span className="text-gray-500">Date of Birth:</span> {formatDate(admission.dob)}</p>
             <p><span className="text-gray-500">Mother Tongue:</span> {admission.motherTongue}</p>
             <p><span className="text-gray-500">Caste:</span> {admission.caste}</p>
@@ -682,8 +699,8 @@ const Admin = () => {
         </div>
         
         <div>
-          <h4 className="font-semibold text-gray-700 mb-3">Parent Information</h4>
-          <div className="space-y-2">
+          <h4 className="font-semibold text-gray-700 mb-2 md:mb-3">Parent Information</h4>
+          <div className="space-y-1 md:space-y-2 text-sm md:text-base">
             <p><span className="text-gray-500">Father's Name:</span> {admission.fatherName}</p>
             <p><span className="text-gray-500">Mother's Name:</span> {admission.motherName}</p>
             <p><span className="text-gray-500">Father's Contact:</span> {admission.fatherContact}</p>
@@ -692,35 +709,35 @@ const Admin = () => {
             <p><span className="text-gray-500">Mother's Occupation:</span> {admission.motherOccupation || 'N/A'}</p>
           </div>
           
-          <h4 className="font-semibold text-gray-700 mt-6 mb-3">Address</h4>
-          <p className="text-gray-600">{admission.address}</p>
+          <h4 className="font-semibold text-gray-700 mt-4 md:mt-6 mb-2 md:mb-3">Address</h4>
+          <p className="text-gray-600 text-sm md:text-base">{admission.address}</p>
         </div>
       </div>
       
-      <div className="mt-8 pt-6 border-t border-gray-200">
-        <div className="flex justify-between items-center">
+      <div className="mt-6 md:mt-8 pt-4 md:pt-6 border-t border-gray-200">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0">
           <div>
-            <p className="text-sm text-gray-500">Submitted on {formatDateTime(admission.submittedAt)}</p>
+            <p className="text-xs md:text-sm text-gray-500">Submitted on {formatDateTime(admission.submittedAt)}</p>
             {admission.applicationNumber && (
-              <p className="text-sm text-gray-500">Application #: {admission.applicationNumber}</p>
+              <p className="text-xs md:text-sm text-gray-500">Application #: {admission.applicationNumber}</p>
             )}
           </div>
-          <div className="space-x-3">
+          <div className="flex flex-wrap gap-2">
             <button
               onClick={() => handleUpdateStatus('admission', admission._id, 'approved')}
-              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+              className="bg-green-600 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-lg hover:bg-green-700 transition-colors text-sm"
             >
               Approve
             </button>
             <button
               onClick={() => handleUpdateStatus('admission', admission._id, 'rejected')}
-              className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+              className="bg-red-600 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-lg hover:bg-red-700 transition-colors text-sm"
             >
               Reject
             </button>
             <button
               onClick={() => handleDelete('admission', admission._id)}
-              className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
+              className="bg-gray-600 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-lg hover:bg-gray-700 transition-colors text-sm"
             >
               Delete
             </button>
@@ -731,25 +748,25 @@ const Admin = () => {
   );
 
   const renderFeePaymentDetails = (payment) => (
-    <div className="bg-white rounded-xl shadow-lg p-6">
-      <div className="flex justify-between items-start mb-6">
-        <div>
-          <h3 className="text-xl font-bold text-gray-900">{payment.studentName}</h3>
-          <p className="text-gray-600">{payment.email}</p>
-          <div className="mt-2">{renderStatusBadge(payment.status)}</div>
+    <div className="bg-white rounded-xl shadow-lg p-4 md:p-6">
+      <div className="flex justify-between items-start mb-4 md:mb-6">
+        <div className="flex-1">
+          <h3 className="text-lg md:text-xl font-bold text-gray-900">{payment.studentName}</h3>
+          <p className="text-gray-600 text-sm md:text-base">{payment.email}</p>
+          <div className="mt-1 md:mt-2">{renderStatusBadge(payment.status)}</div>
         </div>
         <button
           onClick={() => setViewDetails(null)}
-          className="text-gray-400 hover:text-gray-600"
+          className="text-gray-400 hover:text-gray-600 ml-2"
         >
-          <X className="w-6 h-6" />
+          <X className="w-5 h-5 md:w-6 md:h-6" />
         </button>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
         <div>
-          <h4 className="font-semibold text-gray-700 mb-3">Student Information</h4>
-          <div className="space-y-2">
+          <h4 className="font-semibold text-gray-700 mb-2 md:mb-3">Student Information</h4>
+          <div className="space-y-1 md:space-y-2 text-sm md:text-base">
             <p><span className="text-gray-500">Father's Name:</span> {payment.fatherName}</p>
             <p><span className="text-gray-500">Mobile:</span> {payment.mobile}</p>
             <p><span className="text-gray-500">Class:</span> {payment.className}</p>
@@ -757,8 +774,8 @@ const Admin = () => {
         </div>
         
         <div>
-          <h4 className="font-semibold text-gray-700 mb-3">Payment Information</h4>
-          <div className="space-y-2">
+          <h4 className="font-semibold text-gray-700 mb-2 md:mb-3">Payment Information</h4>
+          <div className="space-y-1 md:space-y-2 text-sm md:text-base">
             <p><span className="text-gray-500">Amount:</span> ₹{payment.amount?.toLocaleString('en-IN') || '0'}</p>
             <p><span className="text-gray-500">Payment Method:</span> {payment.paymentMethod}</p>
             <p><span className="text-gray-500">Transaction ID:</span> {payment.transactionId}</p>
@@ -769,25 +786,25 @@ const Admin = () => {
       </div>
       
       {/* Receipt File Section */}
-      <div className="mt-8">
-        <h4 className="font-semibold text-gray-700 mb-4">Payment Receipt</h4>
+      <div className="mt-6 md:mt-8">
+        <h4 className="font-semibold text-gray-700 mb-3 md:mb-4">Payment Receipt</h4>
         
         {payment.cloudinaryFile ? (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl border border-blue-200">
+          <div className="space-y-4 md:space-y-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl border border-blue-200 space-y-4 md:space-y-0">
               <div className="flex items-center space-x-4">
                 <div className="p-3 bg-white rounded-lg shadow-sm">
                   {payment.cloudinaryFile.resource_type === 'image' ? (
-                    <ImageIcon className="w-8 h-8 text-green-600" />
+                    <ImageIcon className="w-6 h-6 md:w-8 md:h-8 text-green-600" />
                   ) : (
-                    <File className="w-8 h-8 text-red-600" />
+                    <File className="w-6 h-6 md:w-8 md:h-8 text-red-600" />
                   )}
                 </div>
                 <div>
-                  <p className="font-bold text-gray-900">
+                  <p className="font-bold text-gray-900 text-sm md:text-base">
                     {payment.cloudinaryFile.original_filename || 'Payment Receipt'}
                   </p>
-                  <div className="flex items-center space-x-4 text-sm text-gray-600 mt-1">
+                  <div className="flex flex-wrap items-center space-x-2 md:space-x-4 text-xs md:text-sm text-gray-600 mt-1">
                     <span>{formatFileSize(payment.cloudinaryFile.bytes)}</span>
                     <span>•</span>
                     <span>{payment.cloudinaryFile.format?.toUpperCase() || 'Unknown Format'}</span>
@@ -796,7 +813,7 @@ const Admin = () => {
                   </div>
                 </div>
               </div>
-              <div className="flex space-x-2">
+              <div className="flex flex-wrap gap-2">
                 {/* Primary View Button */}
                 {payment.cloudinaryFile.resource_type === 'image' ? (
                   <button
@@ -804,50 +821,54 @@ const Admin = () => {
                       getFileUrl(payment),
                       payment.cloudinaryFile?.original_filename || 'Receipt'
                     )}
-                    className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-5 py-2.5 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 transform hover:scale-105 shadow-md flex items-center space-x-2"
+                    className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-3 py-2 md:px-5 md:py-2.5 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 flex items-center space-x-2 text-sm"
                   >
-                    <EyeIcon className="w-5 h-5" />
-                    <span>View Screenshot</span>
+                    <EyeIcon className="w-4 h-4 md:w-5 md:h-5" />
+                    <span className="hidden sm:inline">View Screenshot</span>
+                    <span className="sm:hidden">View</span>
                   </button>
                   ) : (
                   <button
                     onClick={() => openExternal(payment)}
-                    className="bg-gradient-to-r from-red-600 to-red-700 text-white px-5 py-2.5 rounded-lg hover:from-red-700 hover:to-red-800 transition-all duration-200 transform hover:scale-105 shadow-md flex items-center space-x-2"
+                    className="bg-gradient-to-r from-red-600 to-red-700 text-white px-3 py-2 md:px-5 md:py-2.5 rounded-lg hover:from-red-700 hover:to-red-800 transition-all duration-200 flex items-center space-x-2 text-sm"
                   >
-                    <File className="w-5 h-5" />
-                    <span>Open PDF</span>
+                    <File className="w-4 h-4 md:w-5 md:h-5" />
+                    <span className="hidden sm:inline">Open PDF</span>
+                    <span className="sm:hidden">Open</span>
                   </button>
                 )}
                 
                 {/* External Link Button */}
                 <button
                   onClick={() => openExternal(payment)}
-                  className="bg-gray-100 text-gray-700 px-4 py-2.5 rounded-lg hover:bg-gray-200 transition-all duration-200 border border-gray-300 flex items-center space-x-2"
+                  className="bg-gray-100 text-gray-700 px-3 py-2 md:px-4 md:py-2.5 rounded-lg hover:bg-gray-200 transition-all duration-200 border border-gray-300 flex items-center space-x-2 text-sm"
                 >
-                  <ExternalLink className="w-4 h-4" />
-                  <span className="text-sm">Open New Tab</span>
+                  <ExternalLink className="w-3 h-3 md:w-4 md:h-4" />
+                  <span className="hidden sm:inline text-sm">Open New Tab</span>
+                  <span className="sm:hidden text-xs">New Tab</span>
                 </button>
               </div>
             </div>
             
             {/* Image Preview Thumbnail */}
             {payment.cloudinaryFile.resource_type === 'image' && (
-              <div className="bg-white border-2 border-gray-200 rounded-xl p-4 hover:border-blue-300 transition-colors duration-300">
-                <div className="flex items-center justify-between mb-3">
-                  <h5 className="font-medium text-gray-700">Screenshot Preview</h5>
+              <div className="bg-white border-2 border-gray-200 rounded-xl p-3 md:p-4 hover:border-blue-300 transition-colors duration-300">
+                <div className="flex items-center justify-between mb-2 md:mb-3">
+                  <h5 className="font-medium text-gray-700 text-sm md:text-base">Screenshot Preview</h5>
                   <button
                     onClick={() => handleViewImage(
                       getFileUrl(payment),
                       payment.cloudinaryFile?.original_filename || 'Receipt'
                     )}
-                    className="text-sm text-blue-600 hover:text-blue-800 flex items-center space-x-1"
+                    className="text-xs md:text-sm text-blue-600 hover:text-blue-800 flex items-center space-x-1"
                   >
-                    <span>Full Screen</span>
+                    <span className="hidden sm:inline">Full Screen</span>
+                    <span className="sm:hidden">Full</span>
                     <ExternalLink className="w-3 h-3" />
                   </button>
                 </div>
                 <div 
-                  className="relative w-full h-64 bg-gray-50 rounded-lg overflow-hidden cursor-pointer group"
+                  className="relative w-full h-48 md:h-64 bg-gray-50 rounded-lg overflow-hidden cursor-pointer group"
                     onClick={() => handleViewImage(
                       getFileUrl(payment),
                       payment.cloudinaryFile?.original_filename || 'Receipt'
@@ -864,7 +885,7 @@ const Admin = () => {
                   />
                   <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 flex items-center justify-center">
                     <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <EyeIcon className="w-10 h-10 text-white drop-shadow-lg" />
+                      <EyeIcon className="w-8 h-8 md:w-10 md:h-10 text-white drop-shadow-lg" />
                     </div>
                   </div>
                 </div>
@@ -878,38 +899,43 @@ const Admin = () => {
           </div>
         ) : payment.receiptFile ? (
           // Fallback for older local storage files
-          <div className="mt-6 bg-gradient-to-r from-yellow-50 to-yellow-100 p-6 rounded-xl border border-yellow-200">
-            <div className="flex items-center justify-between">
+          <div className="mt-4 md:mt-6 bg-gradient-to-r from-yellow-50 to-yellow-100 p-4 md:p-6 rounded-xl border border-yellow-200">
+            <div className="flex flex-col md:flex-row md:items-center justify-between space-y-4 md:space-y-0">
               <div className="flex items-center space-x-4">
-                <FileText className="w-8 h-8 text-yellow-600" />
+                <FileText className="w-6 h-6 md:w-8 md:h-8 text-yellow-600" />
                 <div>
-                  <p className="font-bold text-gray-900">Legacy Receipt File</p>
-                  <p className="text-sm text-gray-600 mt-1">{payment.receiptFile.originalName}</p>
+                  <p className="font-bold text-gray-900 text-sm md:text-base">Legacy Receipt File</p>
+                  <p className="text-xs md:text-sm text-gray-600 mt-1">{payment.receiptFile.originalName}</p>
                 </div>
               </div>
               <a
                 href={payment.receiptFile.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-white px-5 py-2.5 rounded-lg hover:from-yellow-600 hover:to-yellow-700 transition-all duration-200 transform hover:scale-105 shadow-md flex items-center space-x-2"
+                className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-white px-3 py-2 md:px-5 md:py-2.5 rounded-lg hover:from-yellow-600 hover:to-yellow-700 transition-all duration-200 flex items-center justify-center space-x-2 text-sm"
               >
-                <FileText className="w-5 h-5" />
+                <FileText className="w-4 h-4 md:w-5 md:h-5" />
                 <span>View File</span>
               </a>
             </div>
           </div>
         ) : (
-          <div className="mt-6 p-6 bg-gradient-to-r from-red-50 to-red-100 rounded-xl border border-red-200">
-            <div className="flex items-start space-x-4">
-              <FileText className="w-8 h-8 text-red-600" />
+          <div className="mt-4 md:mt-6 p-4 md:p-6 bg-gradient-to-r from-red-50 to-red-100 rounded-xl border border-red-200">
+            <div className="flex flex-col md:flex-row md:items-start space-y-4 md:space-y-0">
+              <FileText className="w-6 h-6 md:w-8 md:h-8 text-red-600 flex-shrink-0" />
               <div className="flex-1">
-                <p className="font-bold text-red-800">No receipt file attached to this payment.</p>
-                <p className="text-sm text-red-600 mt-1">The user did not upload any payment screenshot.</p>
+                <p className="font-bold text-red-800 text-sm md:text-base">No receipt file attached to this payment.</p>
+                <p className="text-xs md:text-sm text-red-600 mt-1">The user did not upload any payment screenshot.</p>
 
-                <div className="mt-4">
+                <div className="mt-3 md:mt-4">
                   <label className="block text-sm font-medium text-gray-700">Upload Receipt (admin)</label>
-                  <div className="mt-2 flex items-center space-x-2">
-                    <input id={`receipt-input-${payment._id}`} type="file" accept="image/*,application/pdf" className="text-sm" />
+                  <div className="mt-2 flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
+                    <input 
+                      id={`receipt-input-${payment._id}`} 
+                      type="file" 
+                      accept="image/*,application/pdf" 
+                      className="text-sm w-full sm:w-auto" 
+                    />
                     <button
                       onClick={async () => {
                         const input = document.getElementById(`receipt-input-${payment._id}`);
@@ -920,7 +946,7 @@ const Admin = () => {
                         const file = input.files[0];
                         await handleUploadReceipt(payment._id, file);
                       }}
-                      className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+                      className="bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm"
                     >
                       Upload Receipt
                     </button>
@@ -933,36 +959,36 @@ const Admin = () => {
         )}
       </div>
       
-      <div className="mt-8 pt-6 border-t border-gray-200">
-        <div className="flex justify-between items-center">
+      <div className="mt-6 md:mt-8 pt-4 md:pt-6 border-t border-gray-200">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0">
           <div>
-            <p className="text-sm text-gray-500">Submitted on {formatDateTime(payment.submittedAt)}</p>
+            <p className="text-xs md:text-sm text-gray-500">Submitted on {formatDateTime(payment.submittedAt)}</p>
             {payment.verifiedAt && (
-              <p className="text-sm text-gray-500">
+              <p className="text-xs md:text-sm text-gray-500">
                 Verified on {formatDateTime(payment.verifiedAt)} by {payment.verifiedBy || 'Admin'}
               </p>
             )}
           </div>
-          <div className="space-x-3">
+          <div className="flex flex-wrap gap-2">
             <button
               onClick={() => handleUpdateStatus('fee', payment._id, 'verified')}
-              className="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg hover:from-green-600 hover:to-green-700 transition-colors flex items-center space-x-2"
+              className="bg-gradient-to-r from-green-500 to-green-600 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-lg hover:from-green-600 hover:to-green-700 transition-colors flex items-center space-x-1 md:space-x-2 text-sm"
             >
-              <Check className="w-4 h-4" />
+              <Check className="w-3 h-3 md:w-4 md:h-4" />
               <span>Verify</span>
             </button>
             <button
               onClick={() => handleUpdateStatus('fee', payment._id, 'rejected')}
-              className="bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-lg hover:from-red-600 hover:to-red-700 transition-colors flex items-center space-x-2"
+              className="bg-gradient-to-r from-red-500 to-red-600 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-lg hover:from-red-600 hover:to-red-700 transition-colors flex items-center space-x-1 md:space-x-2 text-sm"
             >
-              <X className="w-4 h-4" />
+              <X className="w-3 h-3 md:w-4 md:h-4" />
               <span>Reject</span>
             </button>
             <button
               onClick={() => handleDelete('fee', payment._id)}
-              className="bg-gradient-to-r from-gray-500 to-gray-600 text-white px-4 py-2 rounded-lg hover:from-gray-600 hover:to-gray-700 transition-colors flex items-center space-x-2"
+              className="bg-gradient-to-r from-gray-500 to-gray-600 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-lg hover:from-gray-600 hover:to-gray-700 transition-colors flex items-center space-x-1 md:space-x-2 text-sm"
             >
-              <Trash2 className="w-4 h-4" />
+              <Trash2 className="w-3 h-3 md:w-4 md:h-4" />
               <span>Delete</span>
             </button>
           </div>
@@ -972,52 +998,52 @@ const Admin = () => {
   );
 
   const renderContactDetails = (contact) => (
-    <div className="bg-white rounded-xl shadow-lg p-6">
-      <div className="flex justify-between items-start mb-6">
-        <div>
-          <h3 className="text-xl font-bold text-gray-900">{contact.name}</h3>
-          <p className="text-gray-600">{contact.email}</p>
-          <div className="mt-2">{renderStatusBadge(contact.status)}</div>
+    <div className="bg-white rounded-xl shadow-lg p-4 md:p-6">
+      <div className="flex justify-between items-start mb-4 md:mb-6">
+        <div className="flex-1">
+          <h3 className="text-lg md:text-xl font-bold text-gray-900">{contact.name}</h3>
+          <p className="text-gray-600 text-sm md:text-base">{contact.email}</p>
+          <div className="mt-1 md:mt-2">{renderStatusBadge(contact.status)}</div>
         </div>
         <button
           onClick={() => setViewDetails(null)}
-          className="text-gray-400 hover:text-gray-600"
+          className="text-gray-400 hover:text-gray-600 ml-2"
         >
-          <X className="w-6 h-6" />
+          <X className="w-5 h-5 md:w-6 md:h-6" />
         </button>
       </div>
       
-      <div className="space-y-4">
+      <div className="space-y-3 md:space-y-4">
         <div>
-          <h4 className="font-semibold text-gray-700 mb-2">Contact Information</h4>
-          <div className="space-y-2">
+          <h4 className="font-semibold text-gray-700 mb-1 md:mb-2">Contact Information</h4>
+          <div className="space-y-1 md:space-y-2 text-sm md:text-base">
             {contact.phone && <p><span className="text-gray-500">Phone:</span> {contact.phone}</p>}
             <p><span className="text-gray-500">Subject:</span> {contact.subject || 'General Inquiry'}</p>
           </div>
         </div>
         
         <div>
-          <h4 className="font-semibold text-gray-700 mb-2">Message</h4>
-          <p className="text-gray-600 bg-gray-50 p-4 rounded-lg">{contact.message}</p>
+          <h4 className="font-semibold text-gray-700 mb-1 md:mb-2">Message</h4>
+          <p className="text-gray-600 bg-gray-50 p-3 md:p-4 rounded-lg text-sm md:text-base">{contact.message}</p>
         </div>
         
         {contact.responseMessage && (
           <div>
-            <h4 className="font-semibold text-gray-700 mb-2">Response</h4>
-            <p className="text-gray-600 bg-blue-50 p-4 rounded-lg">{contact.responseMessage}</p>
-            <p className="text-sm text-gray-500 mt-2">
+            <h4 className="font-semibold text-gray-700 mb-1 md:mb-2">Response</h4>
+            <p className="text-gray-600 bg-blue-50 p-3 md:p-4 rounded-lg text-sm md:text-base">{contact.responseMessage}</p>
+            <p className="text-xs md:text-sm text-gray-500 mt-1 md:mt-2">
               Responded on {formatDateTime(contact.respondedAt)} by {contact.respondedBy}
             </p>
           </div>
         )}
       </div>
       
-      <div className="mt-8 pt-6 border-t border-gray-200">
-        <div className="flex justify-between items-center">
+      <div className="mt-6 md:mt-8 pt-4 md:pt-6 border-t border-gray-200">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0">
           <div>
-            <p className="text-sm text-gray-500">Submitted on {formatDateTime(contact.submittedAt)}</p>
+            <p className="text-xs md:text-sm text-gray-500">Submitted on {formatDateTime(contact.submittedAt)}</p>
           </div>
-          <div className="space-x-3">
+          <div className="flex flex-wrap gap-2">
             {contact.status !== 'replied' && (
               <button
                 onClick={() => {
@@ -1026,20 +1052,20 @@ const Admin = () => {
                     handleUpdateStatus('contact', contact._id, 'replied', response);
                   }
                 }}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                className="bg-blue-600 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm"
               >
                 Reply
               </button>
             )}
             <button
               onClick={() => handleUpdateStatus('contact', contact._id, 'archived')}
-              className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
+              className="bg-gray-600 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-lg hover:bg-gray-700 transition-colors text-sm"
             >
               Archive
             </button>
             <button
               onClick={() => handleDelete('contact', contact._id)}
-              className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+              className="bg-red-600 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-lg hover:bg-red-700 transition-colors text-sm"
             >
               Delete
             </button>
@@ -1066,68 +1092,68 @@ const Admin = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Toast Notification */}
       {toast.show && (
-        <div className={`fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 ${
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 md:px-6 md:py-3 rounded-lg shadow-lg transform transition-all duration-300 ${
           toast.type === 'success' ? 'bg-green-500' : 'bg-red-500'
-        } text-white flex items-center space-x-2`}>
+        } text-white flex items-center space-x-2 max-w-xs md:max-w-md`}>
           {toast.type === 'success' ? (
-            <CheckCircle className="w-5 h-5" />
+            <CheckCircle className="w-4 h-4 md:w-5 md:h-5" />
           ) : (
-            <XCircle className="w-5 h-5" />
+            <XCircle className="w-4 h-4 md:w-5 md:h-5" />
           )}
-          <span>{toast.message}</span>
+          <span className="text-sm md:text-base">{toast.message}</span>
         </div>
       )}
 
       {/* Image View Modal */}
       {imageModal.isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-90 p-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-90 p-2 md:p-4">
           <div className="bg-white rounded-xl max-w-6xl w-full h-[90vh] flex flex-col overflow-hidden">
             {/* Header */}
-            <div className="flex justify-between items-center p-4 border-b bg-gradient-to-r from-sricblue to-blue-800 text-white">
-              <div className="flex items-center space-x-3">
-                <ImageIcon className="w-6 h-6" />
-                <div>
-                  <h3 className="text-lg font-bold">{imageModal.fileName || 'Payment Receipt Screenshot'}</h3>
-                  <p className="text-sm text-blue-200">Uploaded by user</p>
+            <div className="flex justify-between items-center p-3 md:p-4 border-b bg-gradient-to-r from-sricblue to-blue-800 text-white">
+              <div className="flex items-center space-x-2 md:space-x-3">
+                <ImageIcon className="w-5 h-5 md:w-6 md:h-6" />
+                <div className="max-w-[200px] md:max-w-none">
+                  <h3 className="text-sm md:text-lg font-bold truncate">{imageModal.fileName || 'Payment Receipt Screenshot'}</h3>
+                  <p className="text-xs md:text-sm text-blue-200 hidden md:block">Uploaded by user</p>
                 </div>
               </div>
-              <div className="flex items-center space-x-3">
-                <div className="flex items-center space-x-2 bg-blue-900/30 px-3 py-1 rounded-lg">
+              <div className="flex items-center space-x-1 md:space-x-3">
+                <div className="flex items-center space-x-1 md:space-x-2 bg-blue-900/30 px-2 py-1 md:px-3 md:py-1 rounded-lg">
                   <button
                     onClick={handleZoomOut}
                     className="p-1 hover:bg-blue-800 rounded transition-colors"
                     title="Zoom Out"
                   >
-                    <ZoomOut className="w-5 h-5" />
+                    <ZoomOut className="w-4 h-4 md:w-5 md:h-5" />
                   </button>
-                  <span className="text-sm font-medium">{(imageModal.zoom * 100).toFixed(0)}%</span>
+                  <span className="text-xs md:text-sm font-medium">{(imageModal.zoom * 100).toFixed(0)}%</span>
                   <button
                     onClick={handleZoomIn}
                     className="p-1 hover:bg-blue-800 rounded transition-colors"
                     title="Zoom In"
                   >
-                    <ZoomIn className="w-5 h-5" />
+                    <ZoomIn className="w-4 h-4 md:w-5 md:h-5" />
                   </button>
                   <button
                     onClick={handleResetZoom}
-                    className="p-1 hover:bg-blue-800 rounded transition-colors ml-2"
+                    className="p-1 hover:bg-blue-800 rounded transition-colors ml-1 md:ml-2"
                     title="Reset Zoom"
                   >
-                    <RotateCcw className="w-4 h-4" />
+                    <RotateCcw className="w-3 h-3 md:w-4 md:h-4" />
                   </button>
                 </div>
                 <button
                   onClick={() => setImageModal({ isOpen: false, imageUrl: null, fileName: null, zoom: 1 })}
-                  className="p-2 hover:bg-blue-800 rounded-full transition-colors"
+                  className="p-1 md:p-2 hover:bg-blue-800 rounded-full transition-colors"
                   title="Close"
                 >
-                  <X className="w-6 h-6" />
+                  <X className="w-5 h-5 md:w-6 md:h-6" />
                 </button>
               </div>
             </div>
             
             {/* Image Container */}
-            <div className="flex-1 overflow-auto bg-gray-900 p-4">
+            <div className="flex-1 overflow-auto bg-gray-900 p-2 md:p-4">
               <div className="w-full h-full flex items-center justify-center">
                 <img
                   src={imageModal.imageUrl}
@@ -1143,20 +1169,20 @@ const Admin = () => {
             </div>
             
             {/* Footer */}
-            <div className="border-t bg-gray-50 p-4">
-              <div className="flex justify-between items-center">
-                <div className="text-sm text-gray-600">
-                  <p><span className="font-medium">Tip:</span> Use zoom controls or scroll wheel to inspect transaction details</p>
+            <div className="border-t bg-gray-50 p-3 md:p-4">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-2 md:space-y-0">
+                <div className="text-xs md:text-sm text-gray-600">
+                  <p><span className="font-medium">Tip:</span> Use zoom controls to inspect details</p>
                 </div>
-                <div className="flex space-x-3">
+                <div className="flex flex-wrap gap-2">
                   <a
                     href={imageModal.imageUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
+                    className="bg-blue-600 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-1 md:space-x-2 text-sm"
                   >
-                    <ExternalLink className="w-4 h-4" />
-                    <span>Open in New Tab</span>
+                    <ExternalLink className="w-3 h-3 md:w-4 md:h-4" />
+                    <span>Open New Tab</span>
                   </a>
                   <button
                     onClick={() => {
@@ -1167,14 +1193,14 @@ const Admin = () => {
                       link.click();
                       document.body.removeChild(link);
                     }}
-                    className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors flex items-center space-x-2"
+                    className="bg-gray-600 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-lg hover:bg-gray-700 transition-colors flex items-center space-x-1 md:space-x-2 text-sm"
                   >
-                    <Download className="w-4 h-4" />
+                    <Download className="w-3 h-3 md:w-4 md:h-4" />
                     <span>Download</span>
                   </button>
                   <button
                     onClick={() => setImageModal({ isOpen: false, imageUrl: null, fileName: null, zoom: 1 })}
-                    className="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors"
+                    className="bg-gray-200 text-gray-800 px-3 py-1.5 md:px-4 md:py-2 rounded-lg hover:bg-gray-300 transition-colors text-sm"
                   >
                     Close
                   </button>
@@ -1185,26 +1211,40 @@ const Admin = () => {
         </div>
       )}
 
+      {/* Mobile Menu Overlay */}
+      {mobileMenuOpen && (
+        <div 
+          className="fixed inset-0 z-30 bg-black bg-opacity-50 md:hidden"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
       <div className={`fixed inset-y-0 left-0 z-40 bg-gradient-to-b from-sricblue to-blue-900 text-white transition-all duration-300 ${
-        sidebarCollapsed ? 'w-20' : 'w-64'
-      }`}>
+        sidebarCollapsed ? 'w-16 md:w-20' : 'w-64'
+      } ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
         {/* Logo */}
-        <div className="p-6 border-b border-blue-800">
+        <div className="p-4 md:p-6 border-b border-blue-800">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className="bg-white p-2 rounded-xl">
-                <Shield className="w-6 h-6 text-sricblue" />
+                <Shield className="w-5 h-5 md:w-6 md:h-6 text-sricblue" />
               </div>
               {!sidebarCollapsed && (
-                <span className="font-bold text-lg tracking-tight">SRIC Admin</span>
+                <span className="font-bold text-base md:text-lg tracking-tight">SRIC Admin</span>
               )}
             </div>
             <button
-              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              onClick={() => {
+                if (window.innerWidth < 768) {
+                  setMobileMenuOpen(false);
+                } else {
+                  setSidebarCollapsed(!sidebarCollapsed);
+                }
+              }}
               className="text-white hover:bg-blue-800 p-2 rounded-lg transition-colors"
             >
-              <ChevronLeft className={`w-5 h-5 transition-transform ${
+              <ChevronLeft className={`w-4 h-4 md:w-5 md:h-5 transition-transform ${
                 sidebarCollapsed ? 'rotate-180' : ''
               }`} />
             </button>
@@ -1212,83 +1252,95 @@ const Admin = () => {
         </div>
 
         {/* Navigation */}
-        <div className="p-4 overflow-y-auto h-[calc(100vh-5rem)]">
+        <div className="p-2 md:p-4 overflow-y-auto h-[calc(100vh-4rem)] md:h-[calc(100vh-5rem)]">
           {/* Main Section */}
-          <div className="mb-8">
-            <p className={`text-xs uppercase tracking-wider text-blue-300 mb-3 ${
+          <div className="mb-6 md:mb-8">
+            <p className={`text-xs uppercase tracking-wider text-blue-300 mb-2 md:mb-3 ${
               sidebarCollapsed ? 'text-center' : 'px-3'
             }`}>Main</p>
             <button
-              onClick={() => setCurrentTab('dashboard')}
-              className={`w-full flex items-center space-x-3 p-3 rounded-xl mb-2 transition-all ${
+              onClick={() => {
+                setCurrentTab('dashboard');
+                if (window.innerWidth < 768) setMobileMenuOpen(false);
+              }}
+              className={`w-full flex items-center space-x-3 p-2 md:p-3 rounded-xl mb-1 md:mb-2 transition-all ${
                 currentTab === 'dashboard'
                   ? 'bg-blue-800 text-white shadow-lg'
                   : 'hover:bg-blue-800/50'
               }`}
             >
-              <Home className="w-5 h-5 flex-shrink-0" />
-              {!sidebarCollapsed && <span>Dashboard</span>}
+              <Home className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
+              {!sidebarCollapsed && <span className="text-sm md:text-base">Dashboard</span>}
             </button>
           </div>
 
           {/* Applications Section */}
-          <div className="mb-8">
-            <p className={`text-xs uppercase tracking-wider text-blue-300 mb-3 ${
+          <div className="mb-6 md:mb-8">
+            <p className={`text-xs uppercase tracking-wider text-blue-300 mb-2 md:mb-3 ${
               sidebarCollapsed ? 'text-center' : 'px-3'
             }`}>Applications</p>
             
             <button
-              onClick={() => setCurrentTab('admissions')}
-              className={`w-full flex items-center justify-between p-3 rounded-xl mb-2 transition-all ${
+              onClick={() => {
+                setCurrentTab('admissions');
+                if (window.innerWidth < 768) setMobileMenuOpen(false);
+              }}
+              className={`w-full flex items-center justify-between p-2 md:p-3 rounded-xl mb-1 md:mb-2 transition-all ${
                 currentTab === 'admissions'
                   ? 'bg-blue-800 text-white shadow-lg'
                   : 'hover:bg-blue-800/50'
               }`}
             >
               <div className="flex items-center space-x-3">
-                <GraduationCap className="w-5 h-5 flex-shrink-0" />
-                {!sidebarCollapsed && <span>Admissions</span>}
+                <GraduationCap className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
+                {!sidebarCollapsed && <span className="text-sm md:text-base">Admissions</span>}
               </div>
               {notificationCounts.admissions > 0 && (
-                <span className="bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                <span className="bg-red-500 text-white text-xs rounded-full w-4 h-4 md:w-5 md:h-5 flex items-center justify-center">
                   {notificationCounts.admissions}
                 </span>
               )}
             </button>
 
             <button
-              onClick={() => setCurrentTab('fees')}
-              className={`w-full flex items-center justify-between p-3 rounded-xl mb-2 transition-all ${
+              onClick={() => {
+                setCurrentTab('fees');
+                if (window.innerWidth < 768) setMobileMenuOpen(false);
+              }}
+              className={`w-full flex items-center justify-between p-2 md:p-3 rounded-xl mb-1 md:mb-2 transition-all ${
                 currentTab === 'fees'
                   ? 'bg-blue-800 text-white shadow-lg'
                   : 'hover:bg-blue-800/50'
               }`}
             >
               <div className="flex items-center space-x-3">
-                <DollarSign className="w-5 h-5 flex-shrink-0" />
-                {!sidebarCollapsed && <span>Fee Payments</span>}
+                <DollarSign className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
+                {!sidebarCollapsed && <span className="text-sm md:text-base">Fee Payments</span>}
               </div>
               {notificationCounts.fees > 0 && (
-                <span className="bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                <span className="bg-red-500 text-white text-xs rounded-full w-4 h-4 md:w-5 md:h-5 flex items-center justify-center">
                   {notificationCounts.fees}
                 </span>
               )}
             </button>
 
             <button
-              onClick={() => setCurrentTab('contacts')}
-              className={`w-full flex items-center justify-between p-3 rounded-xl mb-2 transition-all ${
+              onClick={() => {
+                setCurrentTab('contacts');
+                if (window.innerWidth < 768) setMobileMenuOpen(false);
+              }}
+              className={`w-full flex items-center justify-between p-2 md:p-3 rounded-xl mb-1 md:mb-2 transition-all ${
                 currentTab === 'contacts'
                   ? 'bg-blue-800 text-white shadow-lg'
                   : 'hover:bg-blue-800/50'
               }`}
             >
               <div className="flex items-center space-x-3">
-                <Mail className="w-5 h-5 flex-shrink-0" />
-                {!sidebarCollapsed && <span>Contact Forms</span>}
+                <Mail className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
+                {!sidebarCollapsed && <span className="text-sm md:text-base">Contact Forms</span>}
               </div>
               {notificationCounts.contacts > 0 && (
-                <span className="bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                <span className="bg-red-500 text-white text-xs rounded-full w-4 h-4 md:w-5 md:h-5 flex items-center justify-center">
                   {notificationCounts.contacts}
                 </span>
               )}
@@ -1296,93 +1348,110 @@ const Admin = () => {
           </div>
 
           {/* Management Section */}
-          <div className="mb-8">
-            <p className={`text-xs uppercase tracking-wider text-blue-300 mb-3 ${
+          <div className="mb-6 md:mb-8">
+            <p className={`text-xs uppercase tracking-wider text-blue-300 mb-2 md:mb-3 ${
               sidebarCollapsed ? 'text-center' : 'px-3'
             }`}>Management</p>
             
             <button
-              onClick={() => setCurrentTab('reports')}
-              className={`w-full flex items-center space-x-3 p-3 rounded-xl mb-2 transition-all ${
+              onClick={() => {
+                setCurrentTab('reports');
+                if (window.innerWidth < 768) setMobileMenuOpen(false);
+              }}
+              className={`w-full flex items-center space-x-3 p-2 md:p-3 rounded-xl mb-1 md:mb-2 transition-all ${
                 currentTab === 'reports'
                   ? 'bg-blue-800 text-white shadow-lg'
                   : 'hover:bg-blue-800/50'
               }`}
             >
-              <BarChart3 className="w-5 h-5 flex-shrink-0" />
-              {!sidebarCollapsed && <span>Reports</span>}
+              <BarChart3 className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
+              {!sidebarCollapsed && <span className="text-sm md:text-base">Reports</span>}
             </button>
 
             <button
-              onClick={() => setCurrentTab('settings')}
-              className={`w-full flex items-center space-x-3 p-3 rounded-xl mb-2 transition-all ${
+              onClick={() => {
+                setCurrentTab('settings');
+                if (window.innerWidth < 768) setMobileMenuOpen(false);
+              }}
+              className={`w-full flex items-center space-x-3 p-2 md:p-3 rounded-xl mb-1 md:mb-2 transition-all ${
                 currentTab === 'settings'
                   ? 'bg-blue-800 text-white shadow-lg'
                   : 'hover:bg-blue-800/50'
               }`}
             >
-              <Settings className="w-5 h-5 flex-shrink-0" />
-              {!sidebarCollapsed && <span>Settings</span>}
+              <Settings className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
+              {!sidebarCollapsed && <span className="text-sm md:text-base">Settings</span>}
             </button>
           </div>
 
           {/* Bottom Links */}
-          <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-blue-800">
+          <div className="absolute bottom-0 left-0 right-0 p-2 md:p-4 border-t border-blue-800">
             <Link
               to="/"
-              className="flex items-center space-x-3 p-3 rounded-xl hover:bg-blue-800/50 transition-all mb-2"
+              className="flex items-center space-x-3 p-2 md:p-3 rounded-xl hover:bg-blue-800/50 transition-all mb-1 md:mb-2"
+              onClick={() => window.innerWidth < 768 && setMobileMenuOpen(false)}
             >
-              <div className="w-5 h-5 flex items-center justify-center">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-4 h-4 md:w-5 md:h-5 flex items-center justify-center">
+                <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
                 </svg>
               </div>
-              {!sidebarCollapsed && <span>View Website</span>}
+              {!sidebarCollapsed && <span className="text-sm md:text-base">View Website</span>}
             </Link>
             
             <button
               onClick={handleLogout}
-              className="w-full flex items-center space-x-3 p-3 rounded-xl hover:bg-red-500/20 text-red-300 hover:text-red-200 transition-all"
+              className="w-full flex items-center space-x-3 p-2 md:p-3 rounded-xl hover:bg-red-500/20 text-red-300 hover:text-red-200 transition-all"
             >
-              <LogOut className="w-5 h-5 flex-shrink-0" />
-              {!sidebarCollapsed && <span>Logout</span>}
+              <LogOut className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
+              {!sidebarCollapsed && <span className="text-sm md:text-base">Logout</span>}
             </button>
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className={`transition-all duration-300 ${sidebarCollapsed ? 'ml-20' : 'ml-64'}`}>
+      <div className={`transition-all duration-300 ${
+        sidebarCollapsed ? 'md:ml-16 lg:ml-20' : 'md:ml-64'
+      }`}>
         {/* Header */}
-        <header className="bg-white shadow-sm border-b">
-          <div className="px-6 py-4">
+        <header className="bg-white shadow-sm border-b sticky top-0 z-20">
+          <div className="px-4 py-3 md:px-6 md:py-4">
             <div className="flex items-center justify-between">
-              <h1 className="text-2xl font-bold text-gray-800">
-                {currentTab === 'dashboard' && 'Dashboard'}
-                {currentTab === 'admissions' && 'Admission Applications'}
-                {currentTab === 'fees' && 'Fee Payments'}
-                {currentTab === 'contacts' && 'Contact Messages'}
-                {currentTab === 'reports' && 'Reports & Analytics'}
-                {currentTab === 'settings' && 'Settings'}
-              </h1>
+              <div className="flex items-center space-x-3">
+                <button
+                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                  className="md:hidden text-gray-600 hover:text-gray-900"
+                >
+                  {mobileMenuOpen ? <XIcon className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                </button>
+                <h1 className="text-lg md:text-xl lg:text-2xl font-bold text-gray-800">
+                  {currentTab === 'dashboard' && 'Dashboard'}
+                  {currentTab === 'admissions' && 'Admission Applications'}
+                  {currentTab === 'fees' && 'Fee Payments'}
+                  {currentTab === 'contacts' && 'Contact Messages'}
+                  {currentTab === 'reports' && 'Reports & Analytics'}
+                  {currentTab === 'settings' && 'Settings'}
+                </h1>
+              </div>
               
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2 md:space-x-4">
                 {currentTab !== 'dashboard' && (
-                  <div className="flex items-center space-x-3">
+                  <div className="hidden sm:flex items-center space-x-2 md:space-x-3">
                     <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3 h-3 md:w-4 md:h-4 text-gray-400" />
                       <input
                         type="text"
                         placeholder="Search..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-64"
+                        className="pl-9 pr-3 py-1.5 md:pl-10 md:pr-4 md:py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-40 md:w-64 text-sm"
                       />
                     </div>
                     <select
                       value={statusFilter}
                       onChange={(e) => setStatusFilter(e.target.value)}
-                      className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="border border-gray-300 rounded-lg px-2 py-1.5 md:px-3 md:py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                     >
                       <option value="all">All Status</option>
                       {currentTab === 'admissions' && (
@@ -1410,7 +1479,29 @@ const Admin = () => {
                     </select>
                     <button
                       onClick={loadData}
-                      className="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 transition-colors"
+                      className="bg-blue-600 text-white p-1.5 md:p-2 rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      <RefreshCw className="w-3 h-3 md:w-4 md:h-4" />
+                    </button>
+                  </div>
+                )}
+                
+                {/* Mobile Search/Filter Button */}
+                {currentTab !== 'dashboard' && (
+                  <div className="sm:hidden flex items-center space-x-2">
+                    <button
+                      onClick={() => {
+                        // You can implement a mobile search modal here
+                        const search = prompt('Search:');
+                        if (search !== null) setSearchTerm(search);
+                      }}
+                      className="p-1.5 bg-gray-100 rounded-lg"
+                    >
+                      <Search className="w-4 h-4 text-gray-600" />
+                    </button>
+                    <button
+                      onClick={loadData}
+                      className="p-1.5 bg-blue-600 text-white rounded-lg"
                     >
                       <RefreshCw className="w-4 h-4" />
                     </button>
@@ -1419,44 +1510,91 @@ const Admin = () => {
                 
                 {/* Notifications */}
                 <div className="relative">
-                  <button className="relative p-2 hover:bg-gray-100 rounded-full transition-colors">
-                    <Bell className="w-5 h-5 text-gray-600" />
+                  <button className="relative p-1.5 md:p-2 hover:bg-gray-100 rounded-full transition-colors">
+                    <Bell className="w-4 h-4 md:w-5 md:h-5 text-gray-600" />
                     {notificationCounts.total > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                        {notificationCounts.total}
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 md:w-5 md:h-5 flex items-center justify-center">
+                        {notificationCounts.total > 9 ? '9+' : notificationCounts.total}
                       </span>
                     )}
                   </button>
                 </div>
 
                 {/* User Profile */}
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-2 md:space-x-3">
                   <div className="relative">
                     <img
                       src="https://ui-avatars.com/api/?name=Admin+User&background=002366&color=fff"
                       alt="Admin User"
-                      className="w-10 h-10 rounded-full border-2 border-blue-500"
+                      className="w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-blue-500"
                     />
-                    <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
+                    <div className="absolute -bottom-1 -right-1 w-2 h-2 md:w-3 md:h-3 bg-green-500 border-2 border-white rounded-full"></div>
                   </div>
                   <div className="hidden md:block">
-                    <p className="font-medium text-gray-700">Admin User</p>
+                    <p className="font-medium text-gray-700 text-sm">Admin User</p>
                     <p className="text-xs text-gray-500">Super Administrator</p>
                   </div>
                 </div>
               </div>
             </div>
+            
+            {/* Mobile Search Bar (when needed) */}
+            {currentTab !== 'dashboard' && (
+              <div className="sm:hidden mt-3">
+                <div className="flex items-center space-x-2">
+                  <div className="flex-1 relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input
+                      type="text"
+                      placeholder="Search..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                    />
+                  </div>
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  >
+                    <option value="all">All Status</option>
+                    {currentTab === 'admissions' && (
+                      <>
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                      </>
+                    )}
+                    {currentTab === 'fees' && (
+                      <>
+                        <option value="pending">Pending</option>
+                        <option value="verified">Verified</option>
+                        <option value="rejected">Rejected</option>
+                      </>
+                    )}
+                    {currentTab === 'contacts' && (
+                      <>
+                        <option value="unread">Unread</option>
+                        <option value="read">Read</option>
+                        <option value="replied">Replied</option>
+                        <option value="archived">Archived</option>
+                      </>
+                    )}
+                  </select>
+                </div>
+              </div>
+            )}
           </div>
         </header>
 
         {/* Main Content Area */}
-        <main className="p-6">
+        <main className="p-4 md:p-6">
           {isLoading ? (
             <div className="flex justify-center items-center h-64">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
             </div>
           ) : viewDetails ? (
-            <div className="space-y-6">
+            <div className="space-y-4 md:space-y-6">
               {currentTab === 'admissions' && renderAdmissionDetails(viewDetails)}
               {currentTab === 'fees' && renderFeePaymentDetails(viewDetails)}
               {currentTab === 'contacts' && renderContactDetails(viewDetails)}
@@ -1465,97 +1603,98 @@ const Admin = () => {
             <>
               {/* Dashboard Tab */}
               {currentTab === 'dashboard' && stats && (
-                <div className="space-y-6">
+                <div className="space-y-4 md:space-y-6">
                   {/* Stats Overview */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div className="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-blue-500 hover:shadow-xl transition-shadow">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                    <div className="bg-white rounded-xl md:rounded-2xl shadow-lg p-4 md:p-6 border-l-4 border-blue-500 hover:shadow-xl transition-shadow">
                       <div className="flex justify-between items-start">
                         <div>
-                          <p className="text-gray-500 text-sm font-medium">Total Admissions</p>
-                          <p className="text-3xl font-bold text-gray-800 mt-2">{stats.counts?.admissions || 0}</p>
-                          <div className="flex items-center mt-2">
-                            <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
-                            <span className="text-green-500 text-sm">+12%</span>
-                            <span className="text-gray-400 text-sm ml-2">from last month</span>
+                          <p className="text-gray-500 text-xs md:text-sm font-medium">Total Admissions</p>
+                          <p className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-800 mt-1 md:mt-2">{stats.counts?.admissions || 0}</p>
+                          <div className="flex items-center mt-1 md:mt-2">
+                            <TrendingUp className="w-3 h-3 md:w-4 md:h-4 text-green-500 mr-1" />
+                            <span className="text-green-500 text-xs md:text-sm">+12%</span>
+                            <span className="text-gray-400 text-xs md:text-sm ml-1 md:ml-2">from last month</span>
                           </div>
                         </div>
-                        <div className="bg-blue-100 p-3 rounded-xl">
-                          <GraduationCap className="w-6 h-6 text-blue-600" />
+                        <div className="bg-blue-100 p-2 md:p-3 rounded-xl">
+                          <GraduationCap className="w-5 h-5 md:w-6 md:h-6 text-blue-600" />
                         </div>
                       </div>
                     </div>
 
-                    <div className="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-green-500 hover:shadow-xl transition-shadow">
+                    <div className="bg-white rounded-xl md:rounded-2xl shadow-lg p-4 md:p-6 border-l-4 border-green-500 hover:shadow-xl transition-shadow">
                       <div className="flex justify-between items-start">
                         <div>
-                          <p className="text-gray-500 text-sm font-medium">Fee Payments</p>
-                          <p className="text-3xl font-bold text-gray-800 mt-2">{stats.counts?.feePayments || 0}</p>
-                          <div className="flex items-center mt-2">
-                            <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
-                            <span className="text-green-500 text-sm">+8%</span>
-                            <span className="text-gray-400 text-sm ml-2">from last month</span>
+                          <p className="text-gray-500 text-xs md:text-sm font-medium">Fee Payments</p>
+                          <p className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-800 mt-1 md:mt-2">{stats.counts?.feePayments || 0}</p>
+                          <div className="flex items-center mt-1 md:mt-2">
+                            <TrendingUp className="w-3 h-3 md:w-4 md:h-4 text-green-500 mr-1" />
+                            <span className="text-green-500 text-xs md:text-sm">+8%</span>
+                            <span className="text-gray-400 text-xs md:text-sm ml-1 md:ml-2">from last month</span>
                           </div>
                         </div>
-                        <div className="bg-green-100 p-3 rounded-xl">
-                          <DollarSign className="w-6 h-6 text-green-600" />
+                        <div className="bg-green-100 p-2 md:p-3 rounded-xl">
+                          <DollarSign className="w-5 h-5 md:w-6 md:h-6 text-green-600" />
                         </div>
                       </div>
                     </div>
 
-                    <div className="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-purple-500 hover:shadow-xl transition-shadow">
+                    <div className="bg-white rounded-xl md:rounded-2xl shadow-lg p-4 md:p-6 border-l-4 border-purple-500 hover:shadow-xl transition-shadow">
                       <div className="flex justify-between items-start">
                         <div>
-                          <p className="text-gray-500 text-sm font-medium">Contact Messages</p>
-                          <p className="text-3xl font-bold text-gray-800 mt-2">{stats.counts?.contacts || 0}</p>
-                          <div className="flex items-center mt-2">
-                            <TrendingDown className="w-4 h-4 text-red-500 mr-1" />
-                            <span className="text-red-500 text-sm">-3%</span>
-                            <span className="text-gray-400 text-sm ml-2">from last month</span>
+                          <p className="text-gray-500 text-xs md:text-sm font-medium">Contact Messages</p>
+                          <p className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-800 mt-1 md:mt-2">{stats.counts?.contacts || 0}</p>
+                          <div className="flex items-center mt-1 md:mt-2">
+                            <TrendingDown className="w-3 h-3 md:w-4 md:h-4 text-red-500 mr-1" />
+                            <span className="text-red-500 text-xs md:text-sm">-3%</span>
+                            <span className="text-gray-400 text-xs md:text-sm ml-1 md:ml-2">from last month</span>
                           </div>
                         </div>
-                        <div className="bg-purple-100 p-3 rounded-xl">
-                          <Mail className="w-6 h-6 text-purple-600" />
+                        <div className="bg-purple-100 p-2 md:p-3 rounded-xl">
+                          <Mail className="w-5 h-5 md:w-6 md:h-6 text-purple-600" />
                         </div>
                       </div>
                     </div>
 
-                    <div className="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-yellow-500 hover:shadow-xl transition-shadow">
+                    <div className="bg-white rounded-xl md:rounded-2xl shadow-lg p-4 md:p-6 border-l-4 border-yellow-500 hover:shadow-xl transition-shadow">
                       <div className="flex justify-between items-start">
                         <div>
-                          <p className="text-gray-500 text-sm font-medium">Approved Students</p>
-                          <p className="text-3xl font-bold text-gray-800 mt-2">{stats.counts?.approvedAdmissions || 0}</p>
-                          <div className="flex items-center mt-2">
-                            <CheckCircle className="w-4 h-4 text-green-500 mr-1" />
-                            <span className="text-green-500 text-sm">{stats.counts?.admissions ? Math.round((stats.counts.approvedAdmissions / stats.counts.admissions) * 100) : 0}%</span>
-                            <span className="text-gray-400 text-sm ml-2">approval rate</span>
+                          <p className="text-gray-500 text-xs md:text-sm font-medium">Approved Students</p>
+                          <p className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-800 mt-1 md:mt-2">{stats.counts?.approvedAdmissions || 0}</p>
+                          <div className="flex items-center mt-1 md:mt-2">
+                            <CheckCircle className="w-3 h-3 md:w-4 md:h-4 text-green-500 mr-1" />
+                            <span className="text-green-500 text-xs md:text-sm">{stats.counts?.admissions ? Math.round((stats.counts.approvedAdmissions / stats.counts.admissions) * 100) : 0}%</span>
+                            <span className="text-gray-400 text-xs md:text-sm ml-1 md:ml-2">approval rate</span>
                           </div>
                         </div>
-                        <div className="bg-yellow-100 p-3 rounded-xl">
-                          <Users className="w-6 h-6 text-yellow-600" />
+                        <div className="bg-yellow-100 p-2 md:p-3 rounded-xl">
+                          <Users className="w-5 h-5 md:w-6 md:h-6 text-yellow-600" />
                         </div>
                       </div>
                     </div>
                   </div>
 
                   {/* Charts Section */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
                     {/* Applications Chart */}
-                    <div className="bg-white rounded-2xl shadow-lg p-6">
-                      <div className="flex justify-between items-center mb-6">
-                        <h3 className="text-lg font-semibold text-gray-800">Monthly Applications</h3>
-                        <div className="text-sm text-gray-500">Last 6 months</div>
+                    <div className="bg-white rounded-xl md:rounded-2xl shadow-lg p-4 md:p-6">
+                      <div className="flex justify-between items-center mb-4 md:mb-6">
+                        <h3 className="text-base md:text-lg font-semibold text-gray-800">Monthly Applications</h3>
+                        <div className="text-xs md:text-sm text-gray-500">Last 6 months</div>
                       </div>
-                      <div className="h-64">
+                      <div className="h-48 md:h-64">
                         <ResponsiveContainer width="100%" height="100%">
                           <BarChart data={applicationsByClass}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                            <XAxis dataKey="name" stroke="#666" />
-                            <YAxis stroke="#666" />
+                            <XAxis dataKey="name" stroke="#666" fontSize={12} />
+                            <YAxis stroke="#666" fontSize={12} />
                             <Tooltip 
                               contentStyle={{ 
                                 backgroundColor: 'white', 
                                 border: '1px solid #e5e7eb',
-                                borderRadius: '8px'
+                                borderRadius: '8px',
+                                fontSize: '12px'
                               }}
                             />
                             <Bar 
@@ -1569,12 +1708,12 @@ const Admin = () => {
                     </div>
 
                     {/* Payment Status Chart */}
-                    <div className="bg-white rounded-2xl shadow-lg p-6">
-                      <div className="flex justify-between items-center mb-6">
-                        <h3 className="text-lg font-semibold text-gray-800">Payment Status</h3>
-                        <div className="text-sm text-gray-500">Total: {stats.counts?.feePayments || 0} payments</div>
+                    <div className="bg-white rounded-xl md:rounded-2xl shadow-lg p-4 md:p-6">
+                      <div className="flex justify-between items-center mb-4 md:mb-6">
+                        <h3 className="text-base md:text-lg font-semibold text-gray-800">Payment Status</h3>
+                        <div className="text-xs md:text-sm text-gray-500">Total: {stats.counts?.feePayments || 0} payments</div>
                       </div>
-                      <div className="h-64">
+                      <div className="h-48 md:h-64">
                         <ResponsiveContainer width="100%" height="100%">
                           <PieChart>
                             <Pie
@@ -1583,7 +1722,8 @@ const Admin = () => {
                               cy="50%"
                               labelLine={false}
                               label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                              outerRadius={80}
+                              outerRadius={60}
+                              innerRadius={30}
                               fill="#8884d8"
                               dataKey="value"
                             >
@@ -1600,33 +1740,33 @@ const Admin = () => {
                   </div>
 
                   {/* Recent Activity */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
                     {/* Recent Admissions */}
-                    <div className="bg-white rounded-2xl shadow-lg p-6">
-                      <div className="flex justify-between items-center mb-6">
-                        <h3 className="text-lg font-semibold text-gray-800">Recent Admissions</h3>
+                    <div className="bg-white rounded-xl md:rounded-2xl shadow-lg p-4 md:p-6">
+                      <div className="flex justify-between items-center mb-4 md:mb-6">
+                        <h3 className="text-base md:text-lg font-semibold text-gray-800">Recent Admissions</h3>
                         <button 
                           onClick={() => setCurrentTab('admissions')}
-                          className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                          className="text-xs md:text-sm text-blue-600 hover:text-blue-800 font-medium"
                         >
                           View All
                         </button>
                       </div>
-                      <div className="space-y-4">
+                      <div className="space-y-3 md:space-y-4">
                         {stats.recentAdmissions?.slice(0, 5).map((admission) => (
-                          <div key={admission._id} className="flex items-start p-4 hover:bg-gray-50 rounded-lg transition-colors">
-                            <div className="p-3 rounded-xl mr-4 bg-blue-100 text-blue-600">
-                              <GraduationCap className="w-5 h-5" />
+                          <div key={admission._id} className="flex items-start p-3 md:p-4 hover:bg-gray-50 rounded-lg transition-colors">
+                            <div className="p-2 md:p-3 rounded-xl mr-3 md:mr-4 bg-blue-100 text-blue-600">
+                              <GraduationCap className="w-4 h-4 md:w-5 md:h-5" />
                             </div>
-                            <div className="flex-1">
-                              <div className="flex justify-between items-start">
-                                <div>
-                                  <h4 className="font-medium text-gray-800">{admission.name}</h4>
-                                  <p className="text-gray-600 text-sm mt-1">{admission.admissionClass}</p>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start space-y-1 sm:space-y-0">
+                                <div className="min-w-0">
+                                  <h4 className="font-medium text-gray-800 text-sm md:text-base truncate">{admission.name}</h4>
+                                  <p className="text-gray-600 text-xs md:text-sm mt-1 truncate">{admission.admissionClass}</p>
                                 </div>
                                 <div className="flex items-center space-x-2">
                                   {renderStatusBadge(admission.status)}
-                                  <span className="text-gray-400 text-sm">{formatDate(admission.submittedAt)}</span>
+                                  <span className="text-gray-400 text-xs md:text-sm">{formatDate(admission.submittedAt)}</span>
                                 </div>
                               </div>
                             </div>
@@ -1636,29 +1776,29 @@ const Admin = () => {
                     </div>
 
                     {/* Recent Payments */}
-                    <div className="bg-white rounded-2xl shadow-lg p-6">
-                      <div className="flex justify-between items-center mb-6">
-                        <h3 className="text-lg font-semibold text-gray-800">Recent Payments</h3>
+                    <div className="bg-white rounded-xl md:rounded-2xl shadow-lg p-4 md:p-6">
+                      <div className="flex justify-between items-center mb-4 md:mb-6">
+                        <h3 className="text-base md:text-lg font-semibold text-gray-800">Recent Payments</h3>
                         <button 
                           onClick={() => setCurrentTab('fees')}
-                          className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                          className="text-xs md:text-sm text-blue-600 hover:text-blue-800 font-medium"
                         >
                           View All
                         </button>
                       </div>
-                      <div className="space-y-4">
+                      <div className="space-y-3 md:space-y-4">
                         {stats.recentFeePayments?.slice(0, 5).map((payment) => (
-                          <div key={payment._id} className="flex items-start p-4 hover:bg-gray-50 rounded-lg transition-colors">
-                            <div className={`p-3 rounded-xl mr-4 ${
+                          <div key={payment._id} className="flex items-start p-3 md:p-4 hover:bg-gray-50 rounded-lg transition-colors">
+                            <div className={`p-2 md:p-3 rounded-xl mr-3 md:mr-4 ${
                               payment.status === 'verified' ? 'bg-green-100 text-green-600' : 'bg-yellow-100 text-yellow-600'
                             }`}>
-                              <DollarSign className="w-5 h-5" />
+                              <DollarSign className="w-4 h-4 md:w-5 md:h-5" />
                             </div>
-                            <div className="flex-1">
-                              <div className="flex justify-between items-start">
-                                <div>
-                                  <h4 className="font-medium text-gray-800">{payment.studentName}</h4>
-                                  <p className="text-gray-600 text-sm mt-1">₹{payment.amount?.toLocaleString('en-IN') || '0'} - {payment.className}</p>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start space-y-1 sm:space-y-0">
+                                <div className="min-w-0">
+                                  <h4 className="font-medium text-gray-800 text-sm md:text-base truncate">{payment.studentName}</h4>
+                                  <p className="text-gray-600 text-xs md:text-sm mt-1 truncate">₹{payment.amount?.toLocaleString('en-IN') || '0'} - {payment.className}</p>
                                   {payment.cloudinaryFile && (
                                     <div className="flex items-center mt-1">
                                       {payment.cloudinaryFile.resource_type === 'image' ? (
@@ -1672,7 +1812,7 @@ const Admin = () => {
                                 </div>
                                 <div className="flex items-center space-x-2">
                                   {renderStatusBadge(payment.status)}
-                                  <span className="text-gray-400 text-sm">{formatDate(payment.submittedAt)}</span>
+                                  <span className="text-gray-400 text-xs md:text-sm">{formatDate(payment.submittedAt)}</span>
                                 </div>
                               </div>
                             </div>
@@ -1686,14 +1826,14 @@ const Admin = () => {
 
               {/* Dashboard Tab - No Stats */}
               {currentTab === 'dashboard' && !stats && (
-                <div className="bg-white rounded-2xl shadow-lg p-6">
-                  <div className="text-center py-12">
+                <div className="bg-white rounded-xl md:rounded-2xl shadow-lg p-4 md:p-6">
+                  <div className="text-center py-8 md:py-12">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-                    <h3 className="text-xl font-semibold text-gray-700 mb-2">Loading Dashboard</h3>
-                    <p className="text-gray-500">Fetching dashboard data...</p>
+                    <h3 className="text-lg md:text-xl font-semibold text-gray-700 mb-2">Loading Dashboard</h3>
+                    <p className="text-gray-500 text-sm md:text-base">Fetching dashboard data...</p>
                     <button 
                       onClick={loadDashboardData}
-                      className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                      className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm md:text-base"
                     >
                       Retry Loading
                     </button>
@@ -1703,27 +1843,28 @@ const Admin = () => {
 
               {/* Admissions Tab */}
               {currentTab === 'admissions' && (
-                <div className="space-y-6">
-                  <div className="bg-white rounded-2xl shadow-lg p-6">
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 space-y-4 md:space-y-0">
-                      <h2 className="text-2xl font-bold text-gray-800">Admission Applications ({admissionsData.length})</h2>
-                      <div className="flex items-center space-x-3">
-                        <button className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center justify-center space-x-2 hover:bg-blue-700 transition-colors">
-                          <Download className="w-4 h-4" />
-                          <span>Export CSV</span>
+                <div className="space-y-4 md:space-y-6">
+                  <div className="bg-white rounded-xl md:rounded-2xl shadow-lg p-4 md:p-6">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 md:mb-6 space-y-3 md:space-y-0">
+                      <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-gray-800">Admission Applications ({admissionsData.length})</h2>
+                      <div className="flex items-center space-x-2 md:space-x-3">
+                        <button className="bg-blue-600 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-lg flex items-center justify-center space-x-1 md:space-x-2 hover:bg-blue-700 transition-colors text-sm">
+                          <Download className="w-3 h-3 md:w-4 md:h-4" />
+                          <span className="hidden sm:inline">Export CSV</span>
+                          <span className="sm:hidden">Export</span>
                         </button>
                       </div>
                     </div>
 
                     {/* Table */}
                     {admissionsData.length === 0 ? (
-                      <div className="text-center py-12">
-                        <GraduationCap className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                        <h3 className="text-xl font-semibold text-gray-700 mb-2">No Admissions Found</h3>
-                        <p className="text-gray-500">No admission applications match your search criteria.</p>
+                      <div className="text-center py-8 md:py-12">
+                        <GraduationCap className="w-12 h-12 md:w-16 md:h-16 text-gray-400 mx-auto mb-3 md:mb-4" />
+                        <h3 className="text-lg md:text-xl font-semibold text-gray-700 mb-2">No Admissions Found</h3>
+                        <p className="text-gray-500 text-sm md:text-base">No admission applications match your search criteria.</p>
                         <button 
                           onClick={loadAdmissions}
-                          className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                          className="mt-3 md:mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm md:text-base"
                         >
                           Refresh Data
                         </button>
@@ -1733,25 +1874,25 @@ const Admin = () => {
                         <table className="min-w-full divide-y divide-gray-200">
                           <thead className="bg-gray-50">
                             <tr>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              <th className="px-3 py-2 md:px-6 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Student Name
                               </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              <th className="px-3 py-2 md:px-6 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Class
                               </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              <th className="px-3 py-2 md:px-6 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Father's Name
                               </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              <th className="hidden sm:table-cell px-3 py-2 md:px-6 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Contact
                               </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              <th className="px-3 py-2 md:px-6 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Date
                               </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              <th className="px-3 py-2 md:px-6 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Status
                               </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              <th className="px-3 py-2 md:px-6 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Actions
                               </th>
                             </tr>
@@ -1759,63 +1900,65 @@ const Admin = () => {
                           <tbody className="bg-white divide-y divide-gray-200">
                             {admissionsData.map((admission) => (
                               <tr key={admission._id} className="hover:bg-gray-50 transition-colors">
-                                <td className="px-6 py-4 whitespace-nowrap">
+                                <td className="px-3 py-3 md:px-6 md:py-4 whitespace-nowrap">
                                   <div className="flex items-center">
                                     <img
-                                      className="h-10 w-10 rounded-full"
+                                      className="h-8 w-8 md:h-10 md:w-10 rounded-full"
                                       src={`https://ui-avatars.com/api/?name=${admission.name}&background=002366&color=fff`}
                                       alt={admission.name}
                                     />
-                                    <div className="ml-4">
-                                      <div className="text-sm font-medium text-gray-900">{admission.name}</div>
-                                      <div className="text-sm text-gray-500">{admission.email}</div>
+                                    <div className="ml-2 md:ml-4">
+                                      <div className="text-sm font-medium text-gray-900 truncate max-w-[120px] md:max-w-none">{admission.name}</div>
+                                      <div className="text-xs md:text-sm text-gray-500 truncate max-w-[120px] md:max-w-none">{admission.email}</div>
                                     </div>
                                   </div>
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
+                                <td className="px-3 py-3 md:px-6 md:py-4 whitespace-nowrap">
                                   <div className="text-sm text-gray-900">{admission.admissionClass}</div>
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                  <div className="text-sm text-gray-900">{admission.fatherName}</div>
+                                <td className="px-3 py-3 md:px-6 md:py-4 whitespace-nowrap">
+                                  <div className="text-sm text-gray-900 truncate max-w-[100px] md:max-w-none">{admission.fatherName}</div>
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <td className="hidden sm:table-cell px-3 py-3 md:px-6 md:py-4 whitespace-nowrap text-sm text-gray-500">
                                   {admission.fatherContact}
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <td className="px-3 py-3 md:px-6 md:py-4 whitespace-nowrap text-sm text-gray-500">
                                   {formatDate(admission.submittedAt)}
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
+                                <td className="px-3 py-3 md:px-6 md:py-4 whitespace-nowrap">
                                   {renderStatusBadge(admission.status)}
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                                  <button 
-                                    onClick={() => setViewDetails(admission)}
-                                    className="text-blue-600 hover:text-blue-900"
-                                  >
-                                    <EyeIcon className="w-4 h-4 inline mr-1" /> View
-                                  </button>
-                                  {admission.status === 'pending' && (
-                                    <>
-                                      <button 
-                                        onClick={() => handleUpdateStatus('admission', admission._id, 'approved')}
-                                        className="text-green-600 hover:text-green-900"
-                                      >
-                                        <CheckCircle className="w-4 h-4 inline mr-1" /> Approve
-                                      </button>
-                                      <button 
-                                        onClick={() => handleUpdateStatus('admission', admission._id, 'rejected')}
-                                        className="text-red-600 hover:text-red-900"
-                                      >
-                                        <XCircle className="w-4 h-4 inline mr-1" /> Reject
-                                      </button>
-                                    </>
-                                  )}
-                                  <button 
-                                    onClick={() => handleDelete('admission', admission._id)}
-                                    className="text-red-600 hover:text-red-900"
-                                  >
-                                    <Trash2 className="w-4 h-4 inline mr-1" /> Delete
-                                  </button>
+                                <td className="px-3 py-3 md:px-6 md:py-4 whitespace-nowrap">
+                                  <div className="flex flex-col space-y-1 sm:flex-row sm:space-x-2 sm:space-y-0">
+                                    <button 
+                                      onClick={() => setViewDetails(admission)}
+                                      className="text-blue-600 hover:text-blue-900 text-xs sm:text-sm flex items-center"
+                                    >
+                                      <EyeIcon className="w-3 h-3 md:w-4 md:h-4 inline mr-1" /> View
+                                    </button>
+                                    {admission.status === 'pending' && (
+                                      <>
+                                        <button 
+                                          onClick={() => handleUpdateStatus('admission', admission._id, 'approved')}
+                                          className="text-green-600 hover:text-green-900 text-xs sm:text-sm flex items-center"
+                                        >
+                                          <CheckCircle className="w-3 h-3 md:w-4 md:h-4 inline mr-1" /> Approve
+                                        </button>
+                                        <button 
+                                          onClick={() => handleUpdateStatus('admission', admission._id, 'rejected')}
+                                          className="text-red-600 hover:text-red-900 text-xs sm:text-sm flex items-center"
+                                        >
+                                          <XCircle className="w-3 h-3 md:w-4 md:h-4 inline mr-1" /> Reject
+                                        </button>
+                                      </>
+                                    )}
+                                    <button 
+                                      onClick={() => handleDelete('admission', admission._id)}
+                                      className="text-red-600 hover:text-red-900 text-xs sm:text-sm flex items-center"
+                                    >
+                                      <Trash2 className="w-3 h-3 md:w-4 md:h-4 inline mr-1" /> Delete
+                                    </button>
+                                  </div>
                                 </td>
                               </tr>
                             ))}
@@ -1829,26 +1972,27 @@ const Admin = () => {
 
               {/* Fees Tab */}
               {currentTab === 'fees' && (
-                <div className="space-y-6">
-                  <div className="bg-white rounded-2xl shadow-lg p-6">
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 space-y-4 md:space-y-0">
-                      <h2 className="text-2xl font-bold text-gray-800">Fee Payments ({feesData.length})</h2>
-                      <div className="flex items-center space-x-3">
-                        <button className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center justify-center space-x-2 hover:bg-blue-700 transition-colors">
-                          <Download className="w-4 h-4" />
-                          <span>Export CSV</span>
+                <div className="space-y-4 md:space-y-6">
+                  <div className="bg-white rounded-xl md:rounded-2xl shadow-lg p-4 md:p-6">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 md:mb-6 space-y-3 md:space-y-0">
+                      <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-gray-800">Fee Payments ({feesData.length})</h2>
+                      <div className="flex items-center space-x-2 md:space-x-3">
+                        <button className="bg-blue-600 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-lg flex items-center justify-center space-x-1 md:space-x-2 hover:bg-blue-700 transition-colors text-sm">
+                          <Download className="w-3 h-3 md:w-4 md:h-4" />
+                          <span className="hidden sm:inline">Export CSV</span>
+                          <span className="sm:hidden">Export</span>
                         </button>
                       </div>
                     </div>
 
                     {feesData.length === 0 ? (
-                      <div className="text-center py-12">
-                        <DollarSign className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                        <h3 className="text-xl font-semibold text-gray-700 mb-2">No Fee Payments Found</h3>
-                        <p className="text-gray-500">No fee payments match your search criteria.</p>
+                      <div className="text-center py-8 md:py-12">
+                        <DollarSign className="w-12 h-12 md:w-16 md:h-16 text-gray-400 mx-auto mb-3 md:mb-4" />
+                        <h3 className="text-lg md:text-xl font-semibold text-gray-700 mb-2">No Fee Payments Found</h3>
+                        <p className="text-gray-500 text-sm md:text-base">No fee payments match your search criteria.</p>
                         <button 
                           onClick={loadFeePayments}
-                          className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                          className="mt-3 md:mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm md:text-base"
                         >
                           Refresh Data
                         </button>
@@ -1858,28 +2002,28 @@ const Admin = () => {
                         <table className="min-w-full divide-y divide-gray-200">
                           <thead className="bg-gray-50">
                             <tr>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              <th className="px-3 py-2 md:px-6 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Student Name
                               </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              <th className="px-3 py-2 md:px-6 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Class
                               </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              <th className="px-3 py-2 md:px-6 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Amount
                               </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              <th className="hidden md:table-cell px-3 py-2 md:px-6 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Receipt #
                               </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                File Type
+                              <th className="px-3 py-2 md:px-6 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                File
                               </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              <th className="px-3 py-2 md:px-6 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Date
                               </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              <th className="px-3 py-2 md:px-6 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Status
                               </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              <th className="px-3 py-2 md:px-6 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Actions
                               </th>
                             </tr>
@@ -1887,88 +2031,90 @@ const Admin = () => {
                           <tbody className="bg-white divide-y divide-gray-200">
                             {feesData.map((payment) => (
                               <tr key={payment._id} className="hover:bg-gray-50 transition-colors">
-                                <td className="px-6 py-4 whitespace-nowrap">
+                                <td className="px-3 py-3 md:px-6 md:py-4 whitespace-nowrap">
                                   <div className="flex items-center">
                                     <img
-                                      className="h-10 w-10 rounded-full"
+                                      className="h-8 w-8 md:h-10 md:w-10 rounded-full"
                                       src={`https://ui-avatars.com/api/?name=${payment.studentName}&background=002366&color=fff`}
                                       alt={payment.studentName}
                                     />
-                                    <div className="ml-4">
-                                      <div className="text-sm font-medium text-gray-900">{payment.studentName}</div>
-                                      <div className="text-sm text-gray-500">{payment.email}</div>
+                                    <div className="ml-2 md:ml-4">
+                                      <div className="text-sm font-medium text-gray-900 truncate max-w-[120px] md:max-w-none">{payment.studentName}</div>
+                                      <div className="text-xs md:text-sm text-gray-500 truncate max-w-[120px] md:max-w-none">{payment.email}</div>
                                     </div>
                                   </div>
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
+                                <td className="px-3 py-3 md:px-6 md:py-4 whitespace-nowrap">
                                   <div className="text-sm text-gray-900">{payment.className}</div>
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
+                                <td className="px-3 py-3 md:px-6 md:py-4 whitespace-nowrap">
                                   <div className="text-sm font-semibold text-gray-900">₹{payment.amount?.toLocaleString('en-IN') || '0'}</div>
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <td className="hidden md:table-cell px-3 py-3 md:px-6 md:py-4 whitespace-nowrap text-sm text-gray-500">
                                   {payment.receiptNumber}
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
+                                <td className="px-3 py-3 md:px-6 md:py-4 whitespace-nowrap">
                                   {payment.cloudinaryFile ? (
                                     <div className="flex items-center space-x-1">
                                       {payment.cloudinaryFile.resource_type === 'image' ? (
                                         <>
-                                          <ImageIcon className="w-4 h-4 text-green-600" />
-                                          <span className="text-xs text-gray-600">Image</span>
+                                          <ImageIcon className="w-3 h-3 md:w-4 md:h-4 text-green-600" />
+                                          <span className="hidden sm:inline text-xs md:text-sm text-gray-600">Image</span>
                                         </>
                                       ) : (
                                         <>
-                                          <File className="w-4 h-4 text-red-600" />
-                                          <span className="text-xs text-gray-600">PDF</span>
+                                          <File className="w-3 h-3 md:w-4 md:h-4 text-red-600" />
+                                          <span className="hidden sm:inline text-xs md:text-sm text-gray-600">PDF</span>
                                         </>
                                       )}
-                                      <span className="text-xs text-gray-400 ml-1">☁️</span>
+                                      <span className="text-xs text-gray-400">☁️</span>
                                     </div>
                                   ) : payment.receiptFile ? (
                                     <div className="flex items-center space-x-1">
-                                      <FileText className="w-4 h-4 text-blue-600" />
-                                      <span className="text-xs text-gray-600">File</span>
+                                      <FileText className="w-3 h-3 md:w-4 md:h-4 text-blue-600" />
+                                      <span className="hidden sm:inline text-xs md:text-sm text-gray-600">File</span>
                                     </div>
                                   ) : (
                                     <span className="text-xs text-gray-400">No file</span>
                                   )}
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <td className="px-3 py-3 md:px-6 md:py-4 whitespace-nowrap text-sm text-gray-500">
                                   {formatDate(payment.receiptDate)}
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
+                                <td className="px-3 py-3 md:px-6 md:py-4 whitespace-nowrap">
                                   {renderStatusBadge(payment.status)}
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                                  <button 
-                                    onClick={() => setViewDetails(payment)}
-                                    className="text-blue-600 hover:text-blue-900"
-                                  >
-                                    <EyeIcon className="w-4 h-4 inline mr-1" /> View
-                                  </button>
-                                  {payment.status === 'pending' && (
-                                    <>
-                                      <button 
-                                        onClick={() => handleUpdateStatus('fee', payment._id, 'verified')}
-                                        className="text-green-600 hover:text-green-900"
-                                      >
-                                        <Check className="w-4 h-4 inline mr-1" /> Verify
-                                      </button>
-                                      <button 
-                                        onClick={() => handleUpdateStatus('fee', payment._id, 'rejected')}
-                                        className="text-red-600 hover:text-red-900"
-                                      >
-                                        <X className="w-4 h-4 inline mr-1" /> Reject
-                                      </button>
-                                    </>
-                                  )}
-                                  <button 
-                                    onClick={() => handleDelete('fee', payment._id)}
-                                    className="text-red-600 hover:text-red-900"
-                                  >
-                                    <Trash2 className="w-4 h-4 inline mr-1" /> Delete
-                                  </button>
+                                <td className="px-3 py-3 md:px-6 md:py-4 whitespace-nowrap">
+                                  <div className="flex flex-col space-y-1 sm:flex-row sm:space-x-2 sm:space-y-0">
+                                    <button 
+                                      onClick={() => setViewDetails(payment)}
+                                      className="text-blue-600 hover:text-blue-900 text-xs sm:text-sm flex items-center"
+                                    >
+                                      <EyeIcon className="w-3 h-3 md:w-4 md:h-4 inline mr-1" /> View
+                                    </button>
+                                    {payment.status === 'pending' && (
+                                      <>
+                                        <button 
+                                          onClick={() => handleUpdateStatus('fee', payment._id, 'verified')}
+                                          className="text-green-600 hover:text-green-900 text-xs sm:text-sm flex items-center"
+                                        >
+                                          <Check className="w-3 h-3 md:w-4 md:h-4 inline mr-1" /> Verify
+                                        </button>
+                                        <button 
+                                          onClick={() => handleUpdateStatus('fee', payment._id, 'rejected')}
+                                          className="text-red-600 hover:text-red-900 text-xs sm:text-sm flex items-center"
+                                        >
+                                          <X className="w-3 h-3 md:w-4 md:h-4 inline mr-1" /> Reject
+                                        </button>
+                                      </>
+                                    )}
+                                    <button 
+                                      onClick={() => handleDelete('fee', payment._id)}
+                                      className="text-red-600 hover:text-red-900 text-xs sm:text-sm flex items-center"
+                                    >
+                                      <Trash2 className="w-3 h-3 md:w-4 md:h-4 inline mr-1" /> Delete
+                                    </button>
+                                  </div>
                                 </td>
                               </tr>
                             ))}
@@ -1982,26 +2128,27 @@ const Admin = () => {
 
               {/* Contacts Tab */}
               {currentTab === 'contacts' && (
-                <div className="space-y-6">
-                  <div className="bg-white rounded-2xl shadow-lg p-6">
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 space-y-4 md:space-y-0">
-                      <h2 className="text-2xl font-bold text-gray-800">Contact Messages ({contactsData.length})</h2>
-                      <div className="flex items-center space-x-3">
-                        <button className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center justify-center space-x-2 hover:bg-blue-700 transition-colors">
-                          <Download className="w-4 h-4" />
-                          <span>Export CSV</span>
+                <div className="space-y-4 md:space-y-6">
+                  <div className="bg-white rounded-xl md:rounded-2xl shadow-lg p-4 md:p-6">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 md:mb-6 space-y-3 md:space-y-0">
+                      <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-gray-800">Contact Messages ({contactsData.length})</h2>
+                      <div className="flex items-center space-x-2 md:space-x-3">
+                        <button className="bg-blue-600 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-lg flex items-center justify-center space-x-1 md:space-x-2 hover:bg-blue-700 transition-colors text-sm">
+                          <Download className="w-3 h-3 md:w-4 md:h-4" />
+                          <span className="hidden sm:inline">Export CSV</span>
+                          <span className="sm:hidden">Export</span>
                         </button>
                       </div>
                     </div>
 
                     {contactsData.length === 0 ? (
-                      <div className="text-center py-12">
-                        <Mail className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                        <h3 className="text-xl font-semibold text-gray-700 mb-2">No Contact Messages Found</h3>
-                        <p className="text-gray-500">No contact messages match your search criteria.</p>
+                      <div className="text-center py-8 md:py-12">
+                        <Mail className="w-12 h-12 md:w-16 md:h-16 text-gray-400 mx-auto mb-3 md:mb-4" />
+                        <h3 className="text-lg md:text-xl font-semibold text-gray-700 mb-2">No Contact Messages Found</h3>
+                        <p className="text-gray-500 text-sm md:text-base">No contact messages match your search criteria.</p>
                         <button 
                           onClick={loadContacts}
-                          className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                          className="mt-3 md:mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm md:text-base"
                         >
                           Refresh Data
                         </button>
@@ -2011,25 +2158,25 @@ const Admin = () => {
                         <table className="min-w-full divide-y divide-gray-200">
                           <thead className="bg-gray-50">
                             <tr>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              <th className="px-3 py-2 md:px-6 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Name
                               </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              <th className="px-3 py-2 md:px-6 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Email
                               </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              <th className="hidden sm:table-cell px-3 py-2 md:px-6 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Subject
                               </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              <th className="hidden md:table-cell px-3 py-2 md:px-6 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Message Preview
                               </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              <th className="px-3 py-2 md:px-6 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Date
                               </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              <th className="px-3 py-2 md:px-6 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Status
                               </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              <th className="px-3 py-2 md:px-6 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Actions
                               </th>
                             </tr>
@@ -2037,59 +2184,61 @@ const Admin = () => {
                           <tbody className="bg-white divide-y divide-gray-200">
                             {contactsData.map((contact) => (
                               <tr key={contact._id} className="hover:bg-gray-50 transition-colors">
-                                <td className="px-6 py-4 whitespace-nowrap">
+                                <td className="px-3 py-3 md:px-6 md:py-4 whitespace-nowrap">
                                   <div className="flex items-center">
                                     <img
-                                      className="h-10 w-10 rounded-full"
+                                      className="h-8 w-8 md:h-10 md:w-10 rounded-full"
                                       src={`https://ui-avatars.com/api/?name=${contact.name}&background=002366&color=fff`}
                                       alt={contact.name}
                                     />
-                                    <div className="ml-4">
-                                      <div className="text-sm font-medium text-gray-900">{contact.name}</div>
+                                    <div className="ml-2 md:ml-4">
+                                      <div className="text-sm font-medium text-gray-900 truncate max-w-[100px] md:max-w-none">{contact.name}</div>
                                       {contact.phone && (
-                                        <div className="text-sm text-gray-500">{contact.phone}</div>
+                                        <div className="text-xs md:text-sm text-gray-500 truncate max-w-[100px] md:max-w-none">{contact.phone}</div>
                                       )}
                                     </div>
                                   </div>
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                  {contact.email}
+                                <td className="px-3 py-3 md:px-6 md:py-4 whitespace-nowrap text-sm text-gray-500">
+                                  <div className="truncate max-w-[120px] md:max-w-none">{contact.email}</div>
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                  <div className="text-sm text-gray-900">{contact.subject || 'General Inquiry'}</div>
+                                <td className="hidden sm:table-cell px-3 py-3 md:px-6 md:py-4 whitespace-nowrap">
+                                  <div className="text-sm text-gray-900 truncate max-w-[150px] md:max-w-none">{contact.subject || 'General Inquiry'}</div>
                                 </td>
-                                <td className="px-6 py-4">
+                                <td className="hidden md:table-cell px-3 py-3 md:px-6 md:py-4">
                                   <div className="text-sm text-gray-500 truncate max-w-xs">
                                     {contact.message}
                                   </div>
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <td className="px-3 py-3 md:px-6 md:py-4 whitespace-nowrap text-sm text-gray-500">
                                   {formatDate(contact.submittedAt)}
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
+                                <td className="px-3 py-3 md:px-6 md:py-4 whitespace-nowrap">
                                   {renderStatusBadge(contact.status)}
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                                  <button 
-                                    onClick={() => setViewDetails(contact)}
-                                    className="text-blue-600 hover:text-blue-900"
-                                  >
-                                    <EyeIcon className="w-4 h-4 inline mr-1" /> View
-                                  </button>
-                                  {contact.status === 'unread' && (
+                                <td className="px-3 py-3 md:px-6 md:py-4 whitespace-nowrap">
+                                  <div className="flex flex-col space-y-1 sm:flex-row sm:space-x-2 sm:space-y-0">
                                     <button 
-                                      onClick={() => handleUpdateStatus('contact', contact._id, 'read')}
-                                      className="text-gray-600 hover:text-gray-900"
+                                      onClick={() => setViewDetails(contact)}
+                                      className="text-blue-600 hover:text-blue-900 text-xs sm:text-sm flex items-center"
                                     >
-                                      <Mail className="w-4 h-4 inline mr-1" /> Mark Read
+                                      <EyeIcon className="w-3 h-3 md:w-4 md:h-4 inline mr-1" /> View
                                     </button>
-                                  )}
-                                  <button 
-                                    onClick={() => handleDelete('contact', contact._id)}
-                                    className="text-red-600 hover:text-red-900"
-                                  >
-                                    <Trash2 className="w-4 h-4 inline mr-1" /> Delete
-                                  </button>
+                                    {contact.status === 'unread' && (
+                                      <button 
+                                        onClick={() => handleUpdateStatus('contact', contact._id, 'read')}
+                                        className="text-gray-600 hover:text-gray-900 text-xs sm:text-sm flex items-center"
+                                      >
+                                        <Mail className="w-3 h-3 md:w-4 md:h-4 inline mr-1" /> Read
+                                      </button>
+                                    )}
+                                    <button 
+                                      onClick={() => handleDelete('contact', contact._id)}
+                                      className="text-red-600 hover:text-red-900 text-xs sm:text-sm flex items-center"
+                                    >
+                                      <Trash2 className="w-3 h-3 md:w-4 md:h-4 inline mr-1" /> Delete
+                                    </button>
+                                  </div>
                                 </td>
                               </tr>
                             ))}
@@ -2103,20 +2252,20 @@ const Admin = () => {
 
               {/* Reports Tab */}
               {currentTab === 'reports' && (
-                <div className="space-y-6">
-                  <div className="bg-white rounded-2xl shadow-lg p-6">
-                    <h2 className="text-2xl font-bold text-gray-800 mb-6">Reports & Analytics</h2>
+                <div className="space-y-4 md:space-y-6">
+                  <div className="bg-white rounded-xl md:rounded-2xl shadow-lg p-4 md:p-6">
+                    <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-gray-800 mb-4 md:mb-6">Reports & Analytics</h2>
                     
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-8">
                       {/* Applications Chart */}
-                      <div className="bg-white border border-gray-200 rounded-xl p-6">
-                        <h3 className="text-lg font-semibold text-gray-800 mb-4">Applications by Class</h3>
-                        <div className="h-64">
+                      <div className="bg-white border border-gray-200 rounded-xl p-4 md:p-6">
+                        <h3 className="text-base md:text-lg font-semibold text-gray-800 mb-3 md:mb-4">Applications by Class</h3>
+                        <div className="h-48 md:h-64">
                           <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={applicationsByClass}>
                               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                              <XAxis dataKey="name" stroke="#666" />
-                              <YAxis stroke="#666" />
+                              <XAxis dataKey="name" stroke="#666" fontSize={12} />
+                              <YAxis stroke="#666" fontSize={12} />
                               <Tooltip />
                               <Bar dataKey="applications" fill="#002366" radius={[4, 4, 0, 0]} />
                             </BarChart>
@@ -2125,9 +2274,9 @@ const Admin = () => {
                       </div>
 
                       {/* Payment Status Chart */}
-                      <div className="bg-white border border-gray-200 rounded-xl p-6">
-                        <h3 className="text-lg font-semibold text-gray-800 mb-4">Payment Status Distribution</h3>
-                        <div className="h-64">
+                      <div className="bg-white border border-gray-200 rounded-xl p-4 md:p-6">
+                        <h3 className="text-base md:text-lg font-semibold text-gray-800 mb-3 md:mb-4">Payment Status Distribution</h3>
+                        <div className="h-48 md:h-64">
                           <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                               <Pie
@@ -2136,7 +2285,8 @@ const Admin = () => {
                                 cy="50%"
                                 labelLine={false}
                                 label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                                outerRadius={80}
+                                outerRadius={60}
+                                innerRadius={30}
                                 fill="#8884d8"
                                 dataKey="value"
                               >
@@ -2152,26 +2302,26 @@ const Admin = () => {
                       </div>
                     </div>
                     
-                    <div className="bg-gray-50 rounded-xl p-6">
-                      <h3 className="text-lg font-semibold text-gray-800 mb-4">Quick Statistics</h3>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div className="bg-white p-4 rounded-lg text-center">
-                          <div className="text-2xl font-bold text-blue-600">{stats?.counts?.admissions || 0}</div>
-                          <div className="text-sm text-gray-500">Total Admissions</div>
+                    <div className="bg-gray-50 rounded-xl p-4 md:p-6">
+                      <h3 className="text-base md:text-lg font-semibold text-gray-800 mb-3 md:mb-4">Quick Statistics</h3>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                        <div className="bg-white p-3 md:p-4 rounded-lg text-center">
+                          <div className="text-lg md:text-xl lg:text-2xl font-bold text-blue-600">{stats?.counts?.admissions || 0}</div>
+                          <div className="text-xs md:text-sm text-gray-500">Total Admissions</div>
                         </div>
-                        <div className="bg-white p-4 rounded-lg text-center">
-                          <div className="text-2xl font-bold text-green-600">{stats?.counts?.feePayments || 0}</div>
-                          <div className="text-sm text-gray-500">Total Payments</div>
+                        <div className="bg-white p-3 md:p-4 rounded-lg text-center">
+                          <div className="text-lg md:text-xl lg:text-2xl font-bold text-green-600">{stats?.counts?.feePayments || 0}</div>
+                          <div className="text-xs md:text-sm text-gray-500">Total Payments</div>
                         </div>
-                        <div className="bg-white p-4 rounded-lg text-center">
-                          <div className="text-2xl font-bold text-purple-600">{stats?.counts?.contacts || 0}</div>
-                          <div className="text-sm text-gray-500">Total Contacts</div>
+                        <div className="bg-white p-3 md:p-4 rounded-lg text-center">
+                          <div className="text-lg md:text-xl lg:text-2xl font-bold text-purple-600">{stats?.counts?.contacts || 0}</div>
+                          <div className="text-xs md:text-sm text-gray-500">Total Contacts</div>
                         </div>
-                        <div className="bg-white p-4 rounded-lg text-center">
-                          <div className="text-2xl font-bold text-yellow-600">
+                        <div className="bg-white p-3 md:p-4 rounded-lg text-center">
+                          <div className="text-lg md:text-xl lg:text-2xl font-bold text-yellow-600">
                             {stats?.counts?.admissions ? Math.round((stats.counts.approvedAdmissions / stats.counts.admissions) * 100) : 0}%
                           </div>
-                          <div className="text-sm text-gray-500">Approval Rate</div>
+                          <div className="text-xs md:text-sm text-gray-500">Approval Rate</div>
                         </div>
                       </div>
                     </div>
@@ -2181,12 +2331,12 @@ const Admin = () => {
 
               {/* Settings Tab */}
               {currentTab === 'settings' && (
-                <div className="space-y-6">
-                  <div className="bg-white rounded-2xl shadow-lg p-6">
-                    <div className="text-center py-12">
-                      <Settings className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                      <h3 className="text-xl font-semibold text-gray-700 mb-2">Admin Settings</h3>
-                      <p className="text-gray-500">Configure system preferences and user permissions</p>
+                <div className="space-y-4 md:space-y-6">
+                  <div className="bg-white rounded-xl md:rounded-2xl shadow-lg p-4 md:p-6">
+                    <div className="text-center py-8 md:py-12">
+                      <Settings className="w-12 h-12 md:w-16 md:h-16 text-gray-400 mx-auto mb-3 md:mb-4" />
+                      <h3 className="text-lg md:text-xl font-semibold text-gray-700 mb-2">Admin Settings</h3>
+                      <p className="text-gray-500 text-sm md:text-base">Configure system preferences and user permissions</p>
                     </div>
                   </div>
                 </div>
