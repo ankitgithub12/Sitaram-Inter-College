@@ -93,7 +93,7 @@ const AdmissionForm = () => {
   const preparePrintData = async (admissionId) => {
     setIsLoadingPrintData(true);
     try {
-      const response = await axios.get(`${API_URL}/admissions/`);
+       const response = await axios.get(`${API_URL}/admissions/${admissionId}`);
       if (response.data.success) {
         const admission = response.data.data;
         
