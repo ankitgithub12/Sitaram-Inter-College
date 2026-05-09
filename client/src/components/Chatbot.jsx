@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { MessageSquare, X, Send, User, Bot, Loader2, Mic, MicOff, Volume2, VolumeX, ChevronDown, ChevronUp } from 'lucide-react';
+import { apiUrl } from '../lib/config';
 
 // ── Quick reply chips ──────────────────────────────────────────────────────────
 const QUICK_QUESTIONS = [
@@ -249,7 +250,7 @@ const Chatbot = () => {
     }
 
     try {
-      const res = await fetch('/api/chatbot', {
+      const res = await fetch(apiUrl('/api/chatbot'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: text, language }),

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Header from './Header';
 import Footer from './Footer';
+import { apiUrl } from '../lib/config';
 
 const PhotosVideos = () => {
   const [activeCategory, setActiveCategory] = useState('all');
@@ -62,7 +63,7 @@ const PhotosVideos = () => {
   useEffect(() => {
     const fetchPhotos = async () => {
       try {
-        const res = await fetch('/api/gallery');
+        const res = await fetch(apiUrl('/api/gallery'));
         const data = await res.json();
         if (data.success) {
           const mapped = data.data.map(p => ({

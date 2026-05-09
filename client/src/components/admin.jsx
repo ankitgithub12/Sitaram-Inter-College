@@ -18,6 +18,7 @@ import AdminAchievements from './admin/AdminAchievements';
 import AdminAnnouncements from './admin/AdminAnnouncements';
 import AdminExamSchedules from './admin/AdminExamSchedules';
 import AdminTestimonials from './admin/AdminTestimonials';
+import { apiUrl } from '../lib/config';
 
 const Admin = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -153,7 +154,7 @@ const Admin = () => {
     try {
       const token = localStorage.getItem('adminToken');
       if (!token) return navigate('/admin-login');
-      const response = await fetch('/api/dashboard-stats', {
+      const response = await fetch(apiUrl('/api/dashboard-stats'), {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -200,7 +201,7 @@ const Admin = () => {
       if (statusFilter !== 'all') queryParams.append('status', statusFilter);
       
       const token = localStorage.getItem('adminToken');
-      const response = await fetch(`/api/admissions?${queryParams}`, {
+      const response = await fetch(apiUrl(`/api/admissions?${queryParams}`), {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -229,7 +230,7 @@ const Admin = () => {
       if (statusFilter !== 'all') queryParams.append('status', statusFilter);
       
       const token = localStorage.getItem('adminToken');
-      const response = await fetch(`/api/fee-payments?${queryParams}`, {
+      const response = await fetch(apiUrl(`/api/fee-payments?${queryParams}`), {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -260,7 +261,7 @@ const Admin = () => {
       if (statusFilter !== 'all') queryParams.append('status', statusFilter);
       
       const token = localStorage.getItem('adminToken');
-      const response = await fetch(`/api/contacts?${queryParams}`, {
+      const response = await fetch(apiUrl(`/api/contacts?${queryParams}`), {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -294,7 +295,7 @@ const Admin = () => {
       }
 
       const token = localStorage.getItem('adminToken');
-      const response = await fetch(endpoint, {
+      const response = await fetch(apiUrl(endpoint), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -329,7 +330,7 @@ const Admin = () => {
       else if (type === 'contact') endpoint = `/api/contacts/${id}`;
 
       const token = localStorage.getItem('adminToken');
-      const response = await fetch(endpoint, {
+      const response = await fetch(apiUrl(endpoint), {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`

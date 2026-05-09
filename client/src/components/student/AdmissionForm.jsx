@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { apiUrl } from '../../lib/config';
 import Header from '../Header';
 import Footer from '../Footer';
 
@@ -36,8 +37,8 @@ const AdmissionForm = () => {
   const [applicationNumber, setApplicationNumber] = useState('');
   const printContentRef = useRef(null);
 
-  // API URL - make sure this matches your server URL
-  const API_URL = '/api';
+  // API URL - using utility for production support
+  const API_URL = apiUrl('/api');
 
   // Show toast notification
   const showToast = (message, type = 'info') => {

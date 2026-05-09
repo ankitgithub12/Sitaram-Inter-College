@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Upload, Trash2, Image as ImageIcon, Loader, Plus, X } from 'lucide-react';
+import { apiUrl } from '../../lib/config';
 
 const AdminGallery = ({ showToast }) => {
   const [photos, setPhotos] = useState([]);
@@ -21,8 +22,8 @@ const AdminGallery = ({ showToast }) => {
   const fetchPhotos = async () => {
     setIsLoading(true);
     try {
-      const url = category === 'all' ? '/api/gallery' : `/api/gallery?category=${category}`;
-      const res = await fetch(url);
+      const endpoint = category === 'all' ? '/api/gallery' : `/api/gallery?category=${category}`;
+      const res = await fetch(apiUrl(endpoint));
       const data = await res.json();
       if (data.success) {
         setPhotos(data.data);
@@ -51,7 +52,7 @@ const AdminGallery = ({ showToast }) => {
     formData.append('album', album);
 
     try {
-      const res = await fetch('/api/gallery/upload', {
+      const res = await fetch(apiUrl('/api/gallery/upload'), {
         method: 'POST',
         body: formData,
       });
@@ -79,7 +80,7 @@ const AdminGallery = ({ showToast }) => {
     if (!window.confirm('Are you sure you want to delete this photo?')) return;
     
     try {
-      const res = await fetch(`/api/gallery/${id}`, { method: 'DELETE' });
+      const res = await fetch(apiUrl(`/api/gallery/${id}`), { method: 'DELETE' });
       const data = await res.json();
       if (data.success) {
         showToast('Photo deleted', 'success');

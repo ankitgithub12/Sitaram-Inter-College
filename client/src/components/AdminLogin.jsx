@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { apiUrl } from '../lib/config';
 
 const AdminLogin = () => {
   const [formData, setFormData] = useState({
@@ -61,7 +62,7 @@ const AdminLogin = () => {
 
     try {
       // Use universal login endpoint
-      const response = await axios.post('/api/login', {
+      const response = await axios.post(apiUrl('/api/login'), {
         username: formData.username,
         password: formData.password
       });
