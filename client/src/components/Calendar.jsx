@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { apiUrl } from './lib/config';
+import { apiUrl } from '../lib/config';
 import { Link } from 'react-router-dom';
 import Header from './Header';
 import Footer from './Footer';
