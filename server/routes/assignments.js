@@ -1,0 +1,10 @@
+const express = require('express');
+const router = express.Router();
+const assignmentController = require('../controllers/assignmentController');
+
+router.get('/', assignmentController.getAssignments);
+router.get('/student/:className', assignmentController.getStudentAssignments);
+router.post('/', assignmentController.createAssignment);
+router.delete('/:id', assignmentController.deleteAssignment);
+
+module.exports = router;

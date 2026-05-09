@@ -1,1066 +1,448 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { 
-  BarChart, Bar, PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, 
-  CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area 
-} from 'recharts';
-import { 
-  Home, Users, GraduationCap, DollarSign, Mail, Settings, 
-  BarChart3, Calendar, Bell, Search, Download, Filter,
-  LogOut, ChevronLeft, ChevronRight, Eye, CheckCircle, 
-  XCircle, RefreshCw, FileText, UserCheck, UserX, Clock,
-  TrendingUp, TrendingDown, MoreVertical, Shield,
-  Trash2, Edit, EyeIcon, Check, X, MessageSquare,
-  Phone, MapPin, Calendar as CalendarIcon, BookOpen,
-  Archive, Image as ImageIcon, ExternalLink, File, Maximize2,
-  ZoomIn, ZoomOut, RotateCcw
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import {
+  Bell, Search, Menu, Settings, LogOut, CheckCircle, XCircle, RotateCcw,
+  RefreshCw, ChevronLeft, Shield, ZoomIn, ZoomOut, Download, ExternalLink,
+  X, ImageIcon, Users
 } from 'lucide-react';
+import { io } from 'socket.io-client';
+import AdminSidebar from './admin/AdminSidebar';
+import AdminDashboardOverview from './admin/AdminDashboardOverview';
+import AdminAdmissions from './admin/AdminAdmissions';
+import AdminFees from './admin/AdminFees';
+import AdminContacts from './admin/AdminContacts';
+import AdminUsers from './admin/AdminUsers';
+import AdminGallery from './admin/AdminGallery';
+import AdminAchievements from './admin/AdminAchievements';
+import AdminAnnouncements from './admin/AdminAnnouncements';
+import AdminExamSchedules from './admin/AdminExamSchedules';
+import AdminTestimonials from './admin/AdminTestimonials';
 
 const Admin = () => {
-  const navigate = useNavigate();
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userName, setUserName] = useState('');
+  const [loginID, setLoginID] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const [currentTab, setCurrentTab] = useState('dashboard');
   const [admissionsData, setAdmissionsData] = useState([]);
   const [feesData, setFeesData] = useState([]);
   const [contactsData, setContactsData] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [toast, setToast] = useState({ show: false, message: '', type: '' });
+  const [stats, setStats] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [stats, setStats] = useState(null);
   const [viewDetails, setViewDetails] = useState(null);
-  const [imageModal, setImageModal] = useState({
-    isOpen: false,
-    imageUrl: null,
-    fileName: null,
-    zoom: 1
-  });
-  
-  // Notification counts
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [notificationCounts, setNotificationCounts] = useState({
     admissions: 0,
     fees: 0,
     contacts: 0,
     total: 0
   });
+  
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [settingsActiveSection, setSettingsActiveSection] = useState('Account');
+  
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+  const [imageModal, setImageModal] = useState({ 
+    isOpen: false, 
+    imageUrl: null, 
+    fileName: null,
+    zoom: 1 
+  });
+  
+  const socketRef = React.useRef(null);
+  const navigate = useNavigate();
 
-  const API_BASE_URL = 'http://localhost:5000';
-
-  // Image Modal Functions
-  const handleViewImage = (imageUrl, fileName) => {
-    const url = imageUrl;
-    if (!url) {
-      showToast('Image URL not available', 'error');
-      return;
-    }
-
-    setImageModal({
-      isOpen: true,
-      imageUrl: url,
-      fileName,
-      zoom: 1
-    });
-  };
-
-  const handleZoomIn = () => {
-    setImageModal(prev => ({
-      ...prev,
-      zoom: Math.min(prev.zoom + 0.25, 3)
-    }));
-  };
-
-  const handleZoomOut = () => {
-    setImageModal(prev => ({
-      ...prev,
-      zoom: Math.max(prev.zoom - 0.25, 0.5)
-    }));
-  };
-
-  const handleResetZoom = () => {
-    setImageModal(prev => ({
-      ...prev,
-      zoom: 1
-    }));
-  };
-
-  const fetchWithAuth = async (url, options = {}) => {
+  // Authentication check
+  useEffect(() => {
+    const authStatus = sessionStorage.getItem('adminAuth');
     const token = localStorage.getItem('adminToken');
-    const isFormData = options && options.body && typeof options.body !== 'string' && options.body instanceof FormData;
-    const headers = {
-      ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
-      ...options.headers,
+    if (authStatus === 'true' || token) {
+      const storedName = sessionStorage.getItem('userName') || sessionStorage.getItem('adminName');
+      const storedID = sessionStorage.getItem('loginID');
+      if (storedName) setUserName(storedName);
+      if (storedID) setLoginID(storedID);
+      setIsAuthenticated(true);
+      loadDashboardData();
+      
+      // Initialize Socket.io connection for Admin
+      socketRef.current = io(window.location.origin);
+      
+      socketRef.current.on('new_fee_payment', (data) => {
+        showToast('New fee payment submitted', 'info');
+        loadDashboardData(true);
+      });
+      
+      socketRef.current.on('fee_status_updated', (data) => {
+        // Only react if we are the ones listening. Usually admin triggers this, but multiple admins could be on.
+        loadDashboardData(true);
+      });
+      
+    } else {
+      navigate('/admin-login');
+    }
+    
+    return () => {
+      if (socketRef.current) socketRef.current.disconnect();
     };
-    
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
+  }, [navigate]);
+
+  // Update effect to reload data when filters change
+  useEffect(() => {
+    if (isAuthenticated) {
+      if (currentTab === 'admissions') loadAdmissions();
+      if (currentTab === 'fees') loadFeePayments();
+      if (currentTab === 'contacts') loadContacts();
     }
-    
-    try {
-      console.log(`📡 Fetching: ${url}`, { method: options.method || 'GET' });
+  }, [searchTerm, statusFilter, currentTab]); // Re-fetch when search or filter changes
 
-      const response = await fetch(url, {
-        ...options,
-        headers,
-        credentials: 'include'
-      });
-
-      console.log(`📡 Response status: ${response.status} ${response.statusText}`);
-
-      // Check for 401 Unauthorized
-      if (response.status === 401) {
-        localStorage.removeItem('adminToken');
-        navigate('/admin-login');
-        return null;
-      }
-
-      // For 404 or other non-OK responses, try to parse body to show server message
-      if (!response.ok) {
-        let errorBody = null;
-        try {
-          const text = await response.text();
-          errorBody = text ? JSON.parse(text) : null;
-        } catch (parseErr) {
-          errorBody = { message: 'Unable to parse error response' };
-        }
-
-        if (response.status === 404) {
-          console.error(`❌ Endpoint not found: ${url}`, errorBody || 'No body');
-          const serverMsg = errorBody?.message || errorBody?.error || `Endpoint not found: ${url}`;
-          throw new Error(serverMsg);
-        }
-
-        console.error('❌ API Error:', {
-          status: response.status,
-          statusText: response.statusText,
-          url,
-          error: errorBody
-        });
-
-        const serverMsg = errorBody?.message || errorBody?.error || `HTTP error ${response.status}`;
-        throw new Error(serverMsg);
-      }
-
-      // Try to parse JSON response
-      let data;
-      try {
-        const text = await response.text();
-        data = text ? JSON.parse(text) : {};
-      } catch (parseError) {
-        console.error('❌ Error parsing JSON response:', parseError);
-        data = { success: false, message: 'Invalid JSON response' };
-      }
-
-      console.log(`✅ Response from ${url}:`, data.success ? 'Success' : 'Failed');
-      return data;
-    } catch (error) {
-      console.error('❌ Fetch error:', error);
-      if (error.message && error.message.toLowerCase().includes('unauthorized')) {
-        localStorage.removeItem('adminToken');
-        navigate('/admin-login');
-      }
-      throw error;
+  // Auto-refresh notifications periodically
+  useEffect(() => {
+    if (isAuthenticated && stats) {
+      const interval = setInterval(() => {
+        loadDashboardData(true); // silent refresh
+      }, 30000); // Check every 30 seconds for real-time feel
+      return () => clearInterval(interval);
     }
-  };
-
-  const handleUploadReceipt = async (paymentId, file) => {
-    if (!file) {
-      showToast('Please choose a file to upload', 'error');
-      return;
-    }
-
-    try {
-      const form = new FormData();
-      form.append('receipt', file);
-
-      const res = await fetchWithAuth(`${API_BASE_URL}/api/fee-payments/${paymentId}/receipt`, {
-        method: 'POST',
-        body: form
-      });
-
-      if (res?.success && res.data) {
-        showToast('Receipt uploaded successfully', 'success');
-        // Update local state
-        setFeesData(prev => prev.map(p => (String(p._id) === String(res.data.id) ? { ...p, cloudinaryFile: { secure_url: res.data.receiptUrl, public_id: res.data.cloudinaryId }, receiptFile: p.receiptFile } : p)));
-        // Refresh the current payment details if open
-        if (viewDetails && String(viewDetails._id) === String(paymentId)) {
-          const updated = await fetchWithAuth(`${API_BASE_URL}/api/fee-payments/${paymentId}`);
-          if (updated?.success && updated.data) setViewDetails(updated.data);
-        }
-      } else {
-        const msg = res?.message || 'Upload failed';
-        throw new Error(msg);
-      }
-    } catch (err) {
-      console.error('Upload error:', err);
-      showToast(err.message || 'Error uploading receipt', 'error');
-    }
-  };
+  }, [isAuthenticated, stats]);
 
   const showToast = (message, type = 'success') => {
     setToast({ show: true, message, type });
-    setTimeout(() => {
-      setToast({ show: false, message: '', type: '' });
-    }, 3000);
+    setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 3000);
   };
 
-  useEffect(() => {
-    // Check if admin is logged in
-    const adminToken = localStorage.getItem('adminToken');
-    if (!adminToken) {
-      navigate('/admin-login');
+  const handleLogin = (e) => {
+    e.preventDefault();
+    if (!userName.trim()) {
+      setError('Please enter a username');
       return;
     }
-    
-    // Load data based on current tab
-    loadData();
-    
-    // Set up auto-refresh every 30 seconds
-    const interval = setInterval(loadData, 30000);
-    
-    return () => clearInterval(interval);
-  }, [navigate, currentTab, searchTerm, statusFilter]);
+    if (password === 'SRIC@123') {
+      setIsAuthenticated(true);
+      sessionStorage.setItem('adminAuth', 'true');
+      sessionStorage.setItem('userName', userName);
+      sessionStorage.setItem('loginID', userName); // In dummy login, use the same as id
+      setLoginID(userName);
+      setError('');
+      loadDashboardData();
+      showToast(`Welcome back, ${userName}!`);
+    } else {
+      setError('Invalid password');
+    }
+  };
 
-  const loadData = async () => {
-    setIsLoading(true);
+  const handleLogout = () => {
+    sessionStorage.removeItem('adminAuth');
+    sessionStorage.removeItem('userName');
+    sessionStorage.removeItem('adminName');
+    sessionStorage.removeItem('loginID');
+    localStorage.removeItem('adminToken');
+    setIsAuthenticated(false);
+    setUserName('');
+    setLoginID('');
+    showToast('Logged out successfully');
+    navigate('/');
+  };
+
+  const loadDashboardData = async (silent = false) => {
+    if (!silent) setIsLoading(true);
     try {
       const token = localStorage.getItem('adminToken');
-      if (!token) {
-        navigate('/admin-login');
-        return;
+      if (!token) return navigate('/admin-login');
+      const response = await fetch('/api/dashboard-stats', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const result = await response.json();
+      
+      if (result.success) {
+        setStats(result.data);
+        
+        // Use actual pending/unread counts from backend stats
+        const counts = {
+            admissions: result.data.pendingAdmissions || 0,
+            fees: result.data.pendingFees || 0, // FIXED: Corrected field name from pendingFeePayments to pendingFees
+            contacts: result.data.unreadContacts || 0,
+            total: (result.data.pendingAdmissions || 0) + 
+                   (result.data.pendingFees || 0) + 
+                   (result.data.unreadContacts || 0)
+        };
+        
+        setNotificationCounts(counts);
       }
+    } catch (err) {
+      console.error('Error fetching dashboard stats:', err);
+      if (!silent) showToast('Failed to load dashboard data', 'error');
+    } finally {
+      if (!silent) setIsLoading(false);
+    }
+  };
 
-      switch (currentTab) {
-        case 'dashboard':
-          await loadDashboardData();
-          break;
-        case 'admissions':
-          await loadAdmissions();
-          break;
-        case 'fees':
-          await loadFeePayments();
-          break;
-        case 'contacts':
-          await loadContacts();
-          break;
+  const loadData = () => {
+    if (currentTab === 'admissions') loadAdmissions();
+    if (currentTab === 'fees') loadFeePayments();
+    if (currentTab === 'contacts') loadContacts();
+    if (currentTab === 'dashboard') loadDashboardData();
+    // Close mobile menu on tab change
+    setIsMobileMenuOpen(false);
+  };
+
+  const loadAdmissions = async () => {
+    setIsLoading(true);
+    try {
+      const queryParams = new URLSearchParams();
+      if (searchTerm) queryParams.append('search', searchTerm);
+      if (statusFilter !== 'all') queryParams.append('status', statusFilter);
+      
+      const token = localStorage.getItem('adminToken');
+      const response = await fetch(`/api/admissions?${queryParams}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await response.json();
+      if (Array.isArray(data)) {
+        setAdmissionsData(data);
+      } else if (data && Array.isArray(data.data)) {
+        setAdmissionsData(data.data);
+      } else {
+        setAdmissionsData([]);
       }
-    } catch (error) {
-      console.error('Error loading data:', error);
-      showToast('Error loading data', 'error');
+    } catch (err) {
+      console.error('Error fetching admissions:', err);
+      showToast('Failed to load admissions', 'error');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const loadDashboardData = async () => {
-    try {
-      const data = await fetchWithAuth(`${API_BASE_URL}/api/admin/dashboard`);
-      
-      if (data?.success) {
-        setStats(data.data);
-        
-        // Update notification counts
-        const pendingAdmissions = data.data.admissionsByStatus?.find(s => s._id === 'pending')?.count || 0;
-        const pendingPayments = data.data.paymentsByStatus?.find(s => s._id === 'pending')?.count || 0;
-        const unreadContacts = data.data.counts?.unreadContacts || 0;
-        
-        setNotificationCounts({
-          admissions: pendingAdmissions,
-          fees: pendingPayments,
-          contacts: unreadContacts,
-          total: pendingAdmissions + pendingPayments + unreadContacts
-        });
-      }
-    } catch (error) {
-      console.error('❌ Error loading dashboard:', error);
-    }
-  };
-
-  const loadAdmissions = async () => {
-    try {
-      const url = new URL(`${API_BASE_URL}/api/admissions`);
-      if (searchTerm) url.searchParams.append('search', searchTerm);
-      if (statusFilter !== 'all') url.searchParams.append('status', statusFilter);
-      
-      const data = await fetchWithAuth(url.toString());
-      if (data?.success) {
-        setAdmissionsData(data.data);
-      }
-    } catch (error) {
-      console.error('Error loading admissions:', error);
-    }
-  };
-
   const loadFeePayments = async () => {
+    setIsLoading(true);
     try {
-      const url = new URL(`${API_BASE_URL}/api/fee-payments`);
-      if (searchTerm) url.searchParams.append('search', searchTerm);
-      if (statusFilter !== 'all') url.searchParams.append('status', statusFilter);
+      const queryParams = new URLSearchParams();
+      if (searchTerm) queryParams.append('search', searchTerm);
+      if (statusFilter !== 'all') queryParams.append('status', statusFilter);
       
-      const data = await fetchWithAuth(url.toString());
-      if (data?.success) {
+      const token = localStorage.getItem('adminToken');
+      const response = await fetch(`/api/fee-payments?${queryParams}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await response.json();
+      
+      console.log('Fee payments received:', Array.isArray(data) ? data.length : 'not an array');
+      if (Array.isArray(data)) {
+        setFeesData(data);
+      } else if (data && Array.isArray(data.data)) {
         setFeesData(data.data);
+      } else {
+        setFeesData([]);
       }
-    } catch (error) {
-      console.error('Error loading fee payments:', error);
+    } catch (err) {
+      console.error('Error fetching fee payments:', err);
+      showToast('Failed to load fee payments', 'error');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const loadContacts = async () => {
+    setIsLoading(true);
     try {
-      const url = new URL(`${API_BASE_URL}/api/contacts`);
-      if (searchTerm) url.searchParams.append('search', searchTerm);
-      if (statusFilter !== 'all') url.searchParams.append('status', statusFilter);
+      const queryParams = new URLSearchParams();
+      if (searchTerm) queryParams.append('search', searchTerm);
+      if (statusFilter !== 'all') queryParams.append('status', statusFilter);
       
-      const data = await fetchWithAuth(url.toString());
-      if (data?.success) {
+      const token = localStorage.getItem('adminToken');
+      const response = await fetch(`/api/contacts?${queryParams}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await response.json();
+      if (Array.isArray(data)) {
+        setContactsData(data);
+      } else if (data && Array.isArray(data.data)) {
         setContactsData(data.data);
+      } else {
+        setContactsData([]);
       }
-    } catch (error) {
-      console.error('Error loading contacts:', error);
+    } catch (err) {
+      console.error('Error fetching contacts:', err);
+      showToast('Failed to load contacts', 'error');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleUpdateStatus = async (type, id, status, notes = '') => {
+  const handleUpdateStatus = async (type, id, newStatus, responseMessage = '') => {
     try {
-      // Guard: ensure the item exists locally before calling server
-      if (type === 'admission') {
-        const exists = admissionsData.some(a => String(a._id) === String(id));
-        if (!exists) {
-          showToast('Admission not found locally. Refreshing list...', 'error');
-          await loadAdmissions();
-          return;
-        }
-      } else if (type === 'fee') {
-        const exists = feesData.some(f => String(f._id) === String(id));
-        if (!exists) {
-          showToast('Fee payment not found locally. Refreshing list...', 'error');
-          await loadFeePayments();
-          return;
-        }
-      } else if (type === 'contact') {
-        const exists = contactsData.some(c => String(c._id) === String(id));
-        if (!exists) {
-          showToast('Contact not found locally. Refreshing list...', 'error');
-          await loadContacts();
-          return;
-        }
+      let endpoint = '';
+      let body = { status: newStatus };
+
+      if (type === 'admission') endpoint = `/api/admissions/${id}/status`;
+      else if (type === 'fee') endpoint = `/api/fee-payments/${id}/status`;
+      else if (type === 'contact') {
+        endpoint = `/api/contacts/${id}/status`;
+        if (responseMessage) body.responseMessage = responseMessage;
       }
 
-      let endpoint = '';
-      let body = { status };
-      
-      if (type === 'admission') {
-        endpoint = `/api/admissions/${id}/status`;
-        if (notes) body.adminNotes = notes;
-      } else if (type === 'fee') {
-        endpoint = `/api/fee-payments/${id}/status`;
-        if (notes) body.verificationNotes = notes;
-      } else if (type === 'contact') {
-        endpoint = `/api/contacts/${id}/status`;
-        if (notes) body.responseMessage = notes;
-      }
-      
-      console.log(`📡 Updating ${type} status: ${endpoint}`, body);
-      
-      const response = await fetchWithAuth(`${API_BASE_URL}${endpoint}`, {
+      const token = localStorage.getItem('adminToken');
+      const response = await fetch(endpoint, {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(body)
+        body: JSON.stringify(body),
       });
-      
-      if (response?.success) {
-        showToast(`${type.charAt(0).toUpperCase() + type.slice(1)} status updated to ${status}`, 'success');
-        
-        // Refresh the current data
-        switch (currentTab) {
-          case 'admissions':
-            await loadAdmissions();
-            break;
-          case 'fees':
-            await loadFeePayments();
-            break;
-          case 'contacts':
-            await loadContacts();
-            break;
-          default:
-            await loadDashboardData();
-        }
-        
-        setViewDetails(null); // Close details view if open
+
+      if (response.ok) {
+        showToast(`Status updated successfully to ${newStatus}`);
+        loadData(); // Refresh current tab data
+        loadDashboardData(true); // Silently refresh dashboard stats
+        setViewDetails(null); // Close detailed view mode
       } else {
-        // Surface server message when available
-        const msg = response?.message || response?.error || 'Failed to update status';
-        throw new Error(msg);
+        showToast('Failed to update status', 'error');
       }
-    } catch (error) {
-      console.error('❌ Error updating status:', error);
-      // If server returned not-found, show that message
-      if (error.message && /not found/i.test(error.message)) {
-        showToast(error.message, 'error');
-        // Refresh current list to reflect latest server state
-        if (currentTab === 'admissions') await loadAdmissions();
-        if (currentTab === 'fees') await loadFeePayments();
-        if (currentTab === 'contacts') await loadContacts();
-        return;
-      }
+    } catch (err) {
+      console.error('Error updating status:', err);
       showToast('Error updating status', 'error');
     }
   };
 
   const handleDelete = async (type, id) => {
-    if (!window.confirm('Are you sure you want to delete this item?')) return;
-    
-    try {
-      // Guard: ensure the item exists locally before calling server
-      if (type === 'admission') {
-        const exists = admissionsData.some(a => String(a._id) === String(id));
-        if (!exists) {
-          showToast('Admission not found locally. Refreshing list...', 'error');
-          await loadAdmissions();
-          return;
-        }
-      } else if (type === 'fee') {
-        const exists = feesData.some(f => String(f._id) === String(id));
-        if (!exists) {
-          showToast('Fee payment not found locally. Refreshing list...', 'error');
-          await loadFeePayments();
-          return;
-        }
-      } else if (type === 'contact') {
-        const exists = contactsData.some(c => String(c._id) === String(id));
-        if (!exists) {
-          showToast('Contact not found locally. Refreshing list...', 'error');
-          await loadContacts();
-          return;
-        }
-      }
+    if (!window.confirm(`Are you sure you want to delete this ${type} record? This action cannot be undone.`)) {
+      return;
+    }
 
+    try {
       let endpoint = '';
-      
-      if (type === 'admission') {
-        endpoint = `/api/admissions/${id}`;
-      } else if (type === 'fee') {
-        endpoint = `/api/fee-payments/${id}`;
-      } else if (type === 'contact') {
-        endpoint = `/api/contacts/${id}`;
-      }
-      
-      const response = await fetchWithAuth(`${API_BASE_URL}${endpoint}`, {
-        method: 'DELETE'
+      if (type === 'admission') endpoint = `/api/admissions/${id}`;
+      else if (type === 'fee') endpoint = `/api/fee-payments/${id}`;
+      else if (type === 'contact') endpoint = `/api/contacts/${id}`;
+
+      const token = localStorage.getItem('adminToken');
+      const response = await fetch(endpoint, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
-      
-      if (response?.success) {
-        showToast(`${type} deleted successfully`, 'success');
-        loadData(); // Refresh data
+
+      if (response.ok) {
+        showToast(`${type} record deleted successfully`);
+        loadData(); // Refresh current tab data
+        loadDashboardData(true); // Silently refresh dashboard stats
+        setViewDetails(null); // Close detail view if open
       } else {
-        const msg = response?.message || response?.error || 'Failed to delete';
-        throw new Error(msg);
+        showToast('Failed to delete record', 'error');
+      }
+    } catch (err) {
+      console.error('Error deleting record:', err);
+      showToast('Error deleting record', 'error');
+    }
+  };
+
+  const handleUploadReceipt = async (paymentId, file) => {
+    if (!file) return;
+
+    // Show loading toast
+    showToast('Uploading receipt... please wait', 'info');
+    
+    // Create form data
+    const formData = new FormData();
+    formData.append('receiptFile', file);
+    formData.append('studentName', 'Admin Upload'); // Required by the fallback api
+
+    try {
+      const token = localStorage.getItem('adminToken');
+      // First try to upload the file to Cloudinary if our endpoint supports it
+      const response = await fetch(`/api/fee-payments/${paymentId}/receipt`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData, // Don't set content-type, let browser set it with boundary
+      });
+
+      const data = await response.json();
+      
+      if (response.ok && data.success) {
+        showToast('Receipt uploaded successfully!', 'success');
+        loadFeePayments(); // Refresh list to show new file
+        
+        // Update current view details if it's the one being viewed
+        if (viewDetails && viewDetails._id === paymentId) {
+          // Re-fetch this single payment
+          const paymentRes = await fetch(`/api/fee-payments/${paymentId}`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          if (paymentRes.ok) {
+            const updatedPayment = await paymentRes.json();
+            setViewDetails(updatedPayment.data);
+          }
+        }
+      } else {
+        throw new Error(data.message || 'Failed to upload receipt');
       }
     } catch (error) {
-      console.error('Error deleting:', error);
-      if (error.message && /not found/i.test(error.message)) {
-        showToast(error.message, 'error');
-        // Refresh list
-        loadData();
-        return;
-      }
-      showToast('Error deleting item', 'error');
+      console.error('Error uploading receipt:', error);
+      showToast(`Upload failed: ${error.message}`, 'error');
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('adminToken');
-    localStorage.removeItem('adminOTP');
-    localStorage.removeItem('otpEmail');
-    navigate('/admin-login');
+  const handleViewImage = (url, fileName) => {
+    setImageModal({
+      isOpen: true,
+      imageUrl: url,
+      fileName: fileName,
+      zoom: 1
+    });
   };
 
-  const openExternal = async (input) => {
-    // input can be a URL string or a payment object (or cloudinaryFile object)
-    let url = typeof input === 'string' ? input : getFileUrl(input);
-
-    // If URL not found locally, try to fetch latest payment record from server (by id)
-    if (!url && input && input._id) {
-      try {
-          const res = await fetchWithAuth(`${API_BASE_URL}/api/fee-payments/${input._id}`);
-          if (res) {
-            // server may return receiptUrl at top-level or inside data
-            url = res.receiptUrl || (res.data && (getFileUrl(res.data) || res.data.cloudinaryFile?.secure_url || res.data.receiptFile?.url));
-          // Update local state for that payment if present
-            if (res.data) setFeesData(prev => prev.map(p => (String(p._id) === String(res.data._id) ? res.data : p)));
-        }
-      } catch (err) {
-        console.error('Error fetching payment for URL fallback:', err);
-      }
-    }
-
-    if (!url) {
-      showToast('File URL is not available', 'error');
-      console.debug('openExternal: no URL found for input:', input);
-      return;
-    }
-
-    // Normalize protocol-relative URLs
-    if (url.startsWith('//')) url = 'https:' + url;
-
-    // First try to open directly
-    try {
-      const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
-      if (!newWindow) throw new Error('Popup blocked or window.open returned null');
-      return;
-    } catch (err) {
-      console.warn('Direct open failed, attempting blob fallback:', err);
-    }
-
-    // Blob fallback: fetch the file and open as blob URL
-    try {
-      const resp = await fetch(url);
-      if (!resp.ok) throw new Error(`Failed to fetch file: ${resp.status}`);
-      const blob = await resp.blob();
-      const blobUrl = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = blobUrl;
-      a.target = '_blank';
-      a.rel = 'noopener noreferrer';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      // release after a short delay
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 60 * 1000);
-      return;
-    } catch (err) {
-      console.error('openExternal blob fallback failed:', err);
-      showToast('Unable to open file. Check console for details.', 'error');
-    }
+  const handleZoomIn = () => {
+    setImageModal(prev => ({ ...prev, zoom: Math.min(prev.zoom + 0.25, 3) }));
   };
 
-  const getFileUrl = (paymentOrCloudinary) => {
-    if (!paymentOrCloudinary) return null;
-
-    // Accept either the payment object or the cloudinaryFile object
-    // Determine payment object vs cloudinaryFile object
-    const payment = paymentOrCloudinary;
-    let cf = payment && payment.cloudinaryFile ? payment.cloudinaryFile : paymentOrCloudinary;
-
-    if (!cf) cf = paymentOrCloudinary;
-
-    // If stored as string, try to parse
-    if (typeof cf === 'string') {
-      try {
-        cf = JSON.parse(cf);
-      } catch (e) {
-        // not JSON, continue
-      }
-    }
-
-    // Helper to test URL-like strings and normalize
-    const isUrlString = (s) => typeof s === 'string' && (s.startsWith('http://') || s.startsWith('https://') || s.startsWith('//'));
-
-    // Common candidate properties on cloudinaryFile
-    const candidates = [
-      cf?.secure_url, cf?.secureUrl, cf?.url, cf?.path, cf?.original_url, cf?.public_url, cf?.secureUrl
-    ];
-    for (const c of candidates) {
-      if (isUrlString(c)) return c;
-    }
-
-    // Also check top-level payment fields (receiptUrl, receiptFile.url, etc.)
-    if (payment) {
-      if (isUrlString(payment.receiptUrl)) return payment.receiptUrl;
-      if (payment.receiptFile && isUrlString(payment.receiptFile.url)) return payment.receiptFile.url;
-      if (isUrlString(payment.cloudinaryUrl)) return payment.cloudinaryUrl;
-    }
-
-    // Recursively search for first URL string
-    const findUrl = (obj, seen = new Set()) => {
-      if (!obj || typeof obj !== 'object') return null;
-      if (seen.has(obj)) return null;
-      seen.add(obj);
-      for (const key of Object.keys(obj)) {
-        try {
-          const val = obj[key];
-          if (isUrlString(val)) return val;
-          if (typeof val === 'object') {
-            const found = findUrl(val, seen);
-            if (found) return found;
-          }
-        } catch (e) {
-          // ignore
-        }
-      }
-      return null;
-    };
-
-    return findUrl(cf) || null;
+  const handleZoomOut = () => {
+    setImageModal(prev => ({ ...prev, zoom: Math.max(prev.zoom - 0.25, 0.5) }));
   };
 
-  const renderStatusBadge = (status) => {
-    const statusConfig = {
-      pending: { bg: 'bg-yellow-100', text: 'text-yellow-800', label: 'Pending', icon: Clock },
-      approved: { bg: 'bg-green-100', text: 'text-green-800', label: 'Approved', icon: CheckCircle },
-      rejected: { bg: 'bg-red-100', text: 'text-red-800', label: 'Rejected', icon: XCircle },
-      verified: { bg: 'bg-green-100', text: 'text-green-800', label: 'Verified', icon: CheckCircle },
-      unverified: { bg: 'bg-yellow-100', text: 'text-yellow-800', label: 'Pending Verification', icon: Clock },
-      unread: { bg: 'bg-blue-100', text: 'text-blue-800', label: 'Unread', icon: Mail },
-      read: { bg: 'bg-gray-100', text: 'text-gray-800', label: 'Read', icon: Mail },
-      replied: { bg: 'bg-purple-100', text: 'text-purple-800', label: 'Replied', icon: MessageSquare },
-      archived: { bg: 'bg-gray-100', text: 'text-gray-800', label: 'Archived', icon: Archive }
-    };
+  const handleResetZoom = () => {
+    setImageModal(prev => ({ ...prev, zoom: 1 }));
+  };
 
-    const config = statusConfig[status] || statusConfig.pending;
-    const Icon = config.icon;
-    
+  // Helper to open PDF or external files securely
+  const openExternal = (payment) => {
+    if (payment.cloudinaryFile?.secure_url) {
+      window.open(payment.cloudinaryFile.secure_url, '_blank', 'noopener,noreferrer');
+    } else if (payment.receiptFile?.url) {
+      window.open(payment.receiptFile.url, '_blank', 'noopener,noreferrer');
+    }
+  };
+  
+  // Helper to get exact file URL (prioritize cloudinary)
+  const getFileUrl = (payment) => {
+    if (payment.cloudinaryFile?.secure_url) return payment.cloudinaryFile.secure_url;
+    if (payment.receiptFile?.url) return payment.receiptFile.url;
+    return null;
+  };
+
+  if (!isAuthenticated) {
     return (
-      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.bg} ${config.text}`}>
-        <Icon className="w-3 h-3 mr-1" />
-        {config.label}
-      </span>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
     );
-  };
-
-  const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-IN', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric'
-    });
-  };
-
-  const formatDateTime = (dateString) => {
-    if (!dateString) return 'N/A';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-IN', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  const formatFileSize = (bytes) => {
-    if (!bytes) return 'N/A';
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    if (bytes === 0) return '0 Byte';
-    const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)), 10);
-    return `${(bytes / Math.pow(1024, i)).toFixed(2)} ${sizes[i]}`;
-  };
-
-  const renderAdmissionDetails = (admission) => (
-    <div className="bg-white rounded-xl shadow-lg p-6">
-      <div className="flex justify-between items-start mb-6">
-        <div>
-          <h3 className="text-xl font-bold text-gray-900">{admission.name}</h3>
-          <p className="text-gray-600">{admission.email}</p>
-          <div className="mt-2">{renderStatusBadge(admission.status)}</div>
-        </div>
-        <button
-          onClick={() => setViewDetails(null)}
-          className="text-gray-400 hover:text-gray-600"
-        >
-          <X className="w-6 h-6" />
-        </button>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <h4 className="font-semibold text-gray-700 mb-3">Student Information</h4>
-          <div className="space-y-2">
-            <p><span className="text-gray-500">Date of Birth:</span> {formatDate(admission.dob)}</p>
-            <p><span className="text-gray-500">Mother Tongue:</span> {admission.motherTongue}</p>
-            <p><span className="text-gray-500">Caste:</span> {admission.caste}</p>
-            <p><span className="text-gray-500">Religion:</span> {admission.religion}</p>
-            <p><span className="text-gray-500">Previous Class:</span> {admission.previousClass}</p>
-            <p><span className="text-gray-500">Admission Class:</span> {admission.admissionClass}</p>
-            <p><span className="text-gray-500">Previous School:</span> {admission.previousSchool}</p>
-            <p><span className="text-gray-500">Admission Date:</span> {formatDate(admission.admissionDate)}</p>
-          </div>
-        </div>
-        
-        <div>
-          <h4 className="font-semibold text-gray-700 mb-3">Parent Information</h4>
-          <div className="space-y-2">
-            <p><span className="text-gray-500">Father's Name:</span> {admission.fatherName}</p>
-            <p><span className="text-gray-500">Mother's Name:</span> {admission.motherName}</p>
-            <p><span className="text-gray-500">Father's Contact:</span> {admission.fatherContact}</p>
-            <p><span className="text-gray-500">Mother's Contact:</span> {admission.motherContact || 'N/A'}</p>
-            <p><span className="text-gray-500">Occupation:</span> {admission.occupation}</p>
-            <p><span className="text-gray-500">Mother's Occupation:</span> {admission.motherOccupation || 'N/A'}</p>
-          </div>
-          
-          <h4 className="font-semibold text-gray-700 mt-6 mb-3">Address</h4>
-          <p className="text-gray-600">{admission.address}</p>
-        </div>
-      </div>
-      
-      <div className="mt-8 pt-6 border-t border-gray-200">
-        <div className="flex justify-between items-center">
-          <div>
-            <p className="text-sm text-gray-500">Submitted on {formatDateTime(admission.submittedAt)}</p>
-            {admission.applicationNumber && (
-              <p className="text-sm text-gray-500">Application #: {admission.applicationNumber}</p>
-            )}
-          </div>
-          <div className="space-x-3">
-            <button
-              onClick={() => handleUpdateStatus('admission', admission._id, 'approved')}
-              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
-            >
-              Approve
-            </button>
-            <button
-              onClick={() => handleUpdateStatus('admission', admission._id, 'rejected')}
-              className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
-            >
-              Reject
-            </button>
-            <button
-              onClick={() => handleDelete('admission', admission._id)}
-              className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
-            >
-              Delete
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderFeePaymentDetails = (payment) => (
-    <div className="bg-white rounded-xl shadow-lg p-6">
-      <div className="flex justify-between items-start mb-6">
-        <div>
-          <h3 className="text-xl font-bold text-gray-900">{payment.studentName}</h3>
-          <p className="text-gray-600">{payment.email}</p>
-          <div className="mt-2">{renderStatusBadge(payment.status)}</div>
-        </div>
-        <button
-          onClick={() => setViewDetails(null)}
-          className="text-gray-400 hover:text-gray-600"
-        >
-          <X className="w-6 h-6" />
-        </button>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <h4 className="font-semibold text-gray-700 mb-3">Student Information</h4>
-          <div className="space-y-2">
-            <p><span className="text-gray-500">Father's Name:</span> {payment.fatherName}</p>
-            <p><span className="text-gray-500">Mobile:</span> {payment.mobile}</p>
-            <p><span className="text-gray-500">Class:</span> {payment.className}</p>
-          </div>
-        </div>
-        
-        <div>
-          <h4 className="font-semibold text-gray-700 mb-3">Payment Information</h4>
-          <div className="space-y-2">
-            <p><span className="text-gray-500">Amount:</span> ₹{payment.amount?.toLocaleString('en-IN') || '0'}</p>
-            <p><span className="text-gray-500">Payment Method:</span> {payment.paymentMethod}</p>
-            <p><span className="text-gray-500">Transaction ID:</span> {payment.transactionId}</p>
-            <p><span className="text-gray-500">Receipt Number:</span> {payment.receiptNumber}</p>
-            <p><span className="text-gray-500">Receipt Date:</span> {formatDate(payment.receiptDate)}</p>
-          </div>
-        </div>
-      </div>
-      
-      {/* Receipt File Section */}
-      <div className="mt-8">
-        <h4 className="font-semibold text-gray-700 mb-4">Payment Receipt</h4>
-        
-        {payment.cloudinaryFile ? (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl border border-blue-200">
-              <div className="flex items-center space-x-4">
-                <div className="p-3 bg-white rounded-lg shadow-sm">
-                  {payment.cloudinaryFile.resource_type === 'image' ? (
-                    <ImageIcon className="w-8 h-8 text-green-600" />
-                  ) : (
-                    <File className="w-8 h-8 text-red-600" />
-                  )}
-                </div>
-                <div>
-                  <p className="font-bold text-gray-900">
-                    {payment.cloudinaryFile.original_filename || 'Payment Receipt'}
-                  </p>
-                  <div className="flex items-center space-x-4 text-sm text-gray-600 mt-1">
-                    <span>{formatFileSize(payment.cloudinaryFile.bytes)}</span>
-                    <span>•</span>
-                    <span>{payment.cloudinaryFile.format?.toUpperCase() || 'Unknown Format'}</span>
-                    <span>•</span>
-                    <span>{payment.cloudinaryFile.resource_type === 'image' ? 'Image' : 'PDF'}</span>
-                  </div>
-                </div>
-              </div>
-              <div className="flex space-x-2">
-                {/* Primary View Button */}
-                {payment.cloudinaryFile.resource_type === 'image' ? (
-                  <button
-                    onClick={() => handleViewImage(
-                      getFileUrl(payment),
-                      payment.cloudinaryFile?.original_filename || 'Receipt'
-                    )}
-                    className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-5 py-2.5 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 transform hover:scale-105 shadow-md flex items-center space-x-2"
-                  >
-                    <EyeIcon className="w-5 h-5" />
-                    <span>View Screenshot</span>
-                  </button>
-                  ) : (
-                  <button
-                    onClick={() => openExternal(payment)}
-                    className="bg-gradient-to-r from-red-600 to-red-700 text-white px-5 py-2.5 rounded-lg hover:from-red-700 hover:to-red-800 transition-all duration-200 transform hover:scale-105 shadow-md flex items-center space-x-2"
-                  >
-                    <File className="w-5 h-5" />
-                    <span>Open PDF</span>
-                  </button>
-                )}
-                
-                {/* External Link Button */}
-                <button
-                  onClick={() => openExternal(payment)}
-                  className="bg-gray-100 text-gray-700 px-4 py-2.5 rounded-lg hover:bg-gray-200 transition-all duration-200 border border-gray-300 flex items-center space-x-2"
-                >
-                  <ExternalLink className="w-4 h-4" />
-                  <span className="text-sm">Open New Tab</span>
-                </button>
-              </div>
-            </div>
-            
-            {/* Image Preview Thumbnail */}
-            {payment.cloudinaryFile.resource_type === 'image' && (
-              <div className="bg-white border-2 border-gray-200 rounded-xl p-4 hover:border-blue-300 transition-colors duration-300">
-                <div className="flex items-center justify-between mb-3">
-                  <h5 className="font-medium text-gray-700">Screenshot Preview</h5>
-                  <button
-                    onClick={() => handleViewImage(
-                      getFileUrl(payment),
-                      payment.cloudinaryFile?.original_filename || 'Receipt'
-                    )}
-                    className="text-sm text-blue-600 hover:text-blue-800 flex items-center space-x-1"
-                  >
-                    <span>Full Screen</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </button>
-                </div>
-                <div 
-                  className="relative w-full h-64 bg-gray-50 rounded-lg overflow-hidden cursor-pointer group"
-                    onClick={() => handleViewImage(
-                      getFileUrl(payment),
-                      payment.cloudinaryFile?.original_filename || 'Receipt'
-                    )}
-                >
-                  <img
-                    src={getFileUrl(payment)}
-                    alt={`Receipt screenshot for ${payment.studentName}`}
-                    className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239CA3AF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='18' height='18' rx='2' ry='2'%3E%3C/rect%3E%3Ccircle cx='8.5' cy='8.5' r='1.5'%3E%3C/circle%3E%3Cpolyline points='21 15 16 10 5 21'%3E%3C/polyline%3E%3C/svg%3E";
-                    }}
-                  />
-                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 flex items-center justify-center">
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <EyeIcon className="w-10 h-10 text-white drop-shadow-lg" />
-                    </div>
-                  </div>
-                </div>
-                {payment.cloudinaryFile.width && payment.cloudinaryFile.height && (
-                  <p className="text-xs text-gray-500 mt-2 text-center">
-                    Original Resolution: {payment.cloudinaryFile.width} × {payment.cloudinaryFile.height}px
-                  </p>
-                )}
-              </div>
-            )}
-          </div>
-        ) : payment.receiptFile ? (
-          // Fallback for older local storage files
-          <div className="mt-6 bg-gradient-to-r from-yellow-50 to-yellow-100 p-6 rounded-xl border border-yellow-200">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <FileText className="w-8 h-8 text-yellow-600" />
-                <div>
-                  <p className="font-bold text-gray-900">Legacy Receipt File</p>
-                  <p className="text-sm text-gray-600 mt-1">{payment.receiptFile.originalName}</p>
-                </div>
-              </div>
-              <a
-                href={payment.receiptFile.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-white px-5 py-2.5 rounded-lg hover:from-yellow-600 hover:to-yellow-700 transition-all duration-200 transform hover:scale-105 shadow-md flex items-center space-x-2"
-              >
-                <FileText className="w-5 h-5" />
-                <span>View File</span>
-              </a>
-            </div>
-          </div>
-        ) : (
-          <div className="mt-6 p-6 bg-gradient-to-r from-red-50 to-red-100 rounded-xl border border-red-200">
-            <div className="flex items-start space-x-4">
-              <FileText className="w-8 h-8 text-red-600" />
-              <div className="flex-1">
-                <p className="font-bold text-red-800">No receipt file attached to this payment.</p>
-                <p className="text-sm text-red-600 mt-1">The user did not upload any payment screenshot.</p>
-
-                <div className="mt-4">
-                  <label className="block text-sm font-medium text-gray-700">Upload Receipt (admin)</label>
-                  <div className="mt-2 flex items-center space-x-2">
-                    <input id={`receipt-input-${payment._id}`} type="file" accept="image/*,application/pdf" className="text-sm" />
-                    <button
-                      onClick={async () => {
-                        const input = document.getElementById(`receipt-input-${payment._id}`);
-                        if (!input || !input.files || input.files.length === 0) {
-                          showToast('Please select a file first', 'error');
-                          return;
-                        }
-                        const file = input.files[0];
-                        await handleUploadReceipt(payment._id, file);
-                      }}
-                      className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
-                    >
-                      Upload Receipt
-                    </button>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-2">Accepted: JPG, PNG, WebP, GIF, PDF. Max 10MB.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-      
-      <div className="mt-8 pt-6 border-t border-gray-200">
-        <div className="flex justify-between items-center">
-          <div>
-            <p className="text-sm text-gray-500">Submitted on {formatDateTime(payment.submittedAt)}</p>
-            {payment.verifiedAt && (
-              <p className="text-sm text-gray-500">
-                Verified on {formatDateTime(payment.verifiedAt)} by {payment.verifiedBy || 'Admin'}
-              </p>
-            )}
-          </div>
-          <div className="space-x-3">
-            <button
-              onClick={() => handleUpdateStatus('fee', payment._id, 'verified')}
-              className="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg hover:from-green-600 hover:to-green-700 transition-colors flex items-center space-x-2"
-            >
-              <Check className="w-4 h-4" />
-              <span>Verify</span>
-            </button>
-            <button
-              onClick={() => handleUpdateStatus('fee', payment._id, 'rejected')}
-              className="bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-lg hover:from-red-600 hover:to-red-700 transition-colors flex items-center space-x-2"
-            >
-              <X className="w-4 h-4" />
-              <span>Reject</span>
-            </button>
-            <button
-              onClick={() => handleDelete('fee', payment._id)}
-              className="bg-gradient-to-r from-gray-500 to-gray-600 text-white px-4 py-2 rounded-lg hover:from-gray-600 hover:to-gray-700 transition-colors flex items-center space-x-2"
-            >
-              <Trash2 className="w-4 h-4" />
-              <span>Delete</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderContactDetails = (contact) => (
-    <div className="bg-white rounded-xl shadow-lg p-6">
-      <div className="flex justify-between items-start mb-6">
-        <div>
-          <h3 className="text-xl font-bold text-gray-900">{contact.name}</h3>
-          <p className="text-gray-600">{contact.email}</p>
-          <div className="mt-2">{renderStatusBadge(contact.status)}</div>
-        </div>
-        <button
-          onClick={() => setViewDetails(null)}
-          className="text-gray-400 hover:text-gray-600"
-        >
-          <X className="w-6 h-6" />
-        </button>
-      </div>
-      
-      <div className="space-y-4">
-        <div>
-          <h4 className="font-semibold text-gray-700 mb-2">Contact Information</h4>
-          <div className="space-y-2">
-            {contact.phone && <p><span className="text-gray-500">Phone:</span> {contact.phone}</p>}
-            <p><span className="text-gray-500">Subject:</span> {contact.subject || 'General Inquiry'}</p>
-          </div>
-        </div>
-        
-        <div>
-          <h4 className="font-semibold text-gray-700 mb-2">Message</h4>
-          <p className="text-gray-600 bg-gray-50 p-4 rounded-lg">{contact.message}</p>
-        </div>
-        
-        {contact.responseMessage && (
-          <div>
-            <h4 className="font-semibold text-gray-700 mb-2">Response</h4>
-            <p className="text-gray-600 bg-blue-50 p-4 rounded-lg">{contact.responseMessage}</p>
-            <p className="text-sm text-gray-500 mt-2">
-              Responded on {formatDateTime(contact.respondedAt)} by {contact.respondedBy}
-            </p>
-          </div>
-        )}
-      </div>
-      
-      <div className="mt-8 pt-6 border-t border-gray-200">
-        <div className="flex justify-between items-center">
-          <div>
-            <p className="text-sm text-gray-500">Submitted on {formatDateTime(contact.submittedAt)}</p>
-          </div>
-          <div className="space-x-3">
-            {contact.status !== 'replied' && (
-              <button
-                onClick={() => {
-                  const response = prompt('Enter your response:');
-                  if (response) {
-                    handleUpdateStatus('contact', contact._id, 'replied', response);
-                  }
-                }}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Reply
-              </button>
-            )}
-            <button
-              onClick={() => handleUpdateStatus('contact', contact._id, 'archived')}
-              className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
-            >
-              Archive
-            </button>
-            <button
-              onClick={() => handleDelete('contact', contact._id)}
-              className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
-            >
-              Delete
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  // Dashboard charts data
-  const applicationsByClass = stats?.monthlyAdmissions?.map(item => ({
-    name: `${item._id.month}/${item._id.year}`,
-    applications: item.count
-  })) || [];
-
-  const paymentStatusData = stats?.paymentsByStatus?.map(item => ({
-    name: item._id.charAt(0).toUpperCase() + item._id.slice(1),
-    value: item.count
-  })) || [];
-
-  const COLORS = ['#4CAF50', '#FFC107', '#F44336'];
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -1092,7 +474,7 @@ const Admin = () => {
                 </div>
               </div>
               <div className="flex items-center space-x-3">
-                <div className="flex items-center space-x-2 bg-blue-900/30 px-3 py-1 rounded-lg">
+                <div className="flex items-center space-x-2 bg-sricblue/30 px-3 py-1 rounded-lg">
                   <button
                     onClick={handleZoomOut}
                     className="p-1 hover:bg-blue-800 rounded transition-colors"
@@ -1185,190 +567,57 @@ const Admin = () => {
         </div>
       )}
 
-      {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-40 bg-gradient-to-b from-sricblue to-blue-900 text-white transition-all duration-300 ${
-        sidebarCollapsed ? 'w-20' : 'w-64'
-      }`}>
-        {/* Logo */}
-        <div className="p-6 border-b border-blue-800">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="bg-white p-2 rounded-xl">
-                <Shield className="w-6 h-6 text-sricblue" />
-              </div>
-              {!sidebarCollapsed && (
-                <span className="font-bold text-lg tracking-tight">SRIC Admin</span>
-              )}
-            </div>
-            <button
-              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className="text-white hover:bg-blue-800 p-2 rounded-lg transition-colors"
-            >
-              <ChevronLeft className={`w-5 h-5 transition-transform ${
-                sidebarCollapsed ? 'rotate-180' : ''
-              }`} />
-            </button>
-          </div>
-        </div>
-
-        {/* Navigation */}
-        <div className="p-4 overflow-y-auto h-[calc(100vh-5rem)]">
-          {/* Main Section */}
-          <div className="mb-8">
-            <p className={`text-xs uppercase tracking-wider text-blue-300 mb-3 ${
-              sidebarCollapsed ? 'text-center' : 'px-3'
-            }`}>Main</p>
-            <button
-              onClick={() => setCurrentTab('dashboard')}
-              className={`w-full flex items-center space-x-3 p-3 rounded-xl mb-2 transition-all ${
-                currentTab === 'dashboard'
-                  ? 'bg-blue-800 text-white shadow-lg'
-                  : 'hover:bg-blue-800/50'
-              }`}
-            >
-              <Home className="w-5 h-5 flex-shrink-0" />
-              {!sidebarCollapsed && <span>Dashboard</span>}
-            </button>
-          </div>
-
-          {/* Applications Section */}
-          <div className="mb-8">
-            <p className={`text-xs uppercase tracking-wider text-blue-300 mb-3 ${
-              sidebarCollapsed ? 'text-center' : 'px-3'
-            }`}>Applications</p>
-            
-            <button
-              onClick={() => setCurrentTab('admissions')}
-              className={`w-full flex items-center justify-between p-3 rounded-xl mb-2 transition-all ${
-                currentTab === 'admissions'
-                  ? 'bg-blue-800 text-white shadow-lg'
-                  : 'hover:bg-blue-800/50'
-              }`}
-            >
-              <div className="flex items-center space-x-3">
-                <GraduationCap className="w-5 h-5 flex-shrink-0" />
-                {!sidebarCollapsed && <span>Admissions</span>}
-              </div>
-              {notificationCounts.admissions > 0 && (
-                <span className="bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {notificationCounts.admissions}
-                </span>
-              )}
-            </button>
-
-            <button
-              onClick={() => setCurrentTab('fees')}
-              className={`w-full flex items-center justify-between p-3 rounded-xl mb-2 transition-all ${
-                currentTab === 'fees'
-                  ? 'bg-blue-800 text-white shadow-lg'
-                  : 'hover:bg-blue-800/50'
-              }`}
-            >
-              <div className="flex items-center space-x-3">
-                <DollarSign className="w-5 h-5 flex-shrink-0" />
-                {!sidebarCollapsed && <span>Fee Payments</span>}
-              </div>
-              {notificationCounts.fees > 0 && (
-                <span className="bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {notificationCounts.fees}
-                </span>
-              )}
-            </button>
-
-            <button
-              onClick={() => setCurrentTab('contacts')}
-              className={`w-full flex items-center justify-between p-3 rounded-xl mb-2 transition-all ${
-                currentTab === 'contacts'
-                  ? 'bg-blue-800 text-white shadow-lg'
-                  : 'hover:bg-blue-800/50'
-              }`}
-            >
-              <div className="flex items-center space-x-3">
-                <Mail className="w-5 h-5 flex-shrink-0" />
-                {!sidebarCollapsed && <span>Contact Forms</span>}
-              </div>
-              {notificationCounts.contacts > 0 && (
-                <span className="bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {notificationCounts.contacts}
-                </span>
-              )}
-            </button>
-          </div>
-
-          {/* Management Section */}
-          <div className="mb-8">
-            <p className={`text-xs uppercase tracking-wider text-blue-300 mb-3 ${
-              sidebarCollapsed ? 'text-center' : 'px-3'
-            }`}>Management</p>
-            
-            <button
-              onClick={() => setCurrentTab('reports')}
-              className={`w-full flex items-center space-x-3 p-3 rounded-xl mb-2 transition-all ${
-                currentTab === 'reports'
-                  ? 'bg-blue-800 text-white shadow-lg'
-                  : 'hover:bg-blue-800/50'
-              }`}
-            >
-              <BarChart3 className="w-5 h-5 flex-shrink-0" />
-              {!sidebarCollapsed && <span>Reports</span>}
-            </button>
-
-            <button
-              onClick={() => setCurrentTab('settings')}
-              className={`w-full flex items-center space-x-3 p-3 rounded-xl mb-2 transition-all ${
-                currentTab === 'settings'
-                  ? 'bg-blue-800 text-white shadow-lg'
-                  : 'hover:bg-blue-800/50'
-              }`}
-            >
-              <Settings className="w-5 h-5 flex-shrink-0" />
-              {!sidebarCollapsed && <span>Settings</span>}
-            </button>
-          </div>
-
-          {/* Bottom Links */}
-          <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-blue-800">
-            <Link
-              to="/"
-              className="flex items-center space-x-3 p-3 rounded-xl hover:bg-blue-800/50 transition-all mb-2"
-            >
-              <div className="w-5 h-5 flex items-center justify-center">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-                </svg>
-              </div>
-              {!sidebarCollapsed && <span>View Website</span>}
-            </Link>
-            
-            <button
-              onClick={handleLogout}
-              className="w-full flex items-center space-x-3 p-3 rounded-xl hover:bg-red-500/20 text-red-300 hover:text-red-200 transition-all"
-            >
-              <LogOut className="w-5 h-5 flex-shrink-0" />
-              {!sidebarCollapsed && <span>Logout</span>}
-            </button>
-          </div>
-        </div>
-      </div>
+      {/* Sidebar Component */}
+      <AdminSidebar
+        sidebarCollapsed={sidebarCollapsed}
+        setSidebarCollapsed={setSidebarCollapsed}
+        isMobileMenuOpen={isMobileMenuOpen}
+        setIsMobileMenuOpen={setIsMobileMenuOpen}
+        currentTab={currentTab}
+        setCurrentTab={(tab) => {
+          setCurrentTab(tab);
+          setViewDetails(null); // Reset view details when switching tabs
+          setIsMobileMenuOpen(false); // Close mobile menu
+        }}
+        notificationCounts={notificationCounts}
+        handleLogout={handleLogout}
+        adminName={userName}
+        loginID={loginID}
+      />
 
       {/* Main Content */}
-      <div className={`transition-all duration-300 ${sidebarCollapsed ? 'ml-20' : 'ml-64'}`}>
+    <div className={`transition-all duration-300 min-h-screen flex flex-col ${sidebarCollapsed ? 'md:ml-20' : 'md:ml-64'} ${isMobileMenuOpen ? 'overflow-hidden' : ''}`}>
         {/* Header */}
-        <header className="bg-white shadow-sm border-b">
-          <div className="px-6 py-4">
+        <header className="bg-white shadow-sm border-b sticky top-0 z-30">
+          <div className="px-4 md:px-6 py-4">
             <div className="flex items-center justify-between">
-              <h1 className="text-2xl font-bold text-gray-800">
-                {currentTab === 'dashboard' && 'Dashboard'}
-                {currentTab === 'admissions' && 'Admission Applications'}
-                {currentTab === 'fees' && 'Fee Payments'}
-                {currentTab === 'contacts' && 'Contact Messages'}
-                {currentTab === 'reports' && 'Reports & Analytics'}
-                {currentTab === 'settings' && 'Settings'}
-              </h1>
+              <div className="flex items-center">
+                <button 
+                  onClick={() => setIsMobileMenuOpen(true)}
+                  className="md:hidden p-2 mr-3 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <Menu className="w-6 h-6 text-gray-600" />
+                </button>
+                <h1 className="text-xl md:text-2xl font-bold text-gray-800 truncate max-w-[150px] md:max-w-none">
+                  {currentTab === 'dashboard' && 'Dashboard'}
+                  {currentTab === 'admissions' && 'Admissions'}
+                  {currentTab === 'fees' && 'Fees'}
+                  {currentTab === 'contacts' && 'Messages'}
+                  {currentTab === 'users' && 'Teacher Management'}
+                  {currentTab === 'gallery' && 'Gallery Manager'}
+                  {currentTab === 'achievements' && 'Achievements'}
+                  {currentTab === 'announcements' && 'Announcements'}
+                  {currentTab === 'examschedules' && 'Exam Schedules'}
+                  {currentTab === 'testimonials' && 'Testimonials'}
+                  {currentTab === 'reports' && 'Reports'}
+                  {currentTab === 'settings' && 'Settings'}
+                </h1>
+              </div>
               
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2 md:space-x-4">
+                {/* Search and Filters - Hidden on small mobile */}
                 {currentTab !== 'dashboard' && (
-                  <div className="flex items-center space-x-3">
+                  <div className="hidden lg:flex items-center space-x-3">
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                       <input
@@ -1419,29 +668,117 @@ const Admin = () => {
                 
                 {/* Notifications */}
                 <div className="relative">
-                  <button className="relative p-2 hover:bg-gray-100 rounded-full transition-colors">
-                    <Bell className="w-5 h-5 text-gray-600" />
+                  <button 
+                    onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+                    className={`relative p-2 rounded-full transition-colors ${isNotificationOpen ? 'bg-blue-50 text-blue-600' : 'hover:bg-gray-100 text-gray-600'}`}
+                  >
+                    <Bell className="w-5 h-5" />
                     {notificationCounts.total > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      <span className="absolute top-1 right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center animate-pulse">
                         {notificationCounts.total}
                       </span>
                     )}
                   </button>
+
+                  {/* Notification Dropdown */}
+                  {isNotificationOpen && (
+                    <>
+                      <div 
+                        className="fixed inset-0 z-40" 
+                        onClick={() => setIsNotificationOpen(false)}
+                      ></div>
+                      <div className="absolute right-0 mt-3 w-80 bg-white rounded-2xl shadow-2xl border border-gray-100 z-50 overflow-hidden transform origin-top-right transition-all">
+                        <div className="p-4 border-b bg-gradient-to-r from-sricblue to-blue-800 text-white flex justify-between items-center">
+                          <h3 className="font-bold">Notifications</h3>
+                          <span className="text-xs bg-white text-sricblue px-2 py-0.5 rounded-full font-bold">
+                            {notificationCounts.total} New
+                          </span>
+                        </div>
+                        <div className="max-h-96 overflow-y-auto">
+                          {notificationCounts.total === 0 ? (
+                            <div className="p-8 text-center">
+                              <Bell className="w-12 h-12 text-gray-200 mx-auto mb-3" />
+                              <p className="text-gray-500 text-sm">All caught up! No new notifications.</p>
+                            </div>
+                          ) : (
+                            <div className="divide-y divide-gray-50">
+                              {stats?.recentAdmissions?.filter(a => a.status === 'pending').slice(0, 5).map(item => (
+                                <div 
+                                  key={item._id} 
+                                  className="p-4 hover:bg-blue-50 cursor-pointer transition-colors"
+                                  onClick={() => {
+                                    setCurrentTab('admissions');
+                                    setIsNotificationOpen(false);
+                                  }}
+                                >
+                                  <div className="flex items-start space-x-3">
+                                    <div className="bg-blue-100 p-2 rounded-lg text-blue-600">
+                                      <GraduationCap className="w-4 h-4" />
+                                    </div>
+                                    <div>
+                                      <p className="text-sm font-semibold text-gray-900">New Admission Application</p>
+                                      <p className="text-xs text-gray-600 mt-0.5">{item.name} applied for {item.admissionClass}</p>
+                                      <p className="text-[10px] text-gray-400 mt-1">{new Date(item.submittedAt).toLocaleString()}</p>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                              {stats?.recentFeePayments?.filter(f => f.status === 'pending').slice(0, 5).map(item => (
+                                <div 
+                                  key={item._id} 
+                                  className="p-4 hover:bg-blue-50 cursor-pointer transition-colors"
+                                  onClick={() => {
+                                    setCurrentTab('fees');
+                                    setIsNotificationOpen(false);
+                                  }}
+                                >
+                                  <div className="flex items-start space-x-3">
+                                    <div className="bg-yellow-100 p-2 rounded-lg text-yellow-600">
+                                      <DollarSign className="w-4 h-4" />
+                                    </div>
+                                    <div>
+                                      <p className="text-sm font-semibold text-gray-900">New Fee Payment</p>
+                                      <p className="text-xs text-gray-600 mt-0.5">{item.studentName} paid ₹{item.amount}</p>
+                                      <p className="text-[10px] text-gray-400 mt-1">{new Date(item.submittedAt).toLocaleString()}</p>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        {notificationCounts.total > 0 && (
+                          <div className="p-3 bg-gray-50 border-t text-center">
+                            <button 
+                              onClick={() => {
+                                setIsNotificationOpen(false);
+                                setCurrentTab('dashboard');
+                              }}
+                              className="text-xs font-bold text-sricblue hover:text-blue-800 transition-colors"
+                            >
+                              View All Activity
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 {/* User Profile */}
-                <div className="flex items-center space-x-3">
-                  <div className="relative">
-                    <img
-                      src="https://ui-avatars.com/api/?name=Admin+User&background=002366&color=fff"
-                      alt="Admin User"
-                      className="w-10 h-10 rounded-full border-2 border-blue-500"
-                    />
-                    <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
+                <div className="flex items-center space-x-2 md:space-x-3 border-l pl-2 md:pl-4">
+                  <div 
+                    className="relative cursor-pointer group" 
+                    onClick={() => setCurrentTab('settings')}
+                  >
+                    <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-sricblue to-blue-800 flex items-center justify-center border-2 border-blue-100 shadow-sm group-hover:scale-110 transition-transform">
+                      <Shield className="w-5 h-5 md:w-6 md:h-6 text-white" />
+                    </div>
+                    <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
                   </div>
-                  <div className="hidden md:block">
-                    <p className="font-medium text-gray-700">Admin User</p>
-                    <p className="text-xs text-gray-500">Super Administrator</p>
+                  <div className="hidden sm:block">
+                    <p className="font-bold text-gray-800 text-sm leading-tight">{userName || 'Admin Account'}</p>
+                    <p className="text-[10px] text-blue-600 font-bold uppercase tracking-wider">Super Admin</p>
                   </div>
                 </div>
               </div>
@@ -1452,746 +789,232 @@ const Admin = () => {
         {/* Main Content Area */}
         <main className="p-6">
           {isLoading ? (
-            <div className="flex justify-center items-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-            </div>
-          ) : viewDetails ? (
-            <div className="space-y-6">
-              {currentTab === 'admissions' && renderAdmissionDetails(viewDetails)}
-              {currentTab === 'fees' && renderFeePaymentDetails(viewDetails)}
-              {currentTab === 'contacts' && renderContactDetails(viewDetails)}
-            </div>
+             <div className="flex justify-center items-center h-64">
+               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+             </div>
           ) : (
-            <>
-              {/* Dashboard Tab */}
-              {currentTab === 'dashboard' && stats && (
-                <div className="space-y-6">
-                  {/* Stats Overview */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div className="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-blue-500 hover:shadow-xl transition-shadow">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <p className="text-gray-500 text-sm font-medium">Total Admissions</p>
-                          <p className="text-3xl font-bold text-gray-800 mt-2">{stats.counts?.admissions || 0}</p>
-                          <div className="flex items-center mt-2">
-                            <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
-                            <span className="text-green-500 text-sm">+12%</span>
-                            <span className="text-gray-400 text-sm ml-2">from last month</span>
-                          </div>
-                        </div>
-                        <div className="bg-blue-100 p-3 rounded-xl">
-                          <GraduationCap className="w-6 h-6 text-blue-600" />
-                        </div>
-                      </div>
+             <>
+                {currentTab === 'dashboard' && (
+                  <div className="space-y-6">
+                    <div className="bg-white rounded-2xl shadow-sm p-6 border-b border-gray-100 mb-6">
+                      <h2 className="text-2xl font-bold text-gray-800">Welcome back, <span className="text-sricblue">{userName || 'Administrator'}</span></h2>
+                      <p className="text-gray-500 font-medium mt-1">Here's what's happening today at Sitaram Inter College.</p>
                     </div>
-
-                    <div className="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-green-500 hover:shadow-xl transition-shadow">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <p className="text-gray-500 text-sm font-medium">Fee Payments</p>
-                          <p className="text-3xl font-bold text-gray-800 mt-2">{stats.counts?.feePayments || 0}</p>
-                          <div className="flex items-center mt-2">
-                            <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
-                            <span className="text-green-500 text-sm">+8%</span>
-                            <span className="text-gray-400 text-sm ml-2">from last month</span>
-                          </div>
-                        </div>
-                        <div className="bg-green-100 p-3 rounded-xl">
-                          <DollarSign className="w-6 h-6 text-green-600" />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-purple-500 hover:shadow-xl transition-shadow">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <p className="text-gray-500 text-sm font-medium">Contact Messages</p>
-                          <p className="text-3xl font-bold text-gray-800 mt-2">{stats.counts?.contacts || 0}</p>
-                          <div className="flex items-center mt-2">
-                            <TrendingDown className="w-4 h-4 text-red-500 mr-1" />
-                            <span className="text-red-500 text-sm">-3%</span>
-                            <span className="text-gray-400 text-sm ml-2">from last month</span>
-                          </div>
-                        </div>
-                        <div className="bg-purple-100 p-3 rounded-xl">
-                          <Mail className="w-6 h-6 text-purple-600" />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-yellow-500 hover:shadow-xl transition-shadow">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <p className="text-gray-500 text-sm font-medium">Approved Students</p>
-                          <p className="text-3xl font-bold text-gray-800 mt-2">{stats.counts?.approvedAdmissions || 0}</p>
-                          <div className="flex items-center mt-2">
-                            <CheckCircle className="w-4 h-4 text-green-500 mr-1" />
-                            <span className="text-green-500 text-sm">{stats.counts?.admissions ? Math.round((stats.counts.approvedAdmissions / stats.counts.admissions) * 100) : 0}%</span>
-                            <span className="text-gray-400 text-sm ml-2">approval rate</span>
-                          </div>
-                        </div>
-                        <div className="bg-yellow-100 p-3 rounded-xl">
-                          <Users className="w-6 h-6 text-yellow-600" />
-                        </div>
-                      </div>
-                    </div>
+                    <AdminDashboardOverview 
+                       stats={stats} 
+                       setCurrentTab={setCurrentTab} 
+                       loadDashboardData={loadDashboardData} 
+                    />
                   </div>
+                )}
 
-                  {/* Charts Section */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Applications Chart */}
-                    <div className="bg-white rounded-2xl shadow-lg p-6">
-                      <div className="flex justify-between items-center mb-6">
-                        <h3 className="text-lg font-semibold text-gray-800">Monthly Applications</h3>
-                        <div className="text-sm text-gray-500">Last 6 months</div>
-                      </div>
-                      <div className="h-64">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <BarChart data={applicationsByClass}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                            <XAxis dataKey="name" stroke="#666" />
-                            <YAxis stroke="#666" />
-                            <Tooltip 
-                              contentStyle={{ 
-                                backgroundColor: 'white', 
-                                border: '1px solid #e5e7eb',
-                                borderRadius: '8px'
-                              }}
-                            />
-                            <Bar 
-                              dataKey="applications" 
-                              fill="#002366" 
-                              radius={[4, 4, 0, 0]}
-                            />
-                          </BarChart>
-                        </ResponsiveContainer>
-                      </div>
-                    </div>
+               {currentTab === 'admissions' && (
+                 <AdminAdmissions 
+                    admissionsData={admissionsData}
+                    loadAdmissions={loadAdmissions}
+                    handleUpdateStatus={handleUpdateStatus}
+                    handleDelete={handleDelete}
+                    viewDetails={viewDetails}
+                    setViewDetails={setViewDetails}
+                 />
+               )}
 
-                    {/* Payment Status Chart */}
-                    <div className="bg-white rounded-2xl shadow-lg p-6">
-                      <div className="flex justify-between items-center mb-6">
-                        <h3 className="text-lg font-semibold text-gray-800">Payment Status</h3>
-                        <div className="text-sm text-gray-500">Total: {stats.counts?.feePayments || 0} payments</div>
-                      </div>
-                      <div className="h-64">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <PieChart>
-                            <Pie
-                              data={paymentStatusData}
-                              cx="50%"
-                              cy="50%"
-                              labelLine={false}
-                              label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                              outerRadius={80}
-                              fill="#8884d8"
-                              dataKey="value"
-                            >
-                              {paymentStatusData.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                              ))}
-                            </Pie>
-                            <Tooltip />
-                            <Legend />
-                          </PieChart>
-                        </ResponsiveContainer>
-                      </div>
-                    </div>
-                  </div>
+               {currentTab === 'fees' && (
+                 <AdminFees 
+                    feesData={feesData}
+                    loadFeePayments={loadFeePayments}
+                    handleUpdateStatus={handleUpdateStatus}
+                    handleDelete={handleDelete}
+                    viewDetails={viewDetails}
+                    setViewDetails={setViewDetails}
+                    handleViewImage={handleViewImage}
+                    openExternal={openExternal}
+                    getFileUrl={getFileUrl}
+                    handleUploadReceipt={handleUploadReceipt}
+                 />
+               )}
 
-                  {/* Recent Activity */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Recent Admissions */}
-                    <div className="bg-white rounded-2xl shadow-lg p-6">
-                      <div className="flex justify-between items-center mb-6">
-                        <h3 className="text-lg font-semibold text-gray-800">Recent Admissions</h3>
-                        <button 
-                          onClick={() => setCurrentTab('admissions')}
-                          className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-                        >
-                          View All
-                        </button>
-                      </div>
-                      <div className="space-y-4">
-                        {stats.recentAdmissions?.slice(0, 5).map((admission) => (
-                          <div key={admission._id} className="flex items-start p-4 hover:bg-gray-50 rounded-lg transition-colors">
-                            <div className="p-3 rounded-xl mr-4 bg-blue-100 text-blue-600">
-                              <GraduationCap className="w-5 h-5" />
-                            </div>
-                            <div className="flex-1">
-                              <div className="flex justify-between items-start">
-                                <div>
-                                  <h4 className="font-medium text-gray-800">{admission.name}</h4>
-                                  <p className="text-gray-600 text-sm mt-1">{admission.admissionClass}</p>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                  {renderStatusBadge(admission.status)}
-                                  <span className="text-gray-400 text-sm">{formatDate(admission.submittedAt)}</span>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Recent Payments */}
-                    <div className="bg-white rounded-2xl shadow-lg p-6">
-                      <div className="flex justify-between items-center mb-6">
-                        <h3 className="text-lg font-semibold text-gray-800">Recent Payments</h3>
-                        <button 
-                          onClick={() => setCurrentTab('fees')}
-                          className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-                        >
-                          View All
-                        </button>
-                      </div>
-                      <div className="space-y-4">
-                        {stats.recentFeePayments?.slice(0, 5).map((payment) => (
-                          <div key={payment._id} className="flex items-start p-4 hover:bg-gray-50 rounded-lg transition-colors">
-                            <div className={`p-3 rounded-xl mr-4 ${
-                              payment.status === 'verified' ? 'bg-green-100 text-green-600' : 'bg-yellow-100 text-yellow-600'
-                            }`}>
-                              <DollarSign className="w-5 h-5" />
-                            </div>
-                            <div className="flex-1">
-                              <div className="flex justify-between items-start">
-                                <div>
-                                  <h4 className="font-medium text-gray-800">{payment.studentName}</h4>
-                                  <p className="text-gray-600 text-sm mt-1">₹{payment.amount?.toLocaleString('en-IN') || '0'} - {payment.className}</p>
-                                  {payment.cloudinaryFile && (
-                                    <div className="flex items-center mt-1">
-                                      {payment.cloudinaryFile.resource_type === 'image' ? (
-                                        <ImageIcon className="w-3 h-3 text-green-500 mr-1" />
-                                      ) : (
-                                        <File className="w-3 h-3 text-red-500 mr-1" />
-                                      )}
-                                      <span className="text-xs text-gray-500">Cloudinary</span>
-                                    </div>
-                                  )}
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                  {renderStatusBadge(payment.status)}
-                                  <span className="text-gray-400 text-sm">{formatDate(payment.submittedAt)}</span>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
+               {currentTab === 'contacts' && (
+                <AdminContacts 
+                  contactsData={contactsData} 
+                  loadContacts={loadContacts}
+                  handleUpdateStatus={handleUpdateStatus}
+                  handleDelete={handleDelete}
+                  viewDetails={viewDetails}
+                  setViewDetails={setViewDetails}
+                  showToast={showToast}
+                />
               )}
 
-              {/* Dashboard Tab - No Stats */}
-              {currentTab === 'dashboard' && !stats && (
-                <div className="bg-white rounded-2xl shadow-lg p-6">
-                  <div className="text-center py-12">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-                    <h3 className="text-xl font-semibold text-gray-700 mb-2">Loading Dashboard</h3>
-                    <p className="text-gray-500">Fetching dashboard data...</p>
-                    <button 
-                      onClick={loadDashboardData}
-                      className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                      Retry Loading
-                    </button>
-                  </div>
-                </div>
+              {currentTab === 'users' && (
+                <AdminUsers showToast={showToast} />
               )}
 
-              {/* Admissions Tab */}
-              {currentTab === 'admissions' && (
-                <div className="space-y-6">
-                  <div className="bg-white rounded-2xl shadow-lg p-6">
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 space-y-4 md:space-y-0">
-                      <h2 className="text-2xl font-bold text-gray-800">Admission Applications ({admissionsData.length})</h2>
-                      <div className="flex items-center space-x-3">
-                        <button className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center justify-center space-x-2 hover:bg-blue-700 transition-colors">
-                          <Download className="w-4 h-4" />
-                          <span>Export CSV</span>
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Table */}
-                    {admissionsData.length === 0 ? (
-                      <div className="text-center py-12">
-                        <GraduationCap className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                        <h3 className="text-xl font-semibold text-gray-700 mb-2">No Admissions Found</h3>
-                        <p className="text-gray-500">No admission applications match your search criteria.</p>
-                        <button 
-                          onClick={loadAdmissions}
-                          className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                        >
-                          Refresh Data
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="overflow-x-auto rounded-lg border border-gray-200">
-                        <table className="min-w-full divide-y divide-gray-200">
-                          <thead className="bg-gray-50">
-                            <tr>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Student Name
-                              </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Class
-                              </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Father's Name
-                              </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Contact
-                              </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Date
-                              </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Status
-                              </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Actions
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody className="bg-white divide-y divide-gray-200">
-                            {admissionsData.map((admission) => (
-                              <tr key={admission._id} className="hover:bg-gray-50 transition-colors">
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                  <div className="flex items-center">
-                                    <img
-                                      className="h-10 w-10 rounded-full"
-                                      src={`https://ui-avatars.com/api/?name=${admission.name}&background=002366&color=fff`}
-                                      alt={admission.name}
-                                    />
-                                    <div className="ml-4">
-                                      <div className="text-sm font-medium text-gray-900">{admission.name}</div>
-                                      <div className="text-sm text-gray-500">{admission.email}</div>
-                                    </div>
-                                  </div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                  <div className="text-sm text-gray-900">{admission.admissionClass}</div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                  <div className="text-sm text-gray-900">{admission.fatherName}</div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                  {admission.fatherContact}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                  {formatDate(admission.submittedAt)}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                  {renderStatusBadge(admission.status)}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                                  <button 
-                                    onClick={() => setViewDetails(admission)}
-                                    className="text-blue-600 hover:text-blue-900"
-                                  >
-                                    <EyeIcon className="w-4 h-4 inline mr-1" /> View
-                                  </button>
-                                  {admission.status === 'pending' && (
-                                    <>
-                                      <button 
-                                        onClick={() => handleUpdateStatus('admission', admission._id, 'approved')}
-                                        className="text-green-600 hover:text-green-900"
-                                      >
-                                        <CheckCircle className="w-4 h-4 inline mr-1" /> Approve
-                                      </button>
-                                      <button 
-                                        onClick={() => handleUpdateStatus('admission', admission._id, 'rejected')}
-                                        className="text-red-600 hover:text-red-900"
-                                      >
-                                        <XCircle className="w-4 h-4 inline mr-1" /> Reject
-                                      </button>
-                                    </>
-                                  )}
-                                  <button 
-                                    onClick={() => handleDelete('admission', admission._id)}
-                                    className="text-red-600 hover:text-red-900"
-                                  >
-                                    <Trash2 className="w-4 h-4 inline mr-1" /> Delete
-                                  </button>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    )}
-                  </div>
-                </div>
+              {currentTab === 'gallery' && (
+                <AdminGallery showToast={showToast} />
               )}
 
-              {/* Fees Tab */}
-              {currentTab === 'fees' && (
-                <div className="space-y-6">
-                  <div className="bg-white rounded-2xl shadow-lg p-6">
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 space-y-4 md:space-y-0">
-                      <h2 className="text-2xl font-bold text-gray-800">Fee Payments ({feesData.length})</h2>
-                      <div className="flex items-center space-x-3">
-                        <button className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center justify-center space-x-2 hover:bg-blue-700 transition-colors">
-                          <Download className="w-4 h-4" />
-                          <span>Export CSV</span>
-                        </button>
-                      </div>
-                    </div>
-
-                    {feesData.length === 0 ? (
-                      <div className="text-center py-12">
-                        <DollarSign className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                        <h3 className="text-xl font-semibold text-gray-700 mb-2">No Fee Payments Found</h3>
-                        <p className="text-gray-500">No fee payments match your search criteria.</p>
-                        <button 
-                          onClick={loadFeePayments}
-                          className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                        >
-                          Refresh Data
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="overflow-x-auto rounded-lg border border-gray-200">
-                        <table className="min-w-full divide-y divide-gray-200">
-                          <thead className="bg-gray-50">
-                            <tr>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Student Name
-                              </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Class
-                              </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Amount
-                              </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Receipt #
-                              </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                File Type
-                              </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Date
-                              </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Status
-                              </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Actions
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody className="bg-white divide-y divide-gray-200">
-                            {feesData.map((payment) => (
-                              <tr key={payment._id} className="hover:bg-gray-50 transition-colors">
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                  <div className="flex items-center">
-                                    <img
-                                      className="h-10 w-10 rounded-full"
-                                      src={`https://ui-avatars.com/api/?name=${payment.studentName}&background=002366&color=fff`}
-                                      alt={payment.studentName}
-                                    />
-                                    <div className="ml-4">
-                                      <div className="text-sm font-medium text-gray-900">{payment.studentName}</div>
-                                      <div className="text-sm text-gray-500">{payment.email}</div>
-                                    </div>
-                                  </div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                  <div className="text-sm text-gray-900">{payment.className}</div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                  <div className="text-sm font-semibold text-gray-900">₹{payment.amount?.toLocaleString('en-IN') || '0'}</div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                  {payment.receiptNumber}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                  {payment.cloudinaryFile ? (
-                                    <div className="flex items-center space-x-1">
-                                      {payment.cloudinaryFile.resource_type === 'image' ? (
-                                        <>
-                                          <ImageIcon className="w-4 h-4 text-green-600" />
-                                          <span className="text-xs text-gray-600">Image</span>
-                                        </>
-                                      ) : (
-                                        <>
-                                          <File className="w-4 h-4 text-red-600" />
-                                          <span className="text-xs text-gray-600">PDF</span>
-                                        </>
-                                      )}
-                                      <span className="text-xs text-gray-400 ml-1">☁️</span>
-                                    </div>
-                                  ) : payment.receiptFile ? (
-                                    <div className="flex items-center space-x-1">
-                                      <FileText className="w-4 h-4 text-blue-600" />
-                                      <span className="text-xs text-gray-600">File</span>
-                                    </div>
-                                  ) : (
-                                    <span className="text-xs text-gray-400">No file</span>
-                                  )}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                  {formatDate(payment.receiptDate)}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                  {renderStatusBadge(payment.status)}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                                  <button 
-                                    onClick={() => setViewDetails(payment)}
-                                    className="text-blue-600 hover:text-blue-900"
-                                  >
-                                    <EyeIcon className="w-4 h-4 inline mr-1" /> View
-                                  </button>
-                                  {payment.status === 'pending' && (
-                                    <>
-                                      <button 
-                                        onClick={() => handleUpdateStatus('fee', payment._id, 'verified')}
-                                        className="text-green-600 hover:text-green-900"
-                                      >
-                                        <Check className="w-4 h-4 inline mr-1" /> Verify
-                                      </button>
-                                      <button 
-                                        onClick={() => handleUpdateStatus('fee', payment._id, 'rejected')}
-                                        className="text-red-600 hover:text-red-900"
-                                      >
-                                        <X className="w-4 h-4 inline mr-1" /> Reject
-                                      </button>
-                                    </>
-                                  )}
-                                  <button 
-                                    onClick={() => handleDelete('fee', payment._id)}
-                                    className="text-red-600 hover:text-red-900"
-                                  >
-                                    <Trash2 className="w-4 h-4 inline mr-1" /> Delete
-                                  </button>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    )}
-                  </div>
-                </div>
+              {currentTab === 'achievements' && (
+                <AdminAchievements showToast={showToast} />
               )}
 
-              {/* Contacts Tab */}
-              {currentTab === 'contacts' && (
-                <div className="space-y-6">
-                  <div className="bg-white rounded-2xl shadow-lg p-6">
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 space-y-4 md:space-y-0">
-                      <h2 className="text-2xl font-bold text-gray-800">Contact Messages ({contactsData.length})</h2>
-                      <div className="flex items-center space-x-3">
-                        <button className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center justify-center space-x-2 hover:bg-blue-700 transition-colors">
-                          <Download className="w-4 h-4" />
-                          <span>Export CSV</span>
-                        </button>
-                      </div>
-                    </div>
-
-                    {contactsData.length === 0 ? (
-                      <div className="text-center py-12">
-                        <Mail className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                        <h3 className="text-xl font-semibold text-gray-700 mb-2">No Contact Messages Found</h3>
-                        <p className="text-gray-500">No contact messages match your search criteria.</p>
-                        <button 
-                          onClick={loadContacts}
-                          className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                        >
-                          Refresh Data
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="overflow-x-auto rounded-lg border border-gray-200">
-                        <table className="min-w-full divide-y divide-gray-200">
-                          <thead className="bg-gray-50">
-                            <tr>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Name
-                              </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Email
-                              </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Subject
-                              </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Message Preview
-                              </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Date
-                              </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Status
-                              </th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Actions
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody className="bg-white divide-y divide-gray-200">
-                            {contactsData.map((contact) => (
-                              <tr key={contact._id} className="hover:bg-gray-50 transition-colors">
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                  <div className="flex items-center">
-                                    <img
-                                      className="h-10 w-10 rounded-full"
-                                      src={`https://ui-avatars.com/api/?name=${contact.name}&background=002366&color=fff`}
-                                      alt={contact.name}
-                                    />
-                                    <div className="ml-4">
-                                      <div className="text-sm font-medium text-gray-900">{contact.name}</div>
-                                      {contact.phone && (
-                                        <div className="text-sm text-gray-500">{contact.phone}</div>
-                                      )}
-                                    </div>
-                                  </div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                  {contact.email}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                  <div className="text-sm text-gray-900">{contact.subject || 'General Inquiry'}</div>
-                                </td>
-                                <td className="px-6 py-4">
-                                  <div className="text-sm text-gray-500 truncate max-w-xs">
-                                    {contact.message}
-                                  </div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                  {formatDate(contact.submittedAt)}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                  {renderStatusBadge(contact.status)}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                                  <button 
-                                    onClick={() => setViewDetails(contact)}
-                                    className="text-blue-600 hover:text-blue-900"
-                                  >
-                                    <EyeIcon className="w-4 h-4 inline mr-1" /> View
-                                  </button>
-                                  {contact.status === 'unread' && (
-                                    <button 
-                                      onClick={() => handleUpdateStatus('contact', contact._id, 'read')}
-                                      className="text-gray-600 hover:text-gray-900"
-                                    >
-                                      <Mail className="w-4 h-4 inline mr-1" /> Mark Read
-                                    </button>
-                                  )}
-                                  <button 
-                                    onClick={() => handleDelete('contact', contact._id)}
-                                    className="text-red-600 hover:text-red-900"
-                                  >
-                                    <Trash2 className="w-4 h-4 inline mr-1" /> Delete
-                                  </button>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    )}
-                  </div>
-                </div>
+              {currentTab === 'announcements' && (
+                <AdminAnnouncements showToast={showToast} />
               )}
 
-              {/* Reports Tab */}
-              {currentTab === 'reports' && (
-                <div className="space-y-6">
-                  <div className="bg-white rounded-2xl shadow-lg p-6">
-                    <h2 className="text-2xl font-bold text-gray-800 mb-6">Reports & Analytics</h2>
-                    
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                      {/* Applications Chart */}
-                      <div className="bg-white border border-gray-200 rounded-xl p-6">
-                        <h3 className="text-lg font-semibold text-gray-800 mb-4">Applications by Class</h3>
-                        <div className="h-64">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={applicationsByClass}>
-                              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                              <XAxis dataKey="name" stroke="#666" />
-                              <YAxis stroke="#666" />
-                              <Tooltip />
-                              <Bar dataKey="applications" fill="#002366" radius={[4, 4, 0, 0]} />
-                            </BarChart>
-                          </ResponsiveContainer>
+              {currentTab === 'examschedules' && (
+                <AdminExamSchedules showToast={showToast} />
+              )}
+
+              {currentTab === 'testimonials' && (
+                <AdminTestimonials showToast={showToast} />
+              )}
+
+               {currentTab === 'reports' && (
+                 <div className="bg-white rounded-2xl shadow-lg p-6">
+                   <div className="text-center py-12">
+                     <h3 className="text-xl font-semibold text-gray-700 mb-2">Reports and Analytics</h3>
+                     <p className="text-gray-500">Use the dashboard for statistics graphs.</p>
+                   </div>
+                 </div>
+               )}                {currentTab === 'settings' && (
+                  <div className="space-y-6 max-w-5xl mx-auto">
+                    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+                      <div className="bg-gradient-to-r from-sricblue to-blue-800 p-8 text-white relative overflow-hidden">
+                        <div className="absolute top-0 right-0 -mt-8 -mr-8 w-48 h-48 bg-white/10 rounded-full blur-3xl"></div>
+                        <div className="relative z-10 flex items-center space-x-6">
+                          <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 shadow-xl">
+                            <Shield className="w-10 h-10 md:w-12 md:h-12 text-white" />
+                          </div>
+                          <div>
+                            <h2 className="text-2xl md:text-3xl font-bold">Admin Settings</h2>
+                            <p className="text-blue-100 mt-1">Manage administrative preferences</p>
+                          </div>
                         </div>
                       </div>
 
-                      {/* Payment Status Chart */}
-                      <div className="bg-white border border-gray-200 rounded-xl p-6">
-                        <h3 className="text-lg font-semibold text-gray-800 mb-4">Payment Status Distribution</h3>
-                        <div className="h-64">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <PieChart>
-                              <Pie
-                                data={paymentStatusData}
-                                cx="50%"
-                                cy="50%"
-                                labelLine={false}
-                                label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                                outerRadius={80}
-                                fill="#8884d8"
-                                dataKey="value"
+                      <div className="p-6 md:p-8">
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                          {/* Settings Sidebar */}
+                          <div className="lg:col-span-1 space-y-2">
+                            {['Account', 'Security', 'Notifications', 'System'].map((sec) => (
+                              <button
+                                key={sec}
+                                onClick={() => setSettingsActiveSection(sec)}
+                                className={`w-full text-left px-4 py-3 rounded-xl transition-all font-semibold flex items-center space-x-3 ${
+                                  settingsActiveSection === sec ? 'bg-blue-50 text-sricblue' : 'text-gray-500 hover:bg-gray-50'
+                                }`}
                               >
-                                {paymentStatusData.map((entry, index) => (
-                                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                ))}
-                              </Pie>
-                              <Tooltip />
-                              <Legend />
-                            </PieChart>
-                          </ResponsiveContainer>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="bg-gray-50 rounded-xl p-6">
-                      <h3 className="text-lg font-semibold text-gray-800 mb-4">Quick Statistics</h3>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div className="bg-white p-4 rounded-lg text-center">
-                          <div className="text-2xl font-bold text-blue-600">{stats?.counts?.admissions || 0}</div>
-                          <div className="text-sm text-gray-500">Total Admissions</div>
-                        </div>
-                        <div className="bg-white p-4 rounded-lg text-center">
-                          <div className="text-2xl font-bold text-green-600">{stats?.counts?.feePayments || 0}</div>
-                          <div className="text-sm text-gray-500">Total Payments</div>
-                        </div>
-                        <div className="bg-white p-4 rounded-lg text-center">
-                          <div className="text-2xl font-bold text-purple-600">{stats?.counts?.contacts || 0}</div>
-                          <div className="text-sm text-gray-500">Total Contacts</div>
-                        </div>
-                        <div className="bg-white p-4 rounded-lg text-center">
-                          <div className="text-2xl font-bold text-yellow-600">
-                            {stats?.counts?.admissions ? Math.round((stats.counts.approvedAdmissions / stats.counts.admissions) * 100) : 0}%
+                                <div className={`w-2 h-2 rounded-full ${settingsActiveSection === sec ? 'bg-sricblue' : 'bg-transparent'}`}></div>
+                                <span>{sec}</span>
+                              </button>
+                            ))}
                           </div>
-                          <div className="text-sm text-gray-500">Approval Rate</div>
+
+                          {/* Settings Tab Content */}
+                          <div className="lg:col-span-2 space-y-8 min-h-[400px]">
+                            {settingsActiveSection === 'Account' && (
+                              <section className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center border-b pb-2">
+                                  <Users className="w-5 h-5 mr-2 text-sricblue" />
+                                  Account Details
+                                </h3>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                  <div className="space-y-1">
+                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Logged In As</label>
+                                    <div className="w-full bg-blue-50/50 border border-blue-100 p-2.5 rounded-lg text-sricblue font-bold flex items-center">
+                                      <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                                      {userName}
+                                    </div>
+                                  </div>
+                                  <div className="space-y-1">
+                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Role</label>
+                                    <div className="w-full bg-gray-50 border border-gray-200 p-2.5 rounded-lg text-gray-700 font-bold">Super Administrator</div>
+                                  </div>
+                                  <div className="space-y-1">
+                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Session ID</label>
+                                    <div className="w-full bg-gray-50 border border-gray-200 p-2.5 rounded-lg text-gray-500 font-mono text-xs">
+                                      {Math.random().toString(36).substring(2, 10).toUpperCase()}
+                                    </div>
+                                  </div>
+                                </div>
+                              </section>
+                            )}
+
+                            {settingsActiveSection === 'Security' && (
+                              <section className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center border-b pb-2">
+                                  <Shield className="w-5 h-5 mr-2 text-sricblue" />
+                                  Password & Security
+                                </h3>
+                                <div className="space-y-4">
+                                  <div className="p-4 bg-blue-50/50 rounded-2xl border border-blue-100 flex items-center justify-between">
+                                    <div className="flex items-center space-x-4">
+                                      <div className="p-3 bg-white rounded-xl shadow-sm">
+                                        <Settings className="w-6 h-6 text-sricblue" />
+                                      </div>
+                                      <div>
+                                        <p className="font-bold text-gray-800">Master Password</p>
+                                        <p className="text-xs text-gray-500">Security Level: High</p>
+                                      </div>
+                                    </div>
+                                    <button className="bg-white text-sricblue px-4 py-2 rounded-lg border border-blue-200 font-bold hover:bg-blue-600 hover:text-white transition-all shadow-sm">
+                                      Update
+                                    </button>
+                                  </div>
+                                  
+                                  <div className="p-4 bg-gray-50 rounded-2xl border border-gray-200 opacity-60">
+                                    <div className="flex justify-between items-center opacity-50">
+                                      <span className="text-sm font-bold text-gray-700">Two-Factor Authentication</span>
+                                      <span className="text-xs font-bold text-gray-400 italic">Coming Soon</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </section>
+                            )}
+
+                            {settingsActiveSection === 'Notifications' && (
+                              <section className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center border-b pb-2">
+                                  <Bell className="w-5 h-5 mr-2 text-sricblue" />
+                                  Notification Alerts
+                                </h3>
+                                <div className="space-y-3">
+                                  {[
+                                    { label: 'Email for new admissions', active: true },
+                                    { label: 'Daily summary report', active: true },
+                                    { label: 'Security alert emails', active: true }
+                                  ].map((item, i) => (
+                                    <div key={i} className="flex items-center justify-between p-3.5 bg-gray-50 rounded-xl border border-gray-100">
+                                      <span className="text-sm font-semibold text-gray-700">{item.label}</span>
+                                      <div className={`w-10 h-5 rounded-full relative ${item.active ? 'bg-sricblue' : 'bg-gray-300'}`}>
+                                        <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${item.active ? 'right-1' : 'left-1'}`}></div>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </section>
+                            )}
+
+                            {settingsActiveSection === 'System' && (
+                              <section className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center border-b pb-2">
+                                  <Settings className="w-5 h-5 mr-2 text-sricblue" />
+                                  System Preferences
+                                </h3>
+                                <div className="p-12 text-center bg-gray-50 rounded-3xl border border-dashed border-gray-300">
+                                  <RefreshCw className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                                  <p className="text-gray-500 font-medium">Core system settings are managed by the database administrator.</p>
+                                </div>
+                              </section>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              )}
-
-              {/* Settings Tab */}
-              {currentTab === 'settings' && (
-                <div className="space-y-6">
-                  <div className="bg-white rounded-2xl shadow-lg p-6">
-                    <div className="text-center py-12">
-                      <Settings className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                      <h3 className="text-xl font-semibold text-gray-700 mb-2">Admin Settings</h3>
-                      <p className="text-gray-500">Configure system preferences and user permissions</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </>
+                )}
+             </>
           )}
         </main>
       </div>

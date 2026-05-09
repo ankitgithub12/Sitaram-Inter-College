@@ -1,28 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import Header from './Header';
+import Footer from './Footer';
 
 const Programs = () => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [openDropdown, setOpenDropdown] = useState(null);
 
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
 
-  const toggleDropdown = (dropdown) => {
-    setOpenDropdown(openDropdown === dropdown ? null : dropdown);
-  };
-
-  // Close mobile menu when clicking outside
+  // Scroll to top on mount
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (!event.target.closest('#mobile-menu') && !event.target.closest('#menu-toggle')) {
-        setIsMobileMenuOpen(false);
-      }
-    };
-
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
+    window.scrollTo(0, 0);
   }, []);
 
   // Smooth scroll to section
@@ -31,284 +17,11 @@ const Programs = () => {
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
     }
-    setIsMobileMenuOpen(false);
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="sticky top-0 z-50 shadow-lg">
-        <nav className="bg-gradient-to-r from-sricblue to-blue-900 p-4">
-          <div className="container mx-auto flex justify-between items-center">
-            {/* Logo + School Name */}
-            <div className="flex items-center space-x-2">
-              <img 
-                src="/assets/SRIC LOGO.PNG" 
-                alt="SRIC Logo" 
-                className="h-10 w-10 rounded-full border-2 border-white"
-              />
-              <Link to="/" className="text-white text-xl font-bold tracking-tight">
-                SITARAM INTER COLLEGE
-              </Link>
-              <span className="hidden sm:inline text-sricgold text-sm font-medium">
-                Empowering Minds, Shaping Futures
-              </span>
-            </div>
-
-            {/* Desktop Menu */}
-            <ul className="hidden md:flex space-x-6 items-center">
-              <li>
-                <Link to="/" className="nav-link text-gray-200 hover:text-white hover:underline decoration-sricgold decoration-2">
-                  Home
-                </Link>
-              </li>
-              
-              {/* About Us Dropdown */}
-              <li className="relative dropdown-group">
-                <button className="nav-link text-gray-200 hover:text-white focus:outline-none flex items-center">
-                  About Us 
-                  <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
-                  </svg>
-                </button>
-                <ul className="dropdown-menu absolute left-0 mt-2 w-48 bg-white rounded-md shadow-xl py-1 border border-gray-200">
-                  <li>
-                    <Link to="/mission" className="block px-4 py-2 text-gray-800 hover:bg-sricblue hover:text-white transition-colors">
-                      Mission
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to="/history" className="block px-4 py-2 text-gray-800 hover:bg-sricblue hover:text-white transition-colors">
-                      History
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to="/faculty" className="block px-4 py-2 text-gray-800 hover:bg-sricblue hover:text-white transition-colors">
-                      Faculty
-                    </Link>
-                  </li>
-                </ul>
-              </li>
-              
-              {/* Academics Dropdown - Active */}
-              <li className="relative dropdown-group">
-                <button className="nav-link text-white font-semibold focus:outline-none flex items-center">
-                  Academics 
-                  <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
-                  </svg>
-                </button>
-                <ul className="dropdown-menu absolute left-0 mt-2 w-48 bg-white rounded-md shadow-xl py-1 border border-gray-200">
-                  <li>
-                    <Link to="/curriculum" className="block px-4 py-2 text-gray-800 hover:bg-sricblue hover:text-white transition-colors">
-                      Curriculum
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to="/programs" className="block px-4 py-2 bg-sricblue text-white font-semibold">
-                      Programs
-                    </Link>
-                  </li>
-                </ul>
-              </li>
-
-              <li>
-                <Link to="/achievements" className="nav-link text-gray-200 hover:text-white hover:underline decoration-sricgold decoration-2">
-                  Achievements
-                </Link>
-              </li>
-              
-              <li>
-                <Link to="/admission-form" className="nav-link text-gray-200 hover:text-white hover:underline decoration-sricgold decoration-2">
-                  Admissions
-                </Link>
-              </li>
-              
-              <li>
-                <Link to="/contact" className="nav-link text-gray-200 hover:text-white hover:underline decoration-sricgold decoration-2">
-                  Contact
-                </Link>
-              </li>
-            </ul>
-
-            {/* Desktop Buttons Group */}
-            <div className="hidden md:flex items-center space-x-3">
-              {/* CTA Button */}
-              <Link 
-                to="/admission-form" 
-                className="relative overflow-hidden bg-gradient-to-r from-sricgold to-yellow-500 text-sricblue px-5 py-2.5 rounded-lg font-bold hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 group"
-              >
-                <span className="relative z-10 flex items-center">
-                  <i className="fas fa-pen-to-square mr-2"></i>
-                  Apply Now
-                </span>
-                <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
-              </Link>
-            </div>
-
-            {/* Mobile Hamburger Menu */}
-            <button 
-              id="menu-toggle"
-              onClick={toggleMobileMenu}
-              className="md:hidden text-white focus:outline-none"
-              aria-expanded={isMobileMenuOpen}
-              aria-label="Toggle menu"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path>
-              </svg>
-            </button>
-          </div>
-
-          {/* Mobile Menu */}
-          <div 
-            id="mobile-menu" 
-            className={`md:hidden ${isMobileMenuOpen ? 'block' : 'hidden'} bg-blue-900 pb-4 px-4 transition-all duration-300`}
-          >
-            <ul className="flex flex-col space-y-1">
-              <li className="mobile-menu-item">
-                <Link 
-                  to="/" 
-                  className="block text-gray-200 hover:text-white py-3 px-4 rounded-md hover:bg-blue-800 transition"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Home
-                </Link>
-              </li>
-              
-              {/* About Us Mobile Dropdown */}
-              <li className="dropdown-container mobile-menu-item">
-                <button 
-                  onClick={() => toggleDropdown('about')}
-                  className="dropdown-btn w-full text-left text-gray-200 hover:text-white py-3 px-4 rounded-md hover:bg-blue-800 flex justify-between items-center transition"
-                >
-                  About Us 
-                  <svg 
-                    className={`dropdown-icon w-4 h-4 transform transition-transform ${openDropdown === 'about' ? 'rotate-180' : ''}`} 
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
-                  </svg>
-                </button>
-                <ul 
-                  className={`dropdown-content pl-4 mt-1 space-y-1 overflow-hidden transition-all duration-300 ${openDropdown === 'about' ? 'max-h-40' : 'max-h-0'}`}
-                >
-                  <li>
-                    <Link 
-                      to="/mission" 
-                      className="block text-gray-300 hover:text-white py-2 px-4 rounded-md hover:bg-blue-800 transition text-sm"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      Mission
-                    </Link>
-                  </li>
-                  <li>
-                    <Link 
-                      to="/history" 
-                      className="block text-gray-300 hover:text-white py-2 px-4 rounded-md hover:bg-blue-800 transition text-sm"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      History
-                    </Link>
-                  </li>
-                  <li>
-                    <Link 
-                      to="/faculty" 
-                      className="block text-gray-300 hover:text-white py-2 px-4 rounded-md hover:bg-blue-800 transition text-sm"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      Faculty
-                    </Link>
-                  </li>
-                </ul>
-              </li>
-
-              {/* Academics Mobile Dropdown */}
-              <li className="dropdown-container mobile-menu-item">
-                <button 
-                  onClick={() => toggleDropdown('academics')}
-                  className="dropdown-btn w-full text-left text-white font-semibold py-3 px-4 rounded-md hover:bg-blue-800 flex justify-between items-center transition"
-                >
-                  Academics 
-                  <svg 
-                    className={`dropdown-icon w-4 h-4 transform transition-transform ${openDropdown === 'academics' ? 'rotate-180' : ''}`} 
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
-                  </svg>
-                </button>
-                <ul 
-                  className={`dropdown-content pl-4 mt-1 space-y-1 overflow-hidden transition-all duration-300 ${openDropdown === 'academics' ? 'max-h-40' : 'max-h-0'}`}
-                >
-                  <li>
-                    <Link 
-                      to="/curriculum" 
-                      className="block text-gray-300 hover:text-white py-2 px-4 rounded-md hover:bg-blue-800 transition text-sm"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      Curriculum
-                    </Link>
-                  </li>
-                  <li>
-                    <Link 
-                      to="/programs" 
-                      className="block text-white bg-blue-700 py-2 px-4 rounded-md transition text-sm font-medium"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      Programs
-                    </Link>
-                  </li>
-                </ul>
-              </li>
-
-              <li className="mobile-menu-item">
-                <Link 
-                  to="/achievements" 
-                  className="block text-gray-200 hover:text-white py-3 px-4 rounded-md hover:bg-blue-800 transition"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Achievements
-                </Link>
-              </li>
-              
-              <li className="mobile-menu-item">
-                <Link 
-                  to="/admission-form" 
-                  className="block text-gray-200 hover:text-white py-3 px-4 rounded-md hover:bg-blue-800 transition"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Admissions
-                </Link>
-              </li>
-              
-              <li className="mobile-menu-item">
-                <Link 
-                  to="/contact" 
-                  className="block text-gray-200 hover:text-white py-3 px-4 rounded-md hover:bg-blue-800 transition"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Contact
-                </Link>
-              </li>
-              
-              {/* Mobile Apply Now Button */}
-              <li className="mobile-menu-item mt-2">
-                <Link 
-                  to="/admission-form" 
-                  className="block bg-gradient-to-r from-sricgold to-yellow-500 text-sricblue px-4 py-3 rounded-md text-center font-bold hover:shadow-lg transition"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Apply Now
-                </Link>
-              </li>
-            </ul>
-          </div>
-        </nav>
-      </header>
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <Header />
 
       {/* Hero Section */}
       <section className="hero text-white py-20 relative overflow-hidden">
@@ -699,7 +412,7 @@ const Programs = () => {
           <div className="max-w-3xl mx-auto">
             <div className="inline-flex items-center justify-center mb-6 bg-white/10 backdrop-blur-sm rounded-full px-6 py-3">
               <div className="w-3 h-3 bg-green-400 rounded-full mr-2 animate-pulse"></div>
-              <span className="text-sm font-medium">Admissions Open 2025-26</span>
+              <span className="text-sm font-medium">Admissions Open 2026-2027</span>
             </div>
             
             <h2 className="text-3xl md:text-4xl font-bold mb-6">
@@ -749,78 +462,7 @@ const Programs = () => {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
-        <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center mb-4">
-                <div className="bg-gradient-to-br from-sricblue to-blue-900 w-12 h-12 rounded-xl flex items-center justify-center shadow-md">
-                  <span className="text-white text-xl font-bold">SRIC</span>
-                </div>
-                <h3 className="text-xl font-bold ml-3">SRIC</h3>
-              </div>
-              <p className="text-gray-400 mb-4">Preparing students for UP Board success since 2002.</p>
-              <div className="flex space-x-4">
-                <a href="#" className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center text-gray-300 hover:bg-sricblue hover:text-white transition-colors">
-                  <i className="fab fa-facebook-f"></i>
-                </a>
-                <a href="#" className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center text-gray-300 hover:bg-sricblue hover:text-white transition-colors">
-                  <i className="fab fa-twitter"></i>
-                </a>
-                <a href="#" className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center text-gray-300 hover:bg-sricblue hover:text-white transition-colors">
-                  <i className="fab fa-instagram"></i>
-                </a>
-                <a href="#" className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center text-gray-300 hover:bg-sricblue hover:text-white transition-colors">
-                  <i className="fab fa-youtube"></i>
-                </a>
-              </div>
-            </div>
-            
-            <div>
-              <h4 className="text-lg font-bold mb-4">Quick Links</h4>
-              <ul className="space-y-2">
-                <li><Link to="/" className="text-gray-400 hover:text-white transition-colors">Home</Link></li>
-                <li><Link to="/history" className="text-gray-400 hover:text-white transition-colors">About Us</Link></li>
-                <li><Link to="/curriculum" className="text-gray-400 hover:text-white transition-colors">Curriculum</Link></li>
-                <li><Link to="/achievements" className="text-gray-400 hover:text-white transition-colors">Achievements</Link></li>
-                <li><Link to="/admission-form" className="text-gray-400 hover:text-white transition-colors">Admissions</Link></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="text-lg font-bold mb-4">Academic Streams</h4>
-              <ul className="space-y-2">
-                <li><Link to="/programs" className="text-gray-400 hover:text-white transition-colors">Science (PCM)</Link></li>
-                <li><Link to="/programs" className="text-gray-400 hover:text-white transition-colors">Science (PCB)</Link></li>
-                <li><Link to="/programs" className="text-gray-400 hover:text-white transition-colors">Humanities</Link></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="text-lg font-bold mb-4">Contact Us</h4>
-              <ul className="space-y-3">
-                <li className="flex items-start">
-                  <i className="fas fa-map-marker-alt mt-1 mr-3 text-gray-400"></i>
-                  <span className="text-gray-400">Sabdalpur Sharki, Mathana Road Hasanpur, Amroha 244242</span>
-                </li>
-                <li className="flex items-center">
-                  <i className="fas fa-phone-alt mr-3 text-gray-400"></i>
-                  <span className="text-gray-400">+91 9756517750</span>
-                </li>
-                <li className="flex items-center">
-                  <i className="fas fa-envelope mr-3 text-gray-400"></i>
-                  <span className="text-gray-400">sitaramintercollege1205@gmail.com</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-          
-          <div className="border-t border-gray-800 mt-10 pt-6 text-center text-gray-400">
-            <p>© 2025 SRIC Senior Secondary School. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
 
       {/* Add custom styles for animations */}
       <style>{`

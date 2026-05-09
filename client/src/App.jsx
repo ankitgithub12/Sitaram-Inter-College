@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './components/Home';
 import AdminLogin from './components/AdminLogin';
-import AdmissionForm from './components/AdmissionForm';
+import AdmissionForm from './components/student/AdmissionForm';
 import Contact from './components/Contact';
 import Achievements from './components/Achievements';
 import Announcements from './components/Announcements';
@@ -11,15 +11,21 @@ import History from './components/History';
 import Faculty from './components/Faculty';
 import Curriculum from './components/Curriculum';
 import Programs from './components/Programs';
-import Fees from './components/Fees';
+import Fees from './components/student/Fees';
 import Process from './components/Process';
 import PhotosVideos from './components/photos-videos';
 import Admin from './components/admin';
+import StudentDashboard from './components/student/StudentDashboard';
+import TeacherDashboard from './components/teacher/TeacherDashboard';
+import Chatbot from './components/Chatbot';
+import ScrollToTop from './components/ScrollToTop';
+import Testimonials from './components/Testimonials';
 import './App.css';
 
 function App() {
   return (
     <Router>
+      <ScrollToTop />
       <div className="App">
         <Routes>
           <Route path="/" element={<Home />} />
@@ -37,9 +43,14 @@ function App() {
           <Route path ="/fees" element={<Fees/>}/>
           <Route path ="/process" element={<Process/>}/>
           <Route path="/photos-videos" element={<PhotosVideos/>}/>
+          <Route path="/testimonials" element={<Testimonials/>}/>
           <Route path="/admin" element={<Admin />} />
+          <Route path="/student-dashboard" element={<StudentDashboard />} />
+          <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
           {/* Add other routes as we convert more pages */}
         </Routes>
+        {/* Global Chatbot Component */}
+        <Chatbot />
       </div>
     </Router>
   );

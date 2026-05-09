@@ -1,29 +1,37 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import Header from './Header';
+import Footer from './Footer';
 
 const Announcements = () => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [openDropdown, setOpenDropdown] = useState(null);
   const [filter, setFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [visibleCount, setVisibleCount] = useState(6);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
 
-  // Function to handle PDF download
-  const handleDownload = (fileName) => {
-    // Create a temporary link element
+  // Function to handle PDF or file download
+  const handleDownload = (attachment) => {
+    if (!attachment) return;
+    
+    // If it's an object with a secure URL from Cloudinary (new api structure)
+    if (attachment.url) {
+      window.open(attachment.url, '_blank');
+      return;
+    }
+
+    // Fallback for hardcoded assets
+    const fileName = typeof attachment === 'string' ? attachment : attachment.name;
     const link = document.createElement('a');
     
     // Map file names to actual file paths
     const fileMap = {
-      'Practical Schedule.pdf': 'assets/Board Practical Schedule 2025-26.pdf',
-      'Syllabus.pdf': 'assets/UP Board Syllabus 2025-26.pdf',
+      'Practical Schedule.pdf': 'assets/Board Practical Schedule 2026-2027.pdf',
+      'Syllabus.pdf': 'assets/UP Board Syllabus 2026-2027.pdf',
       'Quarterly Datesheet.pdf': '/assets/त्रैमासिक परीक्षा समय सारणी.pdf',
-      'Half Yearly Datesheet.pdf': '/assets/Half Yearly Examination Date Sheet 2025.pdf',
-      'Holiday Schedule.pdf': 'assets/Holiday Schedule 2025-26.pdf',
-      'Event Schedule.pdf': 'assets/Event Schedule 2025-26.pdf',
-      'Academic Calendar.pdf': 'assets/Academic Calendar 2025-26.pdf',
+      'Half Yearly Datesheet.pdf': '/assets/Half Yearly Examination Date Sheet 2026.pdf',
+      'Holiday Schedule.pdf': 'assets/Holiday Schedule 2026-2027.pdf',
+      'Event Schedule.pdf': 'assets/Event Schedule 2026-2027.pdf',
+      'Academic Calendar.pdf': 'assets/Academic Calendar 2026-2027.pdf',
       'PTM Schedule.pdf': 'assets/Parent Teacher Meeting Schedule.pdf'
     };
 
@@ -37,166 +45,78 @@ const Announcements = () => {
     document.body.removeChild(link);
   };
 
-  const announcementsData = [
-    {
-      id: 1,
-      title: "UP Board Practical Examination Schedule",
-      date: "15 April 2025",
-      day: "15",
-      month: "April",
-      category: "academic urgent",
-      isNew: true,
-      isUrgent: true,
-      content: "Practical examinations for Class 10 and 12 will be conducted from January 5-15, 2026. Special preparation classes will commence from November 1, 2025. All students must attend regularly.",
-      posted: "2 days ago",
-      author: "Examination Department",
-      attachments: ["Practical Schedule.pdf", "Syllabus.pdf"]
-    },
-    {
-      id: 2,
-      title: "Quarterly Examination Date Sheet Released",
-      date: "10 April 2025",
-      day: "10",
-      month: "April",
-      category: "academic",
-      isNew: true,
-      isUrgent: false,
-      content: "Quarterly examinations for all classes (UKG to 12th) will be held from October 3-13, 2025. Detailed timetable is available for download. Students should begin preparation immediately.",
-      posted: "1 week ago",
-      author: "Principal's Office",
-      attachments: ["Quarterly Datesheet.pdf"]
-    },
-    {
-      id: 3,
-      title: "Half-Yearly Examination Schedule Announcement",
-      date: "05 April 2025",
-      day: "05",
-      month: "April",
-      category: "academic urgent",
-      isNew: false,
-      isUrgent: true,
-      content: "Half-Yearly examinations for all classes will be conducted from December 11-26, 2025. This includes practical exams for science and other subjects. Detailed schedule attached.",
-      posted: "2 weeks ago",
-      author: "Examination Department",
-      attachments: ["Half Yearly Datesheet.pdf"]
-    },
-    {
-      id: 4,
-      title: "Diwali Holiday Schedule 2025",
-      date: "28 March 2025",
-      day: "28",
-      month: "March",
-      category: "holiday",
-      isNew: false,
-      isUrgent: false,
-      content: "School will remain closed for Diwali holidays from October 19 to October 24, 2025. Regular classes will resume from October 25, 2025. Students must complete pending assignments.",
-      posted: "3 weeks ago",
-      author: "Administration",
-      attachments: ["Holiday Schedule.pdf"]
-    },
-    {
-      id: 5,
-      title: "Independence Day Celebration Program",
-      date: "20 March 2025",
-      day: "20",
-      month: "March",
-      category: "events",
-      isNew: false,
-      isUrgent: false,
-      content: "Independence Day will be celebrated on August 15, 2025 with flag hoisting ceremony at 8:00 AM. Cultural programs and patriotic song competitions. Participation certificates will be awarded.",
-      posted: "1 month ago",
-      author: "Cultural Committee",
-      attachments: ["Event Schedule.pdf"]
-    },
-    {
-      id: 6,
-      title: "New Session Begins - Academic Year 2025-26",
-      date: "01 April 2025",
-      day: "01",
-      month: "April",
-      category: "academic",
-      isNew: false,
-      isUrgent: false,
-      content: "Academic session 2025-26 begins for all classes. All students must collect their new books and syllabus. Timetable for the new session is displayed on notice boards.",
-      posted: "1 month ago",
-      author: "Principal's Office",
-      attachments: ["Academic Calendar.pdf", "Syllabus.pdf"]
-    },
-    {
-      id: 7,
-      title: "Republic Day Celebration & Holiday",
-      date: "15 March 2025",
-      day: "15",
-      month: "March",
-      category: "holiday",
-      isNew: false,
-      isUrgent: false,
-      content: "Republic Day will be celebrated on January 26, 2026. School will remain closed. Patriotic programs will be organized on January 25, 2026.",
-      posted: "1 month ago",
-      author: "Administration",
-      attachments: []
-    },
-    {
-      id: 8,
-      title: "Parent-Teacher Meeting Schedule",
-      date: "10 March 2025",
-      day: "10",
-      month: "March",
-      category: "events",
-      isNew: false,
-      isUrgent: false,
-      content: "Quarterly Parent-Teacher meeting will be held on October 3, 2025. All parents/guardians must attend with their wards. Academic progress will be discussed.",
-      posted: "1 month ago",
-      author: "Principal's Office",
-      attachments: ["PTM Schedule.pdf"]
-    }
-  ];
+  const [announcementsData, setAnnouncementsData] = useState([]);
+
+  useEffect(() => {
+    const fetchAnnouncements = async () => {
+      try {
+        const res = await fetch('/api/announcements');
+        const data = await res.json();
+        if (data.success) {
+          const formatted = data.data.map(a => {
+            const date = new Date(a.publishedAt || a.createdAt);
+            const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            return {
+              id: a._id,
+              title: a.title,
+              date: `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`,
+              day: date.getDate().toString().padStart(2, '0'),
+              month: months[date.getMonth()],
+              category: a.category + (a.isUrgent ? ' urgent' : ''),
+              isNew: a.isNewBadge,
+              isUrgent: a.isUrgent,
+              content: a.content,
+              posted: "Recently",
+              author: "Admin",
+              attachments: a.attachments || [] 
+            };
+          });
+          setAnnouncementsData(formatted);
+        }
+      } catch (err) {
+        console.error('Failed to fetch announcements:', err);
+      }
+    };
+    fetchAnnouncements();
+  }, []);
 
   const archivedAnnouncements = [
     {
-      date: "March 15, 2025",
-      title: "UP Board Result Analysis 2024-25",
+      date: "March 15, 2026",
+      title: "UP Board Result Analysis 2025-26",
       category: "Academic",
       author: "Examination Department",
       attachments: ["Result Analysis.pdf"]
     },
     {
-      date: "February 28, 2025",
-      title: "Summer Vacation Schedule 2024",
+      date: "February 28, 2026",
+      title: "Summer Vacation Schedule 2025",
       category: "General",
       author: "Administration",
       attachments: ["Summer Schedule.pdf"]
     },
     {
-      date: "February 15, 2025",
-      title: "Science Exhibition Winners 2024",
+      date: "February 15, 2026",
+      title: "Science Exhibition Winners 2025",
       category: "Event",
       author: "Science Department",
       attachments: ["Winners List.pdf"]
     },
     {
-      date: "January 30, 2025",
+      date: "January 30, 2026",
       title: "Board Exam Preparation Schedule",
       category: "Academic",
       author: "Principal's Office",
       attachments: ["Preparation Schedule.pdf"]
     },
     {
-      date: "January 15, 2025",
+      date: "January 15, 2026",
       title: "Republic Day Celebration Guidelines",
       category: "Event",
       author: "Cultural Committee",
       attachments: ["Guidelines.pdf"]
     }
   ];
-
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
-
-  const toggleDropdown = (dropdown) => {
-    setOpenDropdown(openDropdown === dropdown ? null : dropdown);
-  };
 
   const filteredAnnouncements = announcementsData.filter(announcement => {
     const matchesFilter = filter === 'all' || announcement.category.includes(filter);
@@ -323,7 +243,7 @@ const Announcements = () => {
                       <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
                         <div className="flex items-center">
                           <i className="fas fa-file-pdf text-red-500 mr-3 text-xl"></i>
-                          <span className="font-medium">{attachment}</span>
+                          <span className="font-medium">{attachment.name || attachment}</span>
                         </div>
                         <button 
                           onClick={() => handleDownload(attachment)}
@@ -358,144 +278,8 @@ const Announcements = () => {
         </div>
       )}
 
-      {/* Header */}
-      <header className="sticky top-0 z-50 shadow-lg">
-        <nav className="bg-gradient-to-r from-sricblue to-blue-800 p-4">
-          <div className="container mx-auto flex justify-between items-center">
-            <div className="flex items-center space-x-3">
-              <div className="bg-white p-2 rounded-full">
-                <img src="/assets/SRIC LOGO.PNG" alt="SRIC Logo" className="h-10 w-10 rounded-full" />
-              </div>
-              <Link to="/" className="text-white text-xl font-bold tracking-tight">SITARAM INTER COLLEGE</Link>
-              <span className="hidden sm:inline text-sricgold text-sm font-medium bg-white/10 px-2 py-1 rounded">Empowering Minds, Shaping Futures</span>
-            </div>
-            
-            {/* Desktop Menu */}
-            <ul className="hidden md:flex space-x-6 items-center">
-              <li><Link to="/" className="text-gray-300 hover:text-white hover:underline transition">Home</Link></li>
-              
-              <li className="relative group">
-                <button className="text-gray-300 hover:text-white focus:outline-none flex items-center transition">
-                  About Us <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                </button>
-                <ul className="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-xl py-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform group-hover:translate-y-0 translate-y-2">
-                  <li><Link to="/mission" className="block px-4 py-2 text-gray-800 hover:bg-sricblue hover:text-white transition">Mission</Link></li>
-                  <li><Link to="/history" className="block px-4 py-2 text-gray-800 hover:bg-sricblue hover:text-white transition">History</Link></li>
-                  <li><Link to="/faculty" className="block px-4 py-2 text-gray-800 hover:bg-sricblue hover:text-white transition">Faculty</Link></li>
-                </ul>
-              </li>
-              
-              <li className="relative group">
-                <button className="text-gray-300 hover:text-white focus:outline-none flex items-center transition">
-                  Academics <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                </button>
-                <ul className="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-xl py-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform group-hover:translate-y-0 translate-y-2">
-                  <li><Link to="/curriculum" className="block px-4 py-2 text-gray-800 hover:bg-sricblue hover:text-white transition">UP Board Curriculum</Link></li>
-                  <li><Link to="/programs" className="block px-4 py-2 text-gray-800 hover:bg-sricblue hover:text-white transition">Programs</Link></li>
-                </ul>
-              </li>
-              
-              <li className="relative group">
-                <button className="text-gray-300 hover:text-white focus:outline-none flex items-center transition">
-                  Admissions <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                </button>
-                <ul className="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-xl py-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform group-hover:translate-y-0 translate-y-2">
-                  <li><Link to="/process" className="block px-4 py-2 text-gray-800 hover:bg-sricblue hover:text-white transition">Process</Link></li>
-                  <li><Link to="/fees" className="block px-4 py-2 text-gray-800 hover:bg-sricblue hover:text-white transition">Fees</Link></li>
-                </ul>
-              </li>
-              
-              <li className="relative group">
-                <button className="text-white focus:outline-none flex items-center font-bold">
-                  News & Events <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                </button>
-                <ul className="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-xl py-1">
-                  <li><Link to="/calendar" className="block px-4 py-2 text-gray-800 hover:bg-sricblue hover:text-white transition">Calendar</Link></li>
-                  <li><Link to="/announcements" className="block px-4 py-2 bg-blue-50 text-sricblue font-bold">Announcements</Link></li>
-                </ul>
-              </li>
-              
-              <li><Link to="/contact" className="text-gray-300 hover:text-white hover:underline transition">Contact</Link></li>
-            </ul>
-
-            <Link to="/admission-form" className="hidden md:block bg-gradient-to-r from-sricgold to-yellow-500 text-sricblue px-6 py-2 rounded-lg font-bold hover:shadow-lg hover:scale-105 transition transform">Apply Now</Link>
-
-            <button 
-              onClick={toggleMobileMenu}
-              className="md:hidden text-white focus:outline-none hover:bg-white/10 p-2 rounded-lg" 
-              aria-expanded={isMobileMenuOpen}
-              aria-label="Toggle menu"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path>
-              </svg>
-            </button>
-          </div>
-
-          {/* Mobile Menu */}
-          <div className={`md:hidden ${isMobileMenuOpen ? 'block' : 'hidden'} bg-sricblue/95 backdrop-blur-sm pb-4 px-4 transition-all duration-300 rounded-b-lg`}>
-            <ul className="flex flex-col space-y-2">
-              <li><Link to="/" className="block text-gray-300 hover:text-white py-2 transition">Home</Link></li>
-              
-              <li className="dropdown-container">
-                <button 
-                  onClick={() => toggleDropdown('about')}
-                  className="dropdown-btn w-full text-left text-gray-300 hover:text-white py-2 flex justify-between items-center transition"
-                >
-                  About Us <svg className={`dropdown-icon w-4 h-4 transform transition-transform ${openDropdown === 'about' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                </button>
-                <div className={`dropdown-content pl-4 mt-1 space-y-1 overflow-hidden transition-all duration-300 ${openDropdown === 'about' ? 'max-h-40' : 'max-h-0'}`}>
-                  <li><Link to="/mission" className="block text-gray-400 hover:text-white py-1 text-sm transition">Mission</Link></li>
-                  <li><Link to="/history" className="block text-gray-400 hover:text-white py-1 text-sm transition">History</Link></li>
-                  <li><Link to="/faculty" className="block text-gray-400 hover:text-white py-1 text-sm transition">Faculty</Link></li>
-                </div>
-              </li>
-              
-              <li className="dropdown-container">
-                <button 
-                  onClick={() => toggleDropdown('academics')}
-                  className="dropdown-btn w-full text-left text-gray-300 hover:text-white py-2 flex justify-between items-center transition"
-                >
-                  Academics <svg className={`dropdown-icon w-4 h-4 transform transition-transform ${openDropdown === 'academics' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                </button>
-                <div className={`dropdown-content pl-4 mt-1 space-y-1 overflow-hidden transition-all duration-300 ${openDropdown === 'academics' ? 'max-h-40' : 'max-h-0'}`}>
-                  <li><Link to="/curriculum" className="block text-gray-400 hover:text-white py-1 text-sm transition">UP Board Curriculum</Link></li>
-                  <li><Link to="/programs" className="block text-gray-400 hover:text-white py-1 text-sm transition">Programs</Link></li>
-                </div>
-              </li>
-              
-              <li className="dropdown-container">
-                <button 
-                  onClick={() => toggleDropdown('admissions')}
-                  className="dropdown-btn w-full text-left text-gray-300 hover:text-white py-2 flex justify-between items-center transition"
-                >
-                  Admissions <svg className={`dropdown-icon w-4 h-4 transform transition-transform ${openDropdown === 'admissions' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                </button>
-                <div className={`dropdown-content pl-4 mt-1 space-y-1 overflow-hidden transition-all duration-300 ${openDropdown === 'admissions' ? 'max-h-40' : 'max-h-0'}`}>
-                  <li><Link to="/process" className="block text-gray-400 hover:text-white py-1 text-sm transition">Process</Link></li>
-                  <li><Link to="/fees" className="block text-gray-400 hover:text-white py-1 text-sm transition">Fees</Link></li>
-                </div>
-              </li>
-              
-              <li className="dropdown-container">
-                <button 
-                  onClick={() => toggleDropdown('news')}
-                  className="dropdown-btn w-full text-left text-white py-2 flex justify-between items-center font-bold"
-                >
-                  News & Events <svg className={`dropdown-icon w-4 h-4 transform transition-transform ${openDropdown === 'news' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                </button>
-                <div className={`dropdown-content pl-4 mt-1 space-y-1 overflow-hidden transition-all duration-300 ${openDropdown === 'news' ? 'max-h-40' : 'max-h-0'}`}>
-                  <li><Link to="/calendar" className="block text-gray-400 hover:text-white py-1 text-sm transition">Calendar</Link></li>
-                  <li><Link to="/announcements" className="block text-white py-1 text-sm font-bold">Announcements</Link></li>
-                </div>
-              </li>
-              
-              <li><Link to="/contact" className="block text-gray-300 hover:text-white py-2 transition">Contact</Link></li>
-              <li><Link to="/admission-form" className="block bg-gradient-to-r from-sricgold to-yellow-500 text-sricblue px-4 py-3 rounded-lg text-center font-bold mt-2 hover:shadow-lg transition">Apply Now</Link></li>
-            </ul>
-          </div>
-        </nav>
-      </header>
+      {/* Shared Responsive Header */}
+      <Header />
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8 md:py-12">
@@ -504,7 +288,7 @@ const Announcements = () => {
           <div className="absolute -top-6 -left-6 w-20 h-20 rounded-full bg-gradient-to-r from-sricgold to-yellow-400 opacity-20 animate-pulse"></div>
           <div className="absolute -bottom-6 -right-6 w-32 h-32 rounded-full bg-gradient-to-r from-sricblue to-blue-600 opacity-20 animate-pulse"></div>
           <h1 className="text-4xl md:text-5xl font-bold text-sricblue mb-4 relative z-10 bg-clip-text bg-gradient-to-r from-sricblue to-blue-600">
-            UP Board Announcements 2025-26
+            UP Board Announcements 2026-2027
           </h1>
           <div className="w-32 h-2 bg-gradient-to-r from-sricblue via-sricgold to-sricblue mx-auto mb-6 rounded-full"></div>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto relative z-10">
@@ -581,10 +365,10 @@ const Announcements = () => {
             <div className="relative z-10">
               <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
                 <div className="flex items-center">
-                  <span className="bg-gradient-to-r from-yellow-400 to-yellow-300 text-red-700 px-4 py-2 rounded-full text-sm font-bold mr-4 flex items-center shadow-md">
+                  <span className="bg-gradient-to-r from-sricgold to-yellow-300 text-red-700 px-4 py-2 rounded-full text-sm font-bold mr-4 flex items-center shadow-md">
                     <i className="fas fa-bullhorn mr-2"></i> URGENT NOTICE
                   </span>
-                  <span className="text-white/90 text-sm bg-white/10 px-3 py-1 rounded-lg">April 15, 2025</span>
+                  <span className="text-white/90 text-sm bg-white/10 px-3 py-1 rounded-lg">April 15, 2026</span>
                 </div>
                 <div className="flex items-center space-x-4">
                   <button className="text-white hover:text-yellow-200 transition flex items-center">
@@ -599,12 +383,12 @@ const Announcements = () => {
               </div>
               <h2 className="text-2xl md:text-3xl font-bold mb-4">UP Board Practical Exam Preparation Classes</h2>
               <p className="mb-6 opacity-95 text-lg">
-                Special preparatory classes for Class 10 and 12 board practical examinations will commence from November 1, 2025. Attendance is mandatory for all students. Detailed schedule and syllabus available for download.
+                Special preparatory classes for Class 10 and 12 board practical examinations will commence from November 1, 2026. Attendance is mandatory for all students. Detailed schedule and syllabus available for download.
               </p>
               <div className="flex flex-wrap gap-4">
                 <button 
                   onClick={() => handleDownload('Practical Schedule.pdf')}
-                  className="bg-gradient-to-r from-yellow-400 to-yellow-300 hover:from-yellow-500 hover:to-yellow-400 text-red-700 font-bold py-3 px-6 rounded-xl transition duration-300 flex items-center shadow-lg hover:shadow-xl"
+                  className="bg-gradient-to-r from-sricgold to-yellow-300 hover:from-yellow-500 hover:to-yellow-400 text-red-700 font-bold py-3 px-6 rounded-xl transition duration-300 flex items-center shadow-lg hover:shadow-xl"
                 >
                   <i className="fas fa-download mr-2"></i> Download Schedule
                 </button>
@@ -648,7 +432,7 @@ const Announcements = () => {
                   className={`announcement-card bg-white rounded-2xl shadow-xl overflow-hidden transition-all duration-300 relative animate-fade-in-up hover:shadow-2xl hover:scale-[1.02] transform border-l-4 border-${badge.color}-500 ${announcement.isNew ? 'ring-2 ring-yellow-400' : ''}`}
                 >
                   {announcement.isNew && (
-                    <div className="absolute top-4 right-4 bg-gradient-to-r from-yellow-400 to-yellow-300 text-red-700 px-3 py-1 rounded-full text-xs font-bold z-10">
+                    <div className="absolute top-4 right-4 bg-gradient-to-r from-sricgold to-yellow-300 text-red-700 px-3 py-1 rounded-full text-xs font-bold z-10">
                       <i className="fas fa-star mr-1"></i> NEW
                     </div>
                   )}
@@ -693,7 +477,7 @@ const Announcements = () => {
                               className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1 rounded-lg flex items-center transition"
                             >
                               <i className="fas fa-file-pdf mr-1 text-red-500"></i>
-                              {attachment}
+                              {attachment.name || attachment}
                               <i className="fas fa-download ml-2 text-xs"></i>
                             </button>
                           ))}
@@ -753,7 +537,7 @@ const Announcements = () => {
               <div className="flex items-center">
                 <i className="fas fa-archive text-2xl mr-3"></i>
                 <div>
-                  <h2 className="text-2xl font-bold">Previous Announcements (2024-25)</h2>
+                  <h2 className="text-2xl font-bold">Previous Announcements (2025-26)</h2>
                   <p className="opacity-90">Access archived notices from previous academic year</p>
                 </div>
               </div>
@@ -837,101 +621,7 @@ const Announcements = () => {
         </div>
       )}
 
-      {/* Footer */}
-      <footer className="bg-gradient-to-r from-gray-900 to-sricblue text-white py-12 mt-12">
-        <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center mb-6">
-                <div className="bg-gradient-to-br from-white to-gray-200 w-14 h-14 rounded-xl flex items-center justify-center shadow-lg">
-                  <span className="text-sricblue text-2xl font-bold">SRIC</span>
-                </div>
-                <h3 className="text-2xl font-bold ml-4 bg-clip-text bg-gradient-to-r from-white to-gray-300">SRIC</h3>
-              </div>
-              <p className="text-gray-300 mb-6 text-lg">Preparing students for UP Board success since 2002.</p>
-              <div className="flex space-x-4">
-                <a href="#" className="bg-gray-800 hover:bg-sricblue w-10 h-10 rounded-full flex items-center justify-center transition">
-                  <i className="fab fa-facebook-f"></i>
-                </a>
-                <a href="#" className="bg-gray-800 hover:bg-sricblue w-10 h-10 rounded-full flex items-center justify-center transition">
-                  <i className="fab fa-twitter"></i>
-                </a>
-                <a href="#" className="bg-gray-800 hover:bg-sricblue w-10 h-10 rounded-full flex items-center justify-center transition">
-                  <i className="fab fa-instagram"></i>
-                </a>
-                <a href="#" className="bg-gray-800 hover:bg-sricblue w-10 h-10 rounded-full flex items-center justify-center transition">
-                  <i className="fab fa-youtube"></i>
-                </a>
-              </div>
-            </div>
-            
-            <div>
-              <h4 className="text-xl font-bold mb-6 flex items-center">
-                <i className="fas fa-link mr-2"></i>
-                Quick Links
-              </h4>
-              <ul className="space-y-3">
-                <li><Link to="/" className="text-gray-300 hover:text-white transition flex items-center">
-                  <i className="fas fa-home mr-2"></i> Home
-                </Link></li>
-                <li><Link to="/mission" className="text-gray-300 hover:text-white transition flex items-center">
-                  <i className="fas fa-info-circle mr-2"></i> About Us
-                </Link></li>
-                <li><Link to="/curriculum" className="text-gray-300 hover:text-white transition flex items-center">
-                  <i className="fas fa-book mr-2"></i> Academics
-                </Link></li>
-                <li><Link to="/admission-form" className="text-gray-300 hover:text-white transition flex items-center">
-                  <i className="fas fa-user-graduate mr-2"></i> Admissions
-                </Link></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="text-xl font-bold mb-6 flex items-center">
-                <i className="fas fa-newspaper mr-2"></i>
-                News & Events
-              </h4>
-              <ul className="space-y-3">
-                <li><Link to="/calendar" className="text-gray-300 hover:text-white transition flex items-center font-medium">
-                  <i className="fas fa-calendar-check mr-2"></i> Academic Calendar
-                </Link></li>
-                <li><Link to="/announcements" className="text-gray-300 hover:text-white transition flex items-center font-medium">
-                  <i className="fas fa-bullhorn mr-2"></i> Announcements
-                </Link></li>
-                <li><a href="#" className="text-gray-300 hover:text-white transition flex items-center">
-                  <i className="fas fa-newspaper mr-2"></i> Latest News
-                </a></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="text-xl font-bold mb-6 flex items-center">
-                <i className="fas fa-address-book mr-2"></i>
-                Contact Us
-              </h4>
-              <ul className="space-y-4">
-                <li className="flex items-start">
-                  <i className="fas fa-map-marker-alt mt-1 mr-4 text-sricgold text-xl"></i>
-                  <span className="text-gray-300">Sabdalpur Sharki, Mathana Road Hasanpur, Amroha 244242</span>
-                </li>
-                <li className="flex items-center">
-                  <i className="fas fa-phone-alt mr-4 text-sricgold text-xl"></i>
-                  <span className="text-gray-300">+91 9756517750</span>
-                </li>
-                <li className="flex items-center">
-                  <i className="fas fa-envelope mr-4 text-sricgold text-xl"></i>
-                  <span className="text-gray-300">sitaramintercollege1205@gmail.com</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-          
-          <div className="border-t border-gray-800 mt-10 pt-6 text-center">
-            <p className="text-gray-400">© 2025 SRIC Senior Secondary School. All rights reserved.</p>
-            <p className="text-gray-500 text-sm mt-2">Affiliated to UP Board, Allahabad | Est. 2002</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };

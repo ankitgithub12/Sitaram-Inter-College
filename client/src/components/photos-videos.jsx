@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import Header from './Header';
+import Footer from './Footer';
 
 const PhotosVideos = () => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [openDropdown, setOpenDropdown] = useState(null);
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedAlbum, setSelectedAlbum] = useState(null);
@@ -11,26 +11,11 @@ const PhotosVideos = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
 
-  const toggleDropdown = (dropdown) => {
-    setOpenDropdown(openDropdown === dropdown ? null : dropdown);
-  };
-
+  // Scroll to top on mount
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (!event.target.closest('#mobile-menu') && !event.target.closest('#menu-toggle')) {
-        setIsMobileMenuOpen(false);
-      }
-    };
-
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
-  }, []);
-
-  const categories = [
+    window.scrollTo(0, 0);
+  }, []);  const categories = [
     { id: 'all', name: 'All', icon: 'fas fa-layer-group', count: 24 },
     { id: 'events', name: 'Events', icon: 'fas fa-calendar-alt', count: 16 },
     { id: 'achievements', name: 'Achievements', icon: 'fas fa-trophy', count: 12 },
@@ -38,56 +23,83 @@ const PhotosVideos = () => {
     { id: 'competitions', name: 'Competitions', icon: 'fas fa-gamepad', count: 6 },
   ];
 
-  const photoGalleryItems = [
+  const initialPhotos = [
     // Farewell Photos
-    { id: 1, category: 'events', src: '/assets/farewell1.jpeg', title: 'Farewell 2025', description: 'Graduating Students' },
-    { id: 2, category: 'events', src: '/assets/farewell2.jpeg', title: 'Farewell 2025', description: 'Gift Distribution' },
-    { id: 3, category: 'events', src: '/assets/farewell3.jpeg', title: 'Farewell 2025', description: 'Group Photos' },
-    { id: 4, category: 'events', src: '/assets/farewell4.jpeg', title: 'Farewell 2025', description: 'Cultural Performances' },
-    { id: 5, category: 'events', src: '/assets/farewell5.jpeg', title: 'Farewell 2025', description: 'Cultural Performances' },
-    { id: 6, category: 'events', src: '/assets/farewell6.jpeg', title: 'Farewell 2025', description: 'Certificate Distribution' },
-    { id: 7, category: 'events', src: '/assets/farewell7.jpeg', title: 'Farewell 2025', description: 'Farewell Party' },
-    { id: 8, category: 'events', src: '/assets/farewell8.jpeg', title: 'Farewell 2024', description: 'Final Memories' },
-    { id: 9, category: 'events', src: '/assets/2018 farewell.jpeg', title: 'Farewell 2018', description: 'Nostalgic Memories' },
+    { id: 'static_1', category: 'events', src: '/assets/farewell1.jpeg', title: 'Farewell 2026', description: 'Graduating Students' },
+    { id: 'static_2', category: 'events', src: '/assets/farewell2.jpeg', title: 'Farewell 2026', description: 'Gift Distribution' },
+    { id: 'static_3', category: 'events', src: '/assets/farewell3.jpeg', title: 'Farewell 2026', description: 'Group Photos' },
+    { id: 'static_4', category: 'events', src: '/assets/farewell4.jpeg', title: 'Farewell 2026', description: 'Cultural Performances' },
+    { id: 'static_5', category: 'events', src: '/assets/farewell5.jpeg', title: 'Farewell 2026', description: 'Cultural Performances' },
+    { id: 'static_6', category: 'events', src: '/assets/farewell6.jpeg', title: 'Farewell 2026', description: 'Certificate Distribution' },
+    { id: 'static_7', category: 'events', src: '/assets/farewell7.jpeg', title: 'Farewell 2026', description: 'Farewell Party' },
+    { id: 'static_8', category: 'events', src: '/assets/farewell8.jpeg', title: 'Farewell 2024', description: 'Final Memories' },
+    { id: 'static_9', category: 'events', src: '/assets/2018 farewell.jpeg', title: 'Farewell 2018', description: 'Nostalgic Memories' },
     
     // Prize Distribution Photos
-    { id: 10, category: 'achievements', src: '/assets/prize1.jpeg', title: 'Prize Day 2025', description: 'Top Performers' },
-    { id: 11, category: 'achievements', src: '/assets/prize3.jpeg', title: 'Prize Day 2025', description: 'Award Winners' },
-    { id: 12, category: 'achievements', src: '/assets/prize4.jpeg', title: 'Prize Day 2025', description: 'Certificate Distribution' },
-    { id: 13, category: 'achievements', src: '/assets/prize5.jpeg', title: 'Prize Day 2025', description: 'Sports Achievements' },
-    { id: 14, category: 'achievements', src: '/assets/prize6.jpeg', title: 'Prize Day 2025', description: 'Special Achievements' },
-    { id: 15, category: 'achievements', src: '/assets/prize7.jpeg', title: 'Prize Day 2025', description: 'Perfect Attendance' },
-    { id: 16, category: 'achievements', src: '/assets/prize8.jpeg', title: 'Glory Moment', description: 'Recognition Day' },
-    { id: 17, category: 'achievements', src: '/assets/prize9.jpeg', title: 'Prize Day 2025', description: 'Winners with Teachers' },
+    { id: 'static_10', category: 'achievements', src: '/assets/prize1.jpeg', title: 'Prize Day 2026', description: 'Top Performers' },
+    { id: 'static_11', category: 'achievements', src: '/assets/prize3.jpeg', title: 'Prize Day 2026', description: 'Award Winners' },
+    { id: 'static_12', category: 'achievements', src: '/assets/prize4.jpeg', title: 'Prize Day 2026', description: 'Certificate Distribution' },
+    { id: 'static_13', category: 'achievements', src: '/assets/prize5.jpeg', title: 'Prize Day 2026', description: 'Sports Achievements' },
+    { id: 'static_14', category: 'achievements', src: '/assets/prize6.jpeg', title: 'Prize Day 2026', description: 'Special Achievements' },
+    { id: 'static_15', category: 'achievements', src: '/assets/prize7.jpeg', title: 'Prize Day 2026', description: 'Perfect Attendance' },
+    { id: 'static_16', category: 'achievements', src: '/assets/prize8.jpeg', title: 'Glory Moment', description: 'Recognition Day' },
+    { id: 'static_17', category: 'achievements', src: '/assets/prize9.jpeg', title: 'Prize Day 2026', description: 'Winners with Teachers' },
     
     // Competition Photos
-    { id: 18, category: 'competitions', src: '/assets/competition1.jpeg', title: 'GK Quiz Championship', description: 'Battle of Wits' },
-    { id: 19, category: 'competitions', src: '/assets/competition2.jpeg', title: 'Quiz Masters', description: 'Battle of Brilliance' },
+    { id: 'static_18', category: 'competitions', src: '/assets/competition1.jpeg', title: 'GK Quiz Championship', description: 'Battle of Wits' },
+    { id: 'static_19', category: 'competitions', src: '/assets/competition2.jpeg', title: 'Quiz Masters', description: 'Battle of Brilliance' },
     
     // Cultural Photos
-    { id: 20, category: 'cultural', src: '/assets/rangoli.jpeg', title: 'Rangoli Competition', description: 'Artistic Skills' },
-    { id: 21, category: 'cultural', src: '/assets/mehandi.jpeg', title: 'Mehandi Competition', description: 'Artistic Designs' },
-    { id: 22, category: 'cultural', src: '/assets/Mehandi 2025.jpeg', title: 'Mehandi 2025', description: 'Creative Patterns' },
-    { id: 23, category: 'cultural', src: '/assets/independence_day.jpeg', title: 'Independence Day', description: 'Patriotic Celebration' },
-    { id: 24, category: 'events', src: '/assets/tour_photo.jpeg', title: 'School Excursion', description: 'Learning Beyond Classroom' },
+    { id: 'static_20', category: 'cultural', src: '/assets/rangoli.jpeg', title: 'Rangoli Competition', description: 'Artistic Skills' },
+    { id: 'static_21', category: 'cultural', src: '/assets/mehandi.jpeg', title: 'Mehandi Competition', description: 'Artistic Designs' },
+    { id: 'static_22', category: 'cultural', src: '/assets/Mehandi 2026.jpeg', title: 'Mehandi 2026', description: 'Creative Patterns' },
+    { id: 'static_23', category: 'cultural', src: '/assets/independence_day.jpeg', title: 'Independence Day', description: 'Patriotic Celebration' },
+    { id: 'static_24', category: 'events', src: '/assets/tour_photo.jpeg', title: 'School Excursion', description: 'Learning Beyond Classroom' },
   ];
 
+  const [photoGalleryItems, setPhotoGalleryItems] = useState(initialPhotos);
+
+  useEffect(() => {
+    const fetchPhotos = async () => {
+      try {
+        const res = await fetch('/api/gallery');
+        const data = await res.json();
+        if (data.success) {
+          const mapped = data.data.map(p => ({
+            id: p._id,
+            category: p.category || 'general',
+            src: p.secureUrl,
+            title: p.title,
+            description: p.description || ''
+          }));
+          // Prepend new admin photos before the hardcoded ones
+          setPhotoGalleryItems([...mapped, ...initialPhotos]);
+        }
+      } catch (err) {
+        console.error('Failed to fetch gallery', err);
+      }
+    };
+    fetchPhotos();
+  }, []);
+    // Farewell Photos
+
+
   const albums = [
-    { id: 'farewell-album', title: 'Farewell 2025', description: 'Graduation ceremony', count: 24, cover: '/assets/farewell2.jpeg' },
-    { id: 'prize-album', title: 'Prize Day 2025', description: 'Academic excellence', count: 32, cover: '/assets/prize4.jpeg' },
+    { id: 'farewell-album', title: 'Farewell 2026', description: 'Graduation ceremony', count: 24, cover: '/assets/farewell2.jpeg' },
+    { id: 'prize-album', title: 'Prize Day 2026', description: 'Academic excellence', count: 32, cover: '/assets/prize4.jpeg' },
     { id: 'independence-album', title: 'Independence Day', description: 'Patriotic celebrations', count: 15, cover: '/assets/independence_day.jpeg' },
     { id: 'teacher-album', title: 'Teacher Recognition', description: 'Honoring our educators', count: 12, cover: '/assets/teachers1.jpeg' },
   ];
 
   const videos = [
-    { id: 1, youtubeId: 'Yq_Edmb3hi8', title: 'Prize Distribution 2025', description: 'Highlights from our prize distribution event celebrating student achievements', date: 'July 15, 2025' },
-    { id: 2, youtubeId: 'ZcQkTWSuDC0', title: 'Patriotic Drama', description: 'Student performance of a patriotic drama on Republic Day', date: 'January 26, 2025' },
+    { id: 1, youtubeId: 'Yq_Edmb3hi8', title: 'Prize Distribution 2026', description: 'Highlights from our prize distribution event celebrating student achievements', date: 'July 15, 2026' },
+    { id: 2, youtubeId: 'ZcQkTWSuDC0', title: 'Patriotic Drama', description: 'Student performance of a patriotic drama on Republic Day', date: 'January 26, 2026' },
     { id: 3, youtubeId: 'lNukl6lkgcg', title: 'Mehandi Competition', description: 'Creative showcase from our annual Mehandi competition', date: 'August 20, 2024' },
   ];
 
   const featuredEvents = [
-    { id: 1, title: 'Annual Farewell 2025', description: 'An emotional farewell ceremony for our graduating students, celebrating their journey at SRIC with speeches, awards, and performances.', date: 'May 15, 2025', image: '/assets/farewell2.jpeg', albumId: 'farewell-album' },
-    { id: 2, title: 'Prize Distribution 2025', description: 'Celebrating academic excellence and special achievements of our students with certificate distribution and honors.', date: 'April 10, 2025', image: '/assets/prize4.jpeg', albumId: 'prize-album' },
+    { id: 1, title: 'Annual Farewell 2026', description: 'An emotional farewell ceremony for our graduating students, celebrating their journey at SRIC with speeches, awards, and performances.', date: 'May 15, 2026', image: '/assets/farewell2.jpeg', albumId: 'farewell-album' },
+    { id: 2, title: 'Prize Distribution 2026', description: 'Celebrating academic excellence and special achievements of our students with certificate distribution and honors.', date: 'April 10, 2026', image: '/assets/prize4.jpeg', albumId: 'prize-album' },
   ];
 
   const filteredItems = photoGalleryItems.filter(item => {
@@ -122,24 +134,24 @@ const PhotosVideos = () => {
   const getAlbumImages = (albumId) => {
     const albumMap = {
       'farewell-album': [
-        { src: '/assets/farewell1.jpeg', title: 'Farewell 2025' },
-        { src: '/assets/farewell2.jpeg', title: 'Farewell 2025' },
-        { src: '/assets/farewell3.jpeg', title: 'Farewell 2025' },
-        { src: '/assets/farewell4.jpeg', title: 'Farewell 2025' },
-        { src: '/assets/farewell5.jpeg', title: 'Farewell 2025' },
-        { src: '/assets/farewell6.jpeg', title: 'Farewell 2025' },
-        { src: '/assets/farewell7.jpeg', title: 'Farewell 2025' },
+        { src: '/assets/farewell1.jpeg', title: 'Farewell 2026' },
+        { src: '/assets/farewell2.jpeg', title: 'Farewell 2026' },
+        { src: '/assets/farewell3.jpeg', title: 'Farewell 2026' },
+        { src: '/assets/farewell4.jpeg', title: 'Farewell 2026' },
+        { src: '/assets/farewell5.jpeg', title: 'Farewell 2026' },
+        { src: '/assets/farewell6.jpeg', title: 'Farewell 2026' },
+        { src: '/assets/farewell7.jpeg', title: 'Farewell 2026' },
         { src: '/assets/farewell8.jpeg', title: 'Farewell 2024' },
       ],
       'prize-album': [
-        { src: '/assets/prize1.jpeg', title: 'Prize Day 2025' },
-        { src: '/assets/prize3.jpeg', title: 'Prize Day 2025' },
-        { src: '/assets/prize4.jpeg', title: 'Prize Day 2025' },
-        { src: '/assets/prize5.jpeg', title: 'Prize Day 2025' },
-        { src: '/assets/prize6.jpeg', title: 'Prize Day 2025' },
-        { src: '/assets/prize7.jpeg', title: 'Prize Day 2025' },
-        { src: '/assets/prize8.jpeg', title: 'Prize Day 2025' },
-        { src: '/assets/prize9.jpeg', title: 'Prize Day 2025' },
+        { src: '/assets/prize1.jpeg', title: 'Prize Day 2026' },
+        { src: '/assets/prize3.jpeg', title: 'Prize Day 2026' },
+        { src: '/assets/prize4.jpeg', title: 'Prize Day 2026' },
+        { src: '/assets/prize5.jpeg', title: 'Prize Day 2026' },
+        { src: '/assets/prize6.jpeg', title: 'Prize Day 2026' },
+        { src: '/assets/prize7.jpeg', title: 'Prize Day 2026' },
+        { src: '/assets/prize8.jpeg', title: 'Prize Day 2026' },
+        { src: '/assets/prize9.jpeg', title: 'Prize Day 2026' },
       ],
       'independence-album': [
         { src: '/assets/independence_day.jpeg', title: 'Independence Day' },
@@ -157,303 +169,8 @@ const PhotosVideos = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-      {/* Header */}
-      <header className="sticky top-0 z-50 shadow-md">
-        <nav className="bg-sricblue p-4">
-          <div className="container mx-auto flex justify-between items-center">
-            {/* Logo + School Name */}
-            <div className="flex items-center space-x-2">
-              <img 
-                src="/assets/SRIC LOGO.PNG" 
-                alt="SRIC Logo" 
-                className="h-10 w-10 rounded-full"
-              />
-              <Link to="/" className="text-white text-xl font-bold">
-                SITARAM INTER COLLEGE
-              </Link>
-              <span className="hidden sm:inline text-sricgold text-sm">
-                Empowering Minds, Shaping Futures
-              </span>
-            </div>
-
-            {/* Desktop Menu */}
-            <ul className="hidden md:flex space-x-6 items-center">
-              <li>
-                <Link to="/" className="text-gray-300 hover:text-white hover:underline transition duration-300">
-                  Home
-                </Link>
-              </li>
-              
-              {/* About Us Dropdown */}
-              <li className="relative group">
-                <button className="text-gray-300 hover:text-white focus:outline-none flex items-center transition duration-300">
-                  About Us <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                </button>
-                <ul className="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform group-hover:translate-y-0 translate-y-2">
-                  <li><Link to="/mission" className="block px-4 py-2 text-gray-800 hover:bg-sricblue hover:text-white">Mission</Link></li>
-                  <li><Link to="/history" className="block px-4 py-2 text-gray-800 hover:bg-sricblue hover:text-white">History</Link></li>
-                  <li><Link to="/faculty" className="block px-4 py-2 text-gray-800 hover:bg-sricblue hover:text-white">Faculty</Link></li>
-                </ul>
-              </li>
-              
-              {/* Academics Dropdown */}
-              <li className="relative group">
-                <button className="text-gray-300 hover:text-white focus:outline-none flex items-center transition duration-300">
-                  Academics <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                </button>
-                <ul className="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform group-hover:translate-y-0 translate-y-2">
-                  <li><Link to="/curriculum" className="block px-4 py-2 text-gray-800 hover:bg-sricblue hover:text-white">Curriculum</Link></li>
-                  <li><Link to="/programs" className="block px-4 py-2 text-gray-800 hover:bg-sricblue hover:text-white">Programs</Link></li>
-                </ul>
-              </li>
-
-              {/* Admissions Dropdown */}
-              <li className="relative group">
-                <button className="text-gray-300 hover:text-white focus:outline-none flex items-center transition duration-300">
-                  Admissions <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                </button>
-                <ul className="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform group-hover:translate-y-0 translate-y-2">
-                  <li><Link to="/process" className="block px-4 py-2 text-gray-800 hover:bg-sricblue hover:text-white">Process</Link></li>
-                  <li><Link to="/fees" className="block px-4 py-2 text-gray-800 hover:bg-sricblue hover:text-white">Fees</Link></li>
-                </ul>
-              </li>
-
-              {/* News & Events Dropdown */}
-              <li className="relative group">
-                <button className="text-gray-300 hover:text-white focus:outline-none flex items-center transition duration-300">
-                  News & Events <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                </button>
-                <ul className="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform group-hover:translate-y-0 translate-y-2">
-                  <li><Link to="/calendar" className="block px-4 py-2 text-gray-800 hover:bg-sricblue hover:text-white">Calendar</Link></li>
-                  <li><Link to="/announcements" className="block px-4 py-2 text-gray-800 hover:bg-sricblue hover:text-white">Announcements</Link></li>
-                </ul>
-              </li>
-
-              {/* Gallery Dropdown */}
-              <li className="relative group">
-                <button className="text-white font-medium focus:outline-none flex items-center">
-                  Gallery <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                </button>
-                <ul className="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1">
-                  <li><Link to="/photos-videos" className="block px-4 py-2 text-gray-800 bg-sricblue text-white">Photos/Videos</Link></li>
-                </ul>
-              </li>
-
-              <li>
-                <Link to="/contact" className="text-gray-300 hover:text-white hover:underline transition duration-300">
-                  Contact
-                </Link>
-              </li>
-            </ul>
-
-            {/* Desktop Buttons Group */}
-            <div className="hidden md:flex items-center space-x-3">
-              {/* Admin Button */}
-              <Link 
-                to="/admin-login" 
-                className="px-4 py-2.5 bg-sricgold text-sricblue rounded-md font-bold flex items-center space-x-2 hover:bg-yellow-500 transition"
-              >
-                <i className="fas fa-user-shield"></i>
-                <span>Admin</span>
-              </Link>
-              
-              {/* CTA Button */}
-              <Link 
-                to="/adm" 
-                className="bg-sricgold text-sricblue px-5 py-2.5 rounded-md font-bold hover:bg-yellow-500 transition transform hover:scale-105"
-              >
-                Apply Now
-              </Link>
-            </div>
-
-            {/* Mobile Hamburger Menu */}
-            <button 
-              id="menu-toggle"
-              onClick={toggleMobileMenu}
-              className="md:hidden text-white focus:outline-none"
-              aria-expanded={isMobileMenuOpen}
-              aria-label="Toggle menu"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path>
-              </svg>
-            </button>
-          </div>
-
-          {/* Mobile Menu */}
-          <div 
-            id="mobile-menu" 
-            className={`md:hidden ${isMobileMenuOpen ? 'block' : 'hidden'} bg-sricblue pb-4 px-4`}
-          >
-            <ul className="flex flex-col space-y-2">
-              <li>
-                <Link to="/" className="block text-gray-300 hover:text-white py-2" onClick={() => setIsMobileMenuOpen(false)}>
-                  Home
-                </Link>
-              </li>
-              
-              {/* About Us Mobile Dropdown */}
-              <li className="dropdown-container">
-                <button 
-                  onClick={() => toggleDropdown('about')}
-                  className="dropdown-btn w-full text-left text-gray-300 hover:text-white py-2 flex justify-between items-center"
-                >
-                  About Us 
-                  <svg 
-                    className={`dropdown-icon w-4 h-4 transform transition-transform ${openDropdown === 'about' ? 'rotate-180' : ''}`} 
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
-                  </svg>
-                </button>
-                <ul 
-                  className={`dropdown-content pl-4 mt-1 space-y-1 overflow-hidden transition-all duration-300 ${
-                    openDropdown === 'about' ? 'max-h-40' : 'max-h-0'
-                  }`}
-                >
-                  <li><Link to="/mission" className="block text-gray-400 hover:text-white py-1 text-sm" onClick={() => setIsMobileMenuOpen(false)}>Mission</Link></li>
-                  <li><Link to="/history" className="block text-gray-400 hover:text-white py-1 text-sm" onClick={() => setIsMobileMenuOpen(false)}>History</Link></li>
-                  <li><Link to="/faculty" className="block text-gray-400 hover:text-white py-1 text-sm" onClick={() => setIsMobileMenuOpen(false)}>Faculty</Link></li>
-                </ul>
-              </li>
-
-              {/* Academics Mobile Dropdown */}
-              <li className="dropdown-container">
-                <button 
-                  onClick={() => toggleDropdown('academics')}
-                  className="dropdown-btn w-full text-left text-gray-300 hover:text-white py-2 flex justify-between items-center"
-                >
-                  Academics 
-                  <svg 
-                    className={`dropdown-icon w-4 h-4 transform transition-transform ${openDropdown === 'academics' ? 'rotate-180' : ''}`} 
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
-                  </svg>
-                </button>
-                <ul 
-                  className={`dropdown-content pl-4 mt-1 space-y-1 overflow-hidden transition-all duration-300 ${
-                    openDropdown === 'academics' ? 'max-h-40' : 'max-h-0'
-                  }`}
-                >
-                  <li><Link to="/curriculum" className="block text-gray-400 hover:text-white py-1 text-sm" onClick={() => setIsMobileMenuOpen(false)}>Curriculum</Link></li>
-                  <li><Link to="/programs" className="block text-gray-400 hover:text-white py-1 text-sm" onClick={() => setIsMobileMenuOpen(false)}>Programs</Link></li>
-                </ul>
-              </li>
-
-              {/* Admissions Mobile Dropdown */}
-              <li className="dropdown-container">
-                <button 
-                  onClick={() => toggleDropdown('admissions')}
-                  className="dropdown-btn w-full text-left text-gray-300 hover:text-white py-2 flex justify-between items-center"
-                >
-                  Admissions 
-                  <svg 
-                    className={`dropdown-icon w-4 h-4 transform transition-transform ${openDropdown === 'admissions' ? 'rotate-180' : ''}`} 
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
-                  </svg>
-                </button>
-                <ul 
-                  className={`dropdown-content pl-4 mt-1 space-y-1 overflow-hidden transition-all duration-300 ${
-                    openDropdown === 'admissions' ? 'max-h-40' : 'max-h-0'
-                  }`}
-                >
-                  <li><Link to="/process" className="block text-gray-400 hover:text-white py-1 text-sm" onClick={() => setIsMobileMenuOpen(false)}>Process</Link></li>
-                  <li><Link to="/fees" className="block text-gray-400 hover:text-white py-1 text-sm" onClick={() => setIsMobileMenuOpen(false)}>Fees</Link></li>
-                </ul>
-              </li>
-
-              {/* News & Events Mobile Dropdown */}
-              <li className="dropdown-container">
-                <button 
-                  onClick={() => toggleDropdown('news')}
-                  className="dropdown-btn w-full text-left text-gray-300 hover:text-white py-2 flex justify-between items-center"
-                >
-                  News & Events 
-                  <svg 
-                    className={`dropdown-icon w-4 h-4 transform transition-transform ${openDropdown === 'news' ? 'rotate-180' : ''}`} 
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
-                  </svg>
-                </button>
-                <ul 
-                  className={`dropdown-content pl-4 mt-1 space-y-1 overflow-hidden transition-all duration-300 ${
-                    openDropdown === 'news' ? 'max-h-40' : 'max-h-0'
-                  }`}
-                >
-                  <li><Link to="/calendar" className="block text-gray-400 hover:text-white py-1 text-sm" onClick={() => setIsMobileMenuOpen(false)}>Calendar</Link></li>
-                  <li><Link to="/announcements" className="block text-gray-400 hover:text-white py-1 text-sm" onClick={() => setIsMobileMenuOpen(false)}>Announcements</Link></li>
-                </ul>
-              </li>
-
-              {/* Gallery Mobile Dropdown */}
-              <li className="dropdown-container">
-                <button 
-                  onClick={() => toggleDropdown('gallery')}
-                  className="dropdown-btn w-full text-left text-white py-2 flex justify-between items-center"
-                >
-                  Gallery 
-                  <svg 
-                    className={`dropdown-icon w-4 h-4 transform transition-transform ${openDropdown === 'gallery' ? 'rotate-180' : ''}`} 
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
-                  </svg>
-                </button>
-                <ul 
-                  className={`dropdown-content pl-4 mt-1 space-y-1 overflow-hidden transition-all duration-300 ${
-                    openDropdown === 'gallery' ? 'max-h-40' : 'max-h-0'
-                  }`}
-                >
-                  <li><Link to="/photos-videos" className="block text-white py-1 text-sm bg-sricblue" onClick={() => setIsMobileMenuOpen(false)}>Photos/Videos</Link></li>
-                </ul>
-              </li>
-
-              <li>
-                <Link to="/contact" className="block text-gray-300 hover:text-white py-2" onClick={() => setIsMobileMenuOpen(false)}>
-                  Contact
-                </Link>
-              </li>
-              
-              {/* Mobile Admin Button */}
-              <li>
-                <Link 
-                  to="/admin-login" 
-                  className="block bg-sricgold text-sricblue px-4 py-2 rounded-md text-center font-bold mt-2"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  <i className="fas fa-user-shield mr-2"></i>Admin Login
-                </Link>
-              </li>
-              
-              {/* Mobile Apply Now Button */}
-              <li>
-                <Link 
-                  to="/admission-form" 
-                  className="block bg-sricgold text-sricblue px-4 py-2 rounded-md text-center font-bold mt-2"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Apply Now
-                </Link>
-              </li>
-            </ul>
-          </div>
-        </nav>
-      </header>
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex flex-col">
+      <Header />
 
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-sricblue to-blue-900 text-white py-20">
@@ -494,7 +211,7 @@ const PhotosVideos = () => {
                     <span><i className="far fa-calendar mr-1 text-sricblue"></i> {event.date}</span>
                     <button 
                       onClick={() => openAlbumModal(event.albumId)}
-                      className="text-sricblue hover:text-blue-900 font-medium transition duration-300 flex items-center"
+                      className="text-sricblue hover:text-sricblue font-medium transition duration-300 flex items-center"
                     >
                       View More <i className="fas fa-arrow-right ml-1 text-sm"></i>
                     </button>
@@ -786,71 +503,8 @@ const PhotosVideos = () => {
         </div>
       )}
 
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
-        <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center mb-4">
-                <div className="bg-gradient-to-br from-sricblue to-blue-900 w-12 h-12 rounded-xl flex items-center justify-center">
-                  <span className="text-white text-xl font-bold">SRIC</span>
-                </div>
-                <h3 className="text-xl font-bold ml-3">SRIC</h3>
-              </div>
-              <p className="text-gray-400 mb-4">Preparing students for board success since 2002.</p>
-              <div className="flex space-x-4">
-                <a href="#" className="text-gray-400 hover:text-white"><i className="fab fa-facebook-f"></i></a>
-                <a href="#" className="text-gray-400 hover:text-white"><i className="fab fa-twitter"></i></a>
-                <a href="#" className="text-gray-400 hover:text-white"><i className="fab fa-instagram"></i></a>
-                <a href="#" className="text-gray-400 hover:text-white"><i className="fab fa-linkedin-in"></i></a>
-              </div>
-            </div>
-            
-            <div>
-              <h4 className="text-lg font-bold mb-4">Quick Links</h4>
-              <ul className="space-y-2">
-                <li><Link to="/" className="text-gray-400 hover:text-white">Home</Link></li>
-                <li><Link to="/history" className="text-gray-400 hover:text-white">About Us</Link></li>
-                <li><Link to="/curriculum" className="text-gray-400 hover:text-white">Academics</Link></li>
-                <li><Link to="/admission-form" className="text-gray-400 hover:text-white">Admissions</Link></li>
-                <li><Link to="/contact" className="text-gray-400 hover:text-white">Contact</Link></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="text-lg font-bold mb-4">Gallery</h4>
-              <ul className="space-y-2">
-                <li><Link to="/photos-videos" className="text-gray-400 hover:text-white">Photos</Link></li>
-                <li><Link to="/photos-videos" className="text-gray-400 hover:text-white">Videos</Link></li>
-                <li><Link to="/photos-videos" className="text-gray-400 hover:text-white">Events</Link></li>
-                <li><Link to="/photos-videos" className="text-gray-400 hover:text-white">Achievements</Link></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="text-lg font-bold mb-4">Contact Us</h4>
-              <ul className="space-y-3">
-                <li className="flex items-start">
-                  <i className="fas fa-map-marker-alt mt-1 mr-3 text-gray-400"></i>
-                  <span className="text-gray-400">Sabdalpur Sharki, Mathana Road Hasanpur, Amroha 244242</span>
-                </li>
-                <li className="flex items-center">
-                  <i className="fas fa-phone-alt mr-3 text-gray-400"></i>
-                  <span className="text-gray-400">+91 9756517750</span>
-                </li>
-                <li className="flex items-center">
-                  <i className="fas fa-envelope mr-3 text-gray-400"></i>
-                  <span className="text-gray-400">info@sricschool.edu.in</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-          
-          <div className="border-t border-gray-800 mt-10 pt-6 text-center text-gray-400">
-            <p>© 2025-26 SRIC Senior Secondary School. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
+
     </div>
   );
 };

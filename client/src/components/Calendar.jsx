@@ -1,17 +1,45 @@
-// Calendar.jsx
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import Header from './Header';
+import Footer from './Footer';
 
 const Calendar = () => {
   const [currentMonth, setCurrentMonth] = useState(11); // December (0-indexed)
-  const [currentYear, setCurrentYear] = useState(2025);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [mobileDropdowns, setMobileDropdowns] = useState({
-    about: false,
-    academics: false,
-    news: true
-  });
+  const [currentYear, setCurrentYear] = useState(2026);
   const [activeExamSchedule, setActiveExamSchedule] = useState('quarterly'); // 'quarterly' or 'halfyearly'
+  const [dynamicSchedules, setDynamicSchedules] = useState([]);
+
+  useEffect(() => {
+    fetch('/api/examschedules')
+      .then(r => r.json())
+      .then(d => {
+        if (d.success && d.data.length > 0) {
+          const now = new Date();
+          now.setHours(0, 0, 0, 0);
+          
+          const activeSchedules = d.data.filter(schedule => {
+            if (schedule.status === 'Completed') return false;
+            
+            if (schedule.dates && schedule.dates.length > 0) {
+              const hasUpcomingDate = schedule.dates.some(dt => {
+                const examDate = new Date(dt.date);
+                examDate.setHours(0,0,0,0);
+                return examDate >= now;
+              });
+              return hasUpcomingDate;
+            }
+            return true;
+          });
+
+          setDynamicSchedules(activeSchedules);
+          // Auto-select the first dynamic schedule
+          if (activeSchedules.length > 0) {
+            setActiveExamSchedule(activeSchedules[0]._id);
+          }
+        }
+      })
+      .catch(e => console.error("Could not fetch schedules", e));
+  }, []);
 
   const monthNames = [
     "January", "February", "March", "April", "May", "June",
@@ -20,59 +48,49 @@ const Calendar = () => {
 
   // Academic calendar events data - UPDATED WITH HALF YEARLY DATES
   const academicEvents = {
-    "2025-04-01": { title: "Session Begins", type: "school", color: "pink" },
-    "2025-08-15": { title: "Independence Day", type: "holiday", color: "purple" },
-    "2025-08-01": { title: "Monthly Tests Start", type: "exam", color: "green" },
-    "2025-08-07": { title: "Monthly Tests End", type: "exam", color: "green" },
-    "2025-10-02": { title: "Parent Meeting", type: "parent", color: "red" },
-    "2025-10-03": { title: "Quarterly Exams Start", type: "exam", color: "green" },
-    "2025-10-04": { title: "Quarterly Exams", type: "exam", color: "green" },
-    "2025-10-06": { title: "Quarterly Exams", type: "exam", color: "green" },
-    "2025-10-07": { title: "Quarterly Exams", type: "exam", color: "green" },
-    "2025-10-08": { title: "Quarterly Exams", type: "exam", color: "green" },
-    "2025-10-09": { title: "Quarterly Exams", type: "exam", color: "green" },
-    "2025-10-10": { title: "Quarterly Exams", type: "exam", color: "green" },
-    "2025-10-11": { title: "Quarterly Exams", type: "exam", color: "green" },
-    "2025-10-13": { title: "Quarterly Exams End", type: "exam", color: "green" },
-    "2025-10-19": { title: "Diwali Break Starts", type: "holiday", color: "purple" },
-    "2025-10-24": { title: "Diwali Break Ends", type: "holiday", color: "purple" },
-    "2025-11-01": { title: "Half-Yearly Exams Start", type: "exam", color: "green" },
-    "2025-11-07": { title: "Half-Yearly Exams End", type: "exam", color: "green" },
+    "2026-04-01": { title: "Session Begins", type: "school", color: "pink" },
+    "2026-08-15": { title: "Independence Day", type: "holiday", color: "purple" },
+    "2026-08-01": { title: "Monthly Tests Start", type: "exam", color: "green" },
+    "2026-08-07": { title: "Monthly Tests End", type: "exam", color: "green" },
+    "2026-10-02": { title: "Parent Meeting", type: "parent", color: "red" },
+    "2026-10-03": { title: "Quarterly Exams Start", type: "exam", color: "green" },
+    "2026-10-04": { title: "Quarterly Exams", type: "exam", color: "green" },
+    "2026-10-06": { title: "Quarterly Exams", type: "exam", color: "green" },
+    "2026-10-07": { title: "Quarterly Exams", type: "exam", color: "green" },
+    "2026-10-08": { title: "Quarterly Exams", type: "exam", color: "green" },
+    "2026-10-09": { title: "Quarterly Exams", type: "exam", color: "green" },
+    "2026-10-10": { title: "Quarterly Exams", type: "exam", color: "green" },
+    "2026-10-11": { title: "Quarterly Exams", type: "exam", color: "green" },
+    "2026-10-13": { title: "Quarterly Exams End", type: "exam", color: "green" },
+    "2026-10-19": { title: "Diwali Break Starts", type: "holiday", color: "purple" },
+    "2026-10-24": { title: "Diwali Break Ends", type: "holiday", color: "purple" },
+    "2026-11-01": { title: "Half-Yearly Exams Start", type: "exam", color: "green" },
+    "2026-11-07": { title: "Half-Yearly Exams End", type: "exam", color: "green" },
     // HALF YEARLY EXAM DATES ADDED
-    "2025-12-11": { title: "Half-Yearly: Hindi/Math/Practical", type: "exam", color: "green" },
-    "2025-12-12": { title: "Half-Yearly: Hindi/Math/Science/Physics", type: "exam", color: "green" },
-    "2025-12-13": { title: "Half-Yearly: Hindi/English/Practical", type: "exam", color: "green" },
-    "2025-12-15": { title: "Half-Yearly: English/Drawing/SST", type: "exam", color: "green" },
-    "2025-12-16": { title: "Half-Yearly: Drawing/SST/Chemistry", type: "exam", color: "green" },
-    "2025-12-17": { title: "Half-Yearly: English/Hindi/Practical", type: "exam", color: "green" },
-    "2025-12-18": { title: "Half-Yearly: Math/Urdu/Hindi", type: "exam", color: "green" },
-    "2025-12-19": { title: "Half-Yearly: Science/Practical", type: "exam", color: "green" },
-    "2025-12-20": { title: "Half-Yearly: Math/SST/Agriculture/English", type: "exam", color: "green" },
-    "2025-12-22": { title: "Half-Yearly: PT/Science/Practical", type: "exam", color: "green" },
-    "2025-12-23": { title: "Half-Yearly: PT/Hindi/Math", type: "exam", color: "green" },
-    "2025-12-24": { title: "Half-Yearly: Urdu/Sanskrit/PT/Drawing", type: "exam", color: "green" },
-    "2025-12-26": { title: "Half-Yearly: Sports/Drawing/English", type: "exam", color: "green" },
-    "2026-01-10": { title: "Syllabus Completion", type: "school", color: "pink" },
-    "2026-01-15": { title: "Pre-Board Exams Start", type: "exam", color: "green" },
-    "2026-01-20": { title: "Pre-Board Exams End", type: "exam", color: "green" },
-    "2026-01-21": { title: "Board Practicals Start", type: "exam", color: "green" },
-    "2026-02-05": { title: "Board Practicals End", type: "exam", color: "green" },
-    "2026-01-26": { title: "Republic Day", type: "holiday", color: "purple" },
-    "2026-02-15": { title: "Board Exams Start", type: "exam", color: "green" },
-    "2026-04-15": { title: "Board Exams End", type: "exam", color: "green" },
-    "2026-04-30": { title: "Session Ends", type: "school", color: "pink" }
+    "2026-12-11": { title: "Half-Yearly: Hindi/Math/Practical", type: "exam", color: "green" },
+    "2026-12-12": { title: "Half-Yearly: Hindi/Math/Science/Physics", type: "exam", color: "green" },
+    "2026-12-13": { title: "Half-Yearly: Hindi/English/Practical", type: "exam", color: "green" },
+    "2026-12-15": { title: "Half-Yearly: English/Drawing/SST", type: "exam", color: "green" },
+    "2026-12-16": { title: "Half-Yearly: Drawing/SST/Chemistry", type: "exam", color: "green" },
+    "2026-12-17": { title: "Half-Yearly: English/Hindi/Practical", type: "exam", color: "green" },
+    "2026-12-18": { title: "Half-Yearly: Math/Urdu/Hindi", type: "exam", color: "green" },
+    "2026-12-19": { title: "Half-Yearly: Science/Practical", type: "exam", color: "green" },
+    "2026-12-20": { title: "Half-Yearly: Math/SST/Agriculture/English", type: "exam", color: "green" },
+    "2026-12-22": { title: "Half-Yearly: PT/Science/Practical", type: "exam", color: "green" },
+    "2026-12-23": { title: "Half-Yearly: PT/Hindi/Math", type: "exam", color: "green" },
+    "2026-12-24": { title: "Half-Yearly: Urdu/Sanskrit/PT/Drawing", type: "exam", color: "green" },
+    "2026-12-26": { title: "Half-Yearly: Sports/Drawing/English", type: "exam", color: "green" },
+    "2027-01-10": { title: "Syllabus Completion", type: "school", color: "pink" },
+    "2027-01-15": { title: "Pre-Board Exams Start", type: "exam", color: "green" },
+    "2027-01-20": { title: "Pre-Board Exams End", type: "exam", color: "green" },
+    "2027-01-21": { title: "Board Practicals Start", type: "exam", color: "green" },
+    "2027-02-05": { title: "Board Practicals End", type: "exam", color: "green" },
+    "2027-01-26": { title: "Republic Day", type: "holiday", color: "purple" },
+    "2027-02-15": { title: "Board Exams Start", type: "exam", color: "green" },
+    "2027-04-15": { title: "Board Exams End", type: "exam", color: "green" },
+    "2027-04-30": { title: "Session Ends", type: "school", color: "pink" }
   };
 
-  const toggleMobileMenu = () => {
-    setMobileMenuOpen(!mobileMenuOpen);
-  };
-
-  const toggleMobileDropdown = (dropdown) => {
-    setMobileDropdowns(prev => ({
-      ...prev,
-      [dropdown]: !prev[dropdown]
-    }));
-  };
 
   const navigateMonth = (direction) => {
     if (direction === 'prev') {
@@ -102,10 +120,10 @@ const Calendar = () => {
     const selectedMonth = parseInt(e.target.value);
     if (selectedMonth < 12) {
       setCurrentMonth(selectedMonth);
-      setCurrentYear(2025);
+      setCurrentYear(2026);
     } else {
       setCurrentMonth(selectedMonth - 12);
-      setCurrentYear(2026);
+      setCurrentYear(2027);
     }
   };
 
@@ -187,7 +205,7 @@ const Calendar = () => {
       id: 1,
       date: "03-13",
       month: "October",
-      year: "2025",
+      year: "2026",
       title: "Quarterly Exams",
       description: "Quarterly examinations for all classes (UKG to 12th)",
       time: "8:30 AM - 11:30 AM",
@@ -199,7 +217,7 @@ const Calendar = () => {
       id: 2,
       date: "19-24",
       month: "October",
-      year: "2025",
+      year: "2026",
       title: "Diwali Break",
       description: "School closed for Diwali holidays",
       time: "Full Day",
@@ -211,7 +229,7 @@ const Calendar = () => {
       id: 3,
       date: "11-26",
       month: "December",
-      year: "2025",
+      year: "2026",
       title: "Half-Yearly Exams",
       description: "Half-yearly examinations for all classes",
       time: "8:30 AM - 11:30 AM",
@@ -223,180 +241,56 @@ const Calendar = () => {
 
   // Academic year important dates - UPDATED
   const academicDates = [
-    { event: "Session Begins", date: "01 April 2025", details: "First day of the academic session 2025-26" },
-    { event: "Independence Day", date: "15 August 2025", details: "School holiday – Independence Day celebration" },
-    { event: "Monthly Test Exams", date: "First Week of August 2025", details: "Monthly examinations for all classes" },
-    { event: "त्रैमासिक परीक्षा / Quarterly Exams", date: "03-13 October 2025", details: "Quarterly examinations for all classes (UKG to 12th)", highlight: true },
-    { event: "Diwali Break", date: "19 – 24 October 2025", details: "School closed for Diwali holidays" },
-    { event: "अर्धवार्षिक परीक्षा / Half-Yearly Exams", date: "11 – 26 December 2025", details: "Half-yearly examinations for all classes", highlight: true },
-    { event: "Syllabus Completion", date: "First or Second Week of January 2026", details: "Syllabus completion for all classes" },
-    { event: "Republic Day", date: "26 January 2026", details: "School holiday – Republic Day celebration" },
-    { event: "Pre-Board Exams", date: "15 January 2026 Onwards", details: "Pre-board examinations for Classes 10 & 12" },
-    { event: "Board Practicals", date: "21 January – 05 February 2026", details: "Board practical examinations for Classes 10 & 12" },
-    { event: "Board Exams", date: "February 2026 Onwards", details: "UP Board examinations for Classes 10 & 12" },
-    { event: "Session Ends", date: "30 April 2026", details: "Last day of the academic session 2025-26" }
+    { event: "Session Begins", date: "01 April 2026", details: "First day of the academic session 2026-26" },
+    { event: "Independence Day", date: "15 August 2026", details: "School holiday – Independence Day celebration" },
+    { event: "Monthly Test Exams", date: "First Week of August 2026", details: "Monthly examinations for all classes" },
+    { event: "त्रैमासिक परीक्षा / Quarterly Exams", date: "03-13 October 2026", details: "Quarterly examinations for all classes (UKG to 12th)", highlight: true },
+    { event: "Diwali Break", date: "19 – 24 October 2026", details: "School closed for Diwali holidays" },
+    { event: "अर्धवार्षिक परीक्षा / Half-Yearly Exams", date: "11 – 26 December 2026", details: "Half-yearly examinations for all classes", highlight: true },
+    { event: "Syllabus Completion", date: "First or Second Week of January 2027", details: "Syllabus completion for all classes" },
+    { event: "Republic Day", date: "26 January 2027", details: "School holiday – Republic Day celebration" },
+    { event: "Pre-Board Exams", date: "15 January 2027 Onwards", details: "Pre-board examinations for Classes 10 & 12" },
+    { event: "Board Practicals", date: "21 January – 05 February 2027", details: "Board practical examinations for Classes 10 & 12" },
+    { event: "Board Exams", date: "February 2027 Onwards", details: "UP Board examinations for Classes 10 & 12" },
+    { event: "Session Ends", date: "30 April 2027", details: "Last day of the academic session 2026-26" }
   ];
 
   // Half Yearly Exam Schedule Data
   const halfYearlyExamSchedule = [
-    { date: "11-12-25", day: "Thursday", ukg_1_2: "Holiday", class_3_5: "Hindi", class_6_8: "Math", class_9_10: "Practical Papers: Science", class_11_12: "Practical Papers: Physics, Geography" },
-    { date: "12-12-25", day: "Friday", ukg_1_2: "Hindi, Moral", class_3_5: "Math", class_6_8: "Holiday", class_9_10: "Science", class_11_12: "Physics, Geography" },
-    { date: "13-12-25", day: "Saturday", ukg_1_2: "Hindi", class_3_5: "Moral Education", class_6_8: "English", class_9_10: "Practical, SST", class_11_12: "Practical, Chemistry, Home Science" },
-    { date: "14-12-25", day: "Sunday", ukg_1_2: "Holiday", class_3_5: "Holiday", class_6_8: "Holiday", class_9_10: "Holiday", class_11_12: "Holiday", isHoliday: true },
-    { date: "15-12-25", day: "Monday", ukg_1_2: "English (oral)", class_3_5: "Holiday", class_6_8: "Drawing", class_9_10: "SST", class_11_12: "Holiday" },
-    { date: "16-12-25", day: "Tuesday", ukg_1_2: "Holiday", class_3_5: "Drawing", class_6_8: "SST", class_9_10: "Holiday", class_11_12: "Chemistry/Home Science" },
-    { date: "17-12-25", day: "Wednesday", ukg_1_2: "English", class_3_5: "English", class_6_8: "Hindi", class_9_10: "Practical: Math/Home Science", class_11_12: "Practical: Biology" },
-    { date: "18-12-25", day: "Thursday", ukg_1_2: "Math (Oral)", class_3_5: "Holiday", class_6_8: "Urdu/Sanskrit", class_9_10: "Math, Home Sc.", class_11_12: "Hindi" },
-    { date: "19-12-25", day: "Friday", ukg_1_2: "Holiday", class_3_5: "Science", class_6_8: "Holiday", class_9_10: "Practical: English", class_11_12: "Drawing" },
-    { date: "20-12-25", day: "Saturday", ukg_1_2: "Math", class_3_5: "SST", class_6_8: "Agriculture/ Home Sc.", class_9_10: "English", class_11_12: "Biology" },
-    { date: "21-12-25", day: "Sunday", ukg_1_2: "Holiday", class_3_5: "Holiday", class_6_8: "Holiday", class_9_10: "Holiday", class_11_12: "Holiday", isHoliday: true },
-    { date: "22-12-25", day: "Monday", ukg_1_2: "Holiday", class_3_5: "PT", class_6_8: "Science", class_9_10: "Practical: Hindi", class_11_12: "Holiday" },
-    { date: "23-12-25", day: "Tuesday", ukg_1_2: "P.T", class_3_5: "Holiday", class_6_8: "Holiday", class_9_10: "Hindi", class_11_12: "Math" },
-    { date: "24-12-25", day: "Wednesday", ukg_1_2: "Holiday", class_3_5: "Urdu, Sanskrit", class_6_8: "P.T.", class_9_10: "Drawing", class_11_12: "Holiday" },
-    { date: "25-12-25", day: "Thursday", ukg_1_2: "Holiday", class_3_5: "Holiday", class_6_8: "Holiday", class_9_10: "Holiday", class_11_12: "Holiday", isHoliday: true },
-    { date: "26-12-25", day: "Friday", ukg_1_2: "Holiday", class_3_5: "Holiday", class_6_8: "Sports and Edu.", class_9_10: "Drawing, English", class_11_12: "Drawing, English" }
+    { date: "11-12-26", day: "Thursday", ukg_1_2: "Holiday", class_3_5: "Hindi", class_6_8: "Math", class_9_10: "Practical Papers: Science", class_11_12: "Practical Papers: Physics, Geography" },
+    { date: "12-12-26", day: "Friday", ukg_1_2: "Hindi, Moral", class_3_5: "Math", class_6_8: "Holiday", class_9_10: "Science", class_11_12: "Physics, Geography" },
+    { date: "13-12-26", day: "Saturday", ukg_1_2: "Hindi", class_3_5: "Moral Education", class_6_8: "English", class_9_10: "Practical, SST", class_11_12: "Practical, Chemistry, Home Science" },
+    { date: "14-12-26", day: "Sunday", ukg_1_2: "Holiday", class_3_5: "Holiday", class_6_8: "Holiday", class_9_10: "Holiday", class_11_12: "Holiday", isHoliday: true },
+    { date: "15-12-26", day: "Monday", ukg_1_2: "English (oral)", class_3_5: "Holiday", class_6_8: "Drawing", class_9_10: "SST", class_11_12: "Holiday" },
+    { date: "16-12-26", day: "Tuesday", ukg_1_2: "Holiday", class_3_5: "Drawing", class_6_8: "SST", class_9_10: "Holiday", class_11_12: "Chemistry/Home Science" },
+    { date: "17-12-26", day: "Wednesday", ukg_1_2: "English", class_3_5: "English", class_6_8: "Hindi", class_9_10: "Practical: Math/Home Science", class_11_12: "Practical: Biology" },
+    { date: "18-12-26", day: "Thursday", ukg_1_2: "Math (Oral)", class_3_5: "Holiday", class_6_8: "Urdu/Sanskrit", class_9_10: "Math, Home Sc.", class_11_12: "Hindi" },
+    { date: "19-12-26", day: "Friday", ukg_1_2: "Holiday", class_3_5: "Science", class_6_8: "Holiday", class_9_10: "Practical: English", class_11_12: "Drawing" },
+    { date: "20-12-26", day: "Saturday", ukg_1_2: "Math", class_3_5: "SST", class_6_8: "Agriculture/ Home Sc.", class_9_10: "English", class_11_12: "Biology" },
+    { date: "21-12-26", day: "Sunday", ukg_1_2: "Holiday", class_3_5: "Holiday", class_6_8: "Holiday", class_9_10: "Holiday", class_11_12: "Holiday", isHoliday: true },
+    { date: "22-12-26", day: "Monday", ukg_1_2: "Holiday", class_3_5: "PT", class_6_8: "Science", class_9_10: "Practical: Hindi", class_11_12: "Holiday" },
+    { date: "23-12-26", day: "Tuesday", ukg_1_2: "P.T", class_3_5: "Holiday", class_6_8: "Holiday", class_9_10: "Hindi", class_11_12: "Math" },
+    { date: "24-12-26", day: "Wednesday", ukg_1_2: "Holiday", class_3_5: "Urdu, Sanskrit", class_6_8: "P.T.", class_9_10: "Drawing", class_11_12: "Holiday" },
+    { date: "25-12-26", day: "Thursday", ukg_1_2: "Holiday", class_3_5: "Holiday", class_6_8: "Holiday", class_9_10: "Holiday", class_11_12: "Holiday", isHoliday: true },
+    { date: "26-12-26", day: "Friday", ukg_1_2: "Holiday", class_3_5: "Holiday", class_6_8: "Sports and Edu.", class_9_10: "Drawing, English", class_11_12: "Drawing, English" }
   ];
 
   // Quarterly Exam Schedule Data
   const quarterlyExamSchedule = [
-    { date: "03-10-2025", day: "Friday", ukg_1_2: "हिन्दी मौखिक", class_3_5: "अंग्रेजी", class_6_8: "गणित", class_9_10: "विज्ञान प्रयोगात्मक", class_11_12: "भूगोल + भौतिक विज्ञान (प्रयोगात्मक)", isSpecial: true },
-    { date: "04-10-2025", day: "Saturday", ukg_1_2: "अवकाश (Holiday)", class_3_5: "संस्कृत/उर्दू", class_6_8: "चित्रकला", class_9_10: "विज्ञान", class_11_12: "भौतिक विज्ञान + भूगोल" },
-    { date: "06-10-2025", day: "Monday", ukg_1_2: "हिन्दी लिखित", class_3_5: "चित्रकला", class_6_8: "हिन्दी", class_9_10: "सामाजिक विज्ञान प्रयोगात्मक", class_11_12: "रसायन + गृह विज्ञान (प्रयोगात्मक)" },
-    { date: "07-10-2025", day: "Tuesday", ukg_1_2: "अवकाश (Holiday)", class_3_5: "गणित", class_6_8: "विज्ञान", class_9_10: "सामाजिक विज्ञान", class_11_12: "रसायन + गृह विज्ञान + समाज." },
-    { date: "08-10-2025", day: "Wednesday", ukg_1_2: "अंग्रेजी मौखिक", class_3_5: "नैतिक शिक्षा/सामान्य ज्ञान", class_6_8: "कृषि विज्ञान/गृह विज्ञान", class_9_10: "चित्रकला", class_11_12: "हिन्दी" },
-    { date: "09-10-2025", day: "Thursday", ukg_1_2: "अंग्रेजी लिखित", class_3_5: "हिन्दी", class_6_8: "सामाजिक विज्ञान", class_9_10: "हिन्दी", class_11_12: "जीव विज्ञान प्रयोगात्मक" },
-    { date: "10-10-2025", day: "Friday", ukg_1_2: "गणित मौखिक", class_3_5: "सामाजिक अध्ययन", class_6_8: "संस्कृत/उर्दू", class_9_10: "अंग्रेजी", class_11_12: "जीव विज्ञान + चित्रकला" },
-    { date: "11-10-2025", day: "Saturday", ukg_1_2: "गणित लिखित", class_3_5: "विज्ञान", class_6_8: "पी.टी.", class_9_10: "गणित + गृहवि. प्रयोगात्मक", class_11_12: "अंग्रेजी" },
-    { date: "13-10-2025", day: "Monday", ukg_1_2: "पी.टी.", class_3_5: "पी.टी.", class_6_8: "अंग्रेजी", class_9_10: "गृह विज्ञान + गणित", class_11_12: "गणित" }
+    { date: "03-10-2026", day: "Friday", ukg_1_2: "हिन्दी मौखिक", class_3_5: "अंग्रेजी", class_6_8: "गणित", class_9_10: "विज्ञान प्रयोगात्मक", class_11_12: "भूगोल + भौतिक विज्ञान (प्रयोगात्मक)", isSpecial: true },
+    { date: "04-10-2026", day: "Saturday", ukg_1_2: "अवकाश (Holiday)", class_3_5: "संस्कृत/उर्दू", class_6_8: "चित्रकला", class_9_10: "विज्ञान", class_11_12: "भौतिक विज्ञान + भूगोल" },
+    { date: "06-10-2026", day: "Monday", ukg_1_2: "हिन्दी लिखित", class_3_5: "चित्रकला", class_6_8: "हिन्दी", class_9_10: "सामाजिक विज्ञान प्रयोगात्मक", class_11_12: "रसायन + गृह विज्ञान (प्रयोगात्मक)" },
+    { date: "07-10-2026", day: "Tuesday", ukg_1_2: "अवकाश (Holiday)", class_3_5: "गणित", class_6_8: "विज्ञान", class_9_10: "सामाजिक विज्ञान", class_11_12: "रसायन + गृह विज्ञान + समाज." },
+    { date: "08-10-2026", day: "Wednesday", ukg_1_2: "अंग्रेजी मौखिक", class_3_5: "नैतिक शिक्षा/सामान्य ज्ञान", class_6_8: "कृषि विज्ञान/गृह विज्ञान", class_9_10: "चित्रकला", class_11_12: "हिन्दी" },
+    { date: "09-10-2026", day: "Thursday", ukg_1_2: "अंग्रेजी लिखित", class_3_5: "हिन्दी", class_6_8: "सामाजिक विज्ञान", class_9_10: "हिन्दी", class_11_12: "जीव विज्ञान प्रयोगात्मक" },
+    { date: "10-10-2026", day: "Friday", ukg_1_2: "गणित मौखिक", class_3_5: "सामाजिक अध्ययन", class_6_8: "संस्कृत/उर्दू", class_9_10: "अंग्रेजी", class_11_12: "जीव विज्ञान + चित्रकला" },
+    { date: "11-10-2026", day: "Saturday", ukg_1_2: "गणित लिखित", class_3_5: "विज्ञान", class_6_8: "पी.टी.", class_9_10: "गणित + गृहवि. प्रयोगात्मक", class_11_12: "अंग्रेजी" },
+    { date: "13-10-2026", day: "Monday", ukg_1_2: "पी.टी.", class_3_5: "पी.टी.", class_6_8: "अंग्रेजी", class_9_10: "गृह विज्ञान + गणित", class_11_12: "गणित" }
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-blue-50">
-      {/* Header */}
-      <header className="sticky top-0 z-50 shadow-lg">
-        <nav className="bg-gradient-to-r from-sricblue to-blue-800 p-4">
-          <div className="container mx-auto flex justify-between items-center">
-            {/* Logo + School Name */}
-            <div className="flex items-center space-x-3">
-              <div className="bg-white p-2 rounded-full">
-                <img src="assets/SRIC LOGO.PNG" alt="SRIC Logo" className="h-10 w-10 rounded-full" />
-              </div>
-              <Link to="/" className="text-white text-xl font-bold tracking-tight">SITARAM INTER COLLEGE</Link>
-              <span className="hidden sm:inline text-sricgold text-sm font-medium bg-white/10 px-2 py-1 rounded">Empowering Minds, Shaping Futures</span>
-            </div>
-
-            {/* Desktop Menu */}
-            <ul className="hidden md:flex space-x-6 items-center">
-              <li><Link to="/" className="text-gray-300 hover:text-white hover:underline transition">Home</Link></li>
-              
-              {/* About Us Dropdown */}
-              <li className="relative group">
-                <button className="text-gray-300 hover:text-white focus:outline-none flex items-center transition">
-                  About Us <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                </button>
-                <ul className="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-xl py-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform group-hover:translate-y-0 translate-y-2">
-                  <li><Link to="/mission" className="block px-4 py-2 text-gray-800 hover:bg-sricblue hover:text-white transition">Mission</Link></li>
-                  <li><Link to="/history" className="block px-4 py-2 text-gray-800 hover:bg-sricblue hover:text-white transition">History</Link></li>
-                  <li><Link to="/faculty" className="block px-4 py-2 text-gray-800 hover:bg-sricblue hover:text-white transition">Faculty</Link></li>
-                </ul>
-              </li>
-              
-              {/* Academics Dropdown */}
-              <li className="relative group">
-                <button className="text-gray-300 hover:text-white focus:outline-none flex items-center transition">
-                  Academics <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                </button>
-                <ul className="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-xl py-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform group-hover:translate-y-0 translate-y-2">
-                  <li><Link to="/curriculum" className="block px-4 py-2 text-gray-800 hover:bg-sricblue hover:text-white transition">Curriculum</Link></li>
-                  <li><Link to="/programs" className="block px-4 py-2 text-gray-800 hover:bg-sricblue hover:text-white transition">Programs</Link></li>
-                </ul>
-              </li>
-              
-              {/* News & Events Active */}
-              <li className="relative group">
-                <button className="text-white flex items-center font-semibold">
-                  News & Events <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                </button>
-                <ul className="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-xl py-1">
-                  <li><Link to="/calendar" className="block px-4 py-2 text-gray-800 hover:bg-sricblue hover:text-white font-semibold bg-blue-50">Calendar</Link></li>
-                  <li><Link to="/announcements" className="block px-4 py-2 text-gray-800 hover:bg-sricblue hover:text-white">Announcements</Link></li>
-                </ul>
-              </li>
-              
-              {/* Other Links */}
-              <li><Link to="/contact" className="text-gray-300 hover:text-white hover:underline transition">Contact</Link></li>
-            </ul>
-
-            {/* CTA Button (Desktop) */}
-            <Link to="/admission-form" className="hidden md:block bg-gradient-to-r from-sricgold to-yellow-500 text-sricblue px-6 py-2 rounded-lg font-bold hover:shadow-lg hover:scale-105 transition transform">Apply Now</Link>
-
-            {/* Mobile Hamburger Menu */}
-            <button 
-              onClick={toggleMobileMenu}
-              className="md:hidden text-white focus:outline-none hover:bg-white/10 p-2 rounded-lg" 
-              aria-expanded={mobileMenuOpen} 
-              aria-label="Toggle menu"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path>
-              </svg>
-            </button>
-          </div>
-
-          {/* Mobile Menu */}
-          <div className={`md:hidden ${mobileMenuOpen ? 'block' : 'hidden'} bg-sricblue/95 backdrop-blur-sm pb-4 px-4 transition-all duration-300 rounded-b-lg`}>
-            <ul className="flex flex-col space-y-2">
-              <li><Link to="/" className="block text-gray-300 hover:text-white py-2 transition">Home</Link></li>
-              
-              {/* About Us Dropdown */}
-              <li className="dropdown-container">
-                <button 
-                  onClick={() => toggleMobileDropdown('about')}
-                  className="dropdown-btn w-full text-left text-gray-300 hover:text-white py-2 flex justify-between items-center transition"
-                >
-                  About Us <svg className={`dropdown-icon w-4 h-4 transform transition-transform ${mobileDropdowns.about ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                </button>
-                <div className={`dropdown-content pl-4 mt-1 space-y-1 overflow-hidden transition-all duration-300 ${mobileDropdowns.about ? 'max-h-32' : 'max-h-0'}`}>
-                  <Link to="/mission" className="block text-gray-400 hover:text-white py-1 text-sm transition">Mission</Link>
-                  <Link to="/history" className="block text-gray-400 hover:text-white py-1 text-sm transition">History</Link>
-                  <Link to="/faculty" className="block text-gray-400 hover:text-white py-1 text-sm transition">Faculty</Link>
-                </div>
-              </li>
-              
-              {/* Academics Dropdown */}
-              <li className="dropdown-container">
-                <button 
-                  onClick={() => toggleMobileDropdown('academics')}
-                  className="dropdown-btn w-full text-left text-gray-300 hover:text-white py-2 flex justify-between items-center transition"
-                >
-                  Academics <svg className={`dropdown-icon w-4 h-4 transform transition-transform ${mobileDropdowns.academics ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                </button>
-                <div className={`dropdown-content pl-4 mt-1 space-y-1 overflow-hidden transition-all duration-300 ${mobileDropdowns.academics ? 'max-h-32' : 'max-h-0'}`}>
-                  <Link to="/curriculum" className="block text-gray-400 hover:text-white py-1 text-sm transition">Curriculum</Link>
-                  <Link to="/programs" className="block text-gray-400 hover:text-white py-1 text-sm transition">Programs</Link>
-                </div>
-              </li>
-              
-              {/* News & Events Active */}
-              <li className="dropdown-container">
-                <button 
-                  onClick={() => toggleMobileDropdown('news')}
-                  className="dropdown-btn w-full text-left text-white py-2 flex justify-between items-center transition"
-                >
-                  News & Events <svg className={`dropdown-icon w-4 h-4 transform transition-transform ${mobileDropdowns.news ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                </button>
-                <div className={`dropdown-content pl-4 mt-1 space-y-1 overflow-hidden transition-all duration-300 ${mobileDropdowns.news ? 'max-h-32' : 'max-h-0'}`}>
-                  <Link to="/calendar" className="block text-white py-1 text-sm font-medium">Calendar</Link>
-                  <Link to="/announcements" className="block text-gray-400 hover:text-white py-1 text-sm transition">Announcements</Link>
-                </div>
-              </li>
-              
-              <li><Link to="/contact" className="block text-gray-300 hover:text-white py-2 transition">Contact</Link></li>
-              <li><Link to="/admission-form" className="block bg-gradient-to-r from-sricgold to-yellow-500 text-sricblue px-4 py-3 rounded-lg text-center font-bold mt-2 hover:shadow-lg transition">Apply Now</Link></li>
-            </ul>
-          </div>
-        </nav>
-      </header>
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-blue-50 flex flex-col">
+      <Header />
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8 md:py-12">
@@ -404,190 +298,297 @@ const Calendar = () => {
         <div className="text-center mb-12 relative">
           <div className="absolute -top-6 -left-6 w-20 h-20 rounded-full bg-gradient-to-r from-sricgold to-yellow-400 opacity-20 animate-pulse"></div>
           <div className="absolute -bottom-6 -right-6 w-32 h-32 rounded-full bg-gradient-to-r from-sricblue to-blue-600 opacity-20 animate-pulse"></div>
-          <h1 className="text-4xl md:text-5xl font-bold text-sricblue mb-4 relative z-10 bg-clip-text bg-gradient-to-r from-sricblue to-blue-600">Academic Calendar 2025-26</h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-sricblue mb-4 relative z-10 bg-clip-text bg-gradient-to-r from-sricblue to-blue-600">Academic Calendar 2026-26</h1>
           <div className="w-32 h-2 bg-gradient-to-r from-sricblue via-sricgold to-sricblue mx-auto mb-6 rounded-full"></div>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto relative z-10">Stay updated with all important dates, events, and academic schedules</p>
           
           {/* Exam Schedule Toggle */}
-          <div className="mt-8 flex justify-center gap-4">
-            <button
-              onClick={() => setActiveExamSchedule('quarterly')}
-              className={`px-6 py-3 rounded-lg font-bold transition-all ${activeExamSchedule === 'quarterly' ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
-            >
-              <i className="fas fa-calendar-alt mr-2"></i>
-              Quarterly Exams
-            </button>
-            <button
-              onClick={() => setActiveExamSchedule('halfyearly')}
-              className={`px-6 py-3 rounded-lg font-bold transition-all ${activeExamSchedule === 'halfyearly' ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
-            >
-              <i className="fas fa-calendar-star mr-2"></i>
-              Half-Yearly Exams
-            </button>
+          <div className="mt-8 flex flex-wrap justify-center gap-4">
+            {dynamicSchedules.length > 0 ? (
+              dynamicSchedules.map((schedule) => (
+                <button
+                  key={schedule._id}
+                  onClick={() => setActiveExamSchedule(schedule._id)}
+                  className={`px-6 py-3 rounded-lg font-bold transition-all ${activeExamSchedule === schedule._id ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+                >
+                  <i className="fas fa-calendar-alt mr-2"></i>
+                  {schedule.title}
+                </button>
+              ))
+            ) : (
+              <>
+                <button
+                  onClick={() => setActiveExamSchedule('quarterly')}
+                  className={`px-6 py-3 rounded-lg font-bold transition-all ${activeExamSchedule === 'quarterly' ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+                >
+                  <i className="fas fa-calendar-alt mr-2"></i>
+                  Quarterly Exams
+                </button>
+                <button
+                  onClick={() => setActiveExamSchedule('halfyearly')}
+                  className={`px-6 py-3 rounded-lg font-bold transition-all ${activeExamSchedule === 'halfyearly' ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+                >
+                  <i className="fas fa-calendar-star mr-2"></i>
+                  Half-Yearly Exams
+                </button>
+              </>
+            )}
           </div>
         </div>
 
-        {/* Special Notice Section */}
-        <div className="bg-gradient-to-r from-yellow-50 via-yellow-100 to-amber-50 border-l-4 border-yellow-500 p-6 mb-8 rounded-xl shadow-lg transform hover:scale-[1.005] transition-transform">
-          <div className="flex items-start">
-            <div className="flex-shrink-0 bg-yellow-500 p-3 rounded-full">
-              <i className="fas fa-exclamation-circle text-white text-2xl"></i>
-            </div>
-            <div className="ml-4">
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">त्रैमासिक परीक्षा समय सारणी / Quarterly Examination Schedule</h3>
-              <div className="text-gray-700">
-                <p className="mb-4 font-semibold text-lg">विशेष सूचना / Special Notice:</p>
-                <p className="mb-2 text-lg">कक्षा 9 से 12 तक के सभी छात्र/छात्राओं को सूचित किया जाता है कि:</p>
-                <p className="mb-2 text-lg">All students from classes 9 to 12 are informed that:</p>
-                <ul className="list-disc pl-6 space-y-2 text-lg">
-                  <li>सभी विद्यार्थी दिनांक 03-10-2025, शुक्रवार को अपने अभिभावकों के साथ विद्यालय में प्रातः 8 बजे उपस्थित हों।</li>
-                  <li>All students must be present at school with their parents/guardians on Friday, 03-10-2025 at 8:00 AM.</li>
-                  <li>उस दिन परीक्षा भी संचालित होगी; जिस विषय की परीक्षा है, वही परीक्षा आयोजित की जाएगी।</li>
-                  <li>Exams will also be conducted on that day; the scheduled exam for that day will take place.</li>
-                </ul>
-                <p className="mt-4 font-semibold text-lg">धन्यवाद। / Thank you.</p>
-                <p className="mt-2">आज्ञानुसार, / Sincerely,</p>
-                <p className="font-bold text-lg">प्रधानाचार्य / Principal</p>
+        {/* Dynamic / Special Notice Section */}
+        {(() => {
+          const activeDynSchedule = dynamicSchedules.find(s => s._id === activeExamSchedule);
+
+          if (activeDynSchedule) {
+            return (
+              <>
+                {activeDynSchedule.noticeText && (
+                  <div className="bg-gradient-to-r from-blue-50 via-blue-100 to-indigo-50 border-l-4 border-blue-500 p-6 mb-8 rounded-xl shadow-lg transform hover:scale-[1.005] transition-transform">
+                    <div className="flex items-start">
+                      <div className="flex-shrink-0 bg-blue-500 p-3 rounded-full">
+                        <i className="fas fa-bullhorn text-white text-2xl"></i>
+                      </div>
+                      <div className="ml-4">
+                        <h3 className="text-2xl font-bold text-gray-900 mb-4">{activeDynSchedule.title} - Special Notice</h3>
+                        <div className="text-gray-700 text-lg whitespace-pre-line">
+                          {activeDynSchedule.noticeText}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Exam Schedule Section */}
+                <div className="bg-white rounded-xl shadow-xl overflow-hidden mb-12 border border-gray-200 transform hover:shadow-2xl transition-all duration-300">
+                  <div className="p-6 text-white bg-gradient-to-r from-blue-500 to-indigo-600">
+                    <h2 className="text-2xl md:text-3xl font-bold flex items-center">
+                      <i className="fas fa-calendar-alt mr-3"></i>
+                      {activeDynSchedule.title} Schedule
+                    </h2>
+                    <p className="mt-2 opacity-90">
+                      {activeDynSchedule.academicYear} | Exam Status: {activeDynSchedule.status}
+                    </p>
+                  </div>
+                  
+                  <div className="p-6">
+                    {activeDynSchedule.dates && activeDynSchedule.dates.length > 0 ? (
+                      <div className="overflow-x-auto rounded-lg border border-gray-200">
+                        <table className="min-w-full">
+                          <thead className="bg-blue-50">
+                            <tr>
+                              <th className="py-3 px-4 text-left font-bold text-gray-700 border-b">Date</th>
+                              <th className="py-3 px-4 text-left font-bold text-gray-700 border-b">Subject</th>
+                              <th className="py-3 px-4 text-left font-bold text-gray-700 border-b">Classes</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {activeDynSchedule.dates.map((dt, index) => {
+                              const d = new Date(dt.date);
+                              return (
+                                <tr key={index} className="hover:bg-gray-50 transition border-b">
+                                  <td className="py-3 px-4 font-semibold">{d.toLocaleDateString()}</td>
+                                  <td className="py-3 px-4">
+                                    <span className="inline-block px-3 py-1 rounded-full bg-blue-100 text-blue-700 font-bold">
+                                      {dt.subject}
+                                    </span>
+                                  </td>
+                                  <td className="py-3 px-4">{dt.classes}</td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <div className="text-center py-6 text-gray-500 italic">No exact subject dates listed. Please refer to the downloaded PDF datesheet.</div>
+                    )}
+                    
+                    <div className="mt-6 flex flex-col sm:flex-row gap-4">
+                      {activeDynSchedule.pdfUrl && (
+                        <a 
+                          href={activeDynSchedule.pdfUrl}
+                          target="_blank" rel="noopener noreferrer"
+                          className="inline-flex items-center justify-center bg-gradient-to-r from-sricblue to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 shadow-lg hover:shadow-xl"
+                        >
+                          <i className="fas fa-download mr-2"></i>
+                          Download Datesheet (PDF)
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </>
+            );
+          }
+
+          // Fallback static hardcoded JSX block
+          return (
+            <>
+              {/* Special Notice Section */}
+              <div className="bg-gradient-to-r from-yellow-50 via-yellow-100 to-amber-50 border-l-4 border-yellow-500 p-6 mb-8 rounded-xl shadow-lg transform hover:scale-[1.005] transition-transform">
+                <div className="flex items-start">
+                  <div className="flex-shrink-0 bg-yellow-500 p-3 rounded-full">
+                    <i className="fas fa-exclamation-circle text-white text-2xl"></i>
+                  </div>
+                  <div className="ml-4">
+                    <h3 className="text-2xl font-bold text-gray-900 mb-4">त्रैमासिक परीक्षा समय सारणी / Quarterly Examination Schedule</h3>
+                    <div className="text-gray-700">
+                      <p className="mb-4 font-semibold text-lg">विशेष सूचना / Special Notice:</p>
+                      <p className="mb-2 text-lg">कक्षा 9 से 12 तक के सभी छात्र/छात्राओं को सूचित किया जाता है कि:</p>
+                      <p className="mb-2 text-lg">All students from classes 9 to 12 are informed that:</p>
+                      <ul className="list-disc pl-6 space-y-2 text-lg">
+                        <li>सभी विद्यार्थी दिनांक 03-10-2026, शुक्रवार को अपने अभिभावकों के साथ विद्यालय में प्रातः 8 बजे उपस्थित हों।</li>
+                        <li>All students must be present at school with their parents/guardians on Friday, 03-10-2026 at 8:00 AM.</li>
+                        <li>उस दिन परीक्षा भी संचालित होगी; जिस विषय की परीक्षा है, वही परीक्षा आयोजित की जाएगी।</li>
+                        <li>Exams will also be conducted on that day; the scheduled exam for that day will take place.</li>
+                      </ul>
+                      <p className="mt-4 font-semibold text-lg">धन्यवाद। / Thank you.</p>
+                      <p className="mt-2">आज्ञानुसार, / Sincerely,</p>
+                      <p className="font-bold text-lg">प्रधानाचार्य / Principal</p>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        </div>
-        
-        {/* Exam Schedule Section with Toggle */}
-        <div className="bg-white rounded-xl shadow-xl overflow-hidden mb-12 border border-gray-200 transform hover:shadow-2xl transition-all duration-300">
-          <div className={`p-6 text-white ${activeExamSchedule === 'quarterly' ? 'bg-gradient-to-r from-green-500 to-green-600' : 'bg-gradient-to-r from-orange-500 to-orange-600'}`}>
-            <h2 className="text-2xl md:text-3xl font-bold flex items-center">
-              <i className={`fas ${activeExamSchedule === 'quarterly' ? 'fa-calendar-alt' : 'fa-calendar-star'} mr-3`}></i>
-              {activeExamSchedule === 'quarterly' ? 'त्रैमासिक परीक्षा समय सारणी (Quarterly Examination Schedule)' : 'अर्धवार्षिक परीक्षा समय सारणी (Half-Yearly Examination Schedule)'}
-            </h2>
-            <p className="mt-2 opacity-90">
-              {activeExamSchedule === 'quarterly' ? 'October 2025 | Time: 8:30 AM - 11:30 AM' : 'December 2025 | Time: 8:30 AM - 11:30 AM'}
-            </p>
-          </div>
-          
-          <div className="p-6">
-            <div className="overflow-x-auto rounded-lg border border-gray-200">
-              <table className="exam-table min-w-full">
-                <thead className={`${activeExamSchedule === 'quarterly' ? 'bg-green-50' : 'bg-orange-50'}`}>
-                  <tr>
-                    <th className="py-3 px-4 text-left font-bold text-gray-700 border-b">Date</th>
-                    <th className="py-3 px-4 text-left font-bold text-gray-700 border-b">Day</th>
-                    <th className="py-3 px-4 text-left font-bold text-gray-700 border-b">UKG to 2nd</th>
-                    <th className="py-3 px-4 text-left font-bold text-gray-700 border-b">3rd to 5th</th>
-                    <th className="py-3 px-4 text-left font-bold text-gray-700 border-b">6th to 8th</th>
-                    <th className="py-3 px-4 text-left font-bold text-gray-700 border-b">9th to 10th</th>
-                    <th className="py-3 px-4 text-left font-bold text-gray-700 border-b">11th to 12th</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {activeExamSchedule === 'quarterly' ? (
-                    <>
-                      {quarterlyExamSchedule.map((exam, index) => (
-                        <tr 
-                          key={index} 
-                          className={`hover:bg-gray-50 transition ${exam.isSpecial ? 'bg-blue-50' : ''}`}
-                        >
-                          <td className="py-3 px-4 border-b font-semibold">{exam.date}</td>
-                          <td className="py-3 px-4 border-b">{exam.day}</td>
-                          <td className="py-3 px-4 border-b">
-                            <span className={`inline-block px-3 py-1 rounded-full ${exam.ukg_1_2.includes('Holiday') ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>
-                              {exam.ukg_1_2}
-                            </span>
-                          </td>
-                          <td className="py-3 px-4 border-b">
-                            <span className="inline-block px-3 py-1 rounded-full bg-green-100 text-green-700">
-                              {exam.class_3_5}
-                            </span>
-                          </td>
-                          <td className="py-3 px-4 border-b">
-                            <span className="inline-block px-3 py-1 rounded-full bg-purple-100 text-purple-700">
-                              {exam.class_6_8}
-                            </span>
-                          </td>
-                          <td className="py-3 px-4 border-b">
-                            <span className="inline-block px-3 py-1 rounded-full bg-yellow-100 text-yellow-700">
-                              {exam.class_9_10}
-                            </span>
-                          </td>
-                          <td className="py-3 px-4 border-b">
-                            <span className="inline-block px-3 py-1 rounded-full bg-indigo-100 text-indigo-700">
-                              {exam.class_11_12}
-                            </span>
-                          </td>
+              
+              {/* Exam Schedule Section with Toggle */}
+              <div className="bg-white rounded-xl shadow-xl overflow-hidden mb-12 border border-gray-200 transform hover:shadow-2xl transition-all duration-300">
+                <div className={`p-6 text-white ${activeExamSchedule === 'quarterly' ? 'bg-gradient-to-r from-green-500 to-green-600' : 'bg-gradient-to-r from-orange-500 to-orange-600'}`}>
+                  <h2 className="text-2xl md:text-3xl font-bold flex items-center">
+                    <i className={`fas ${activeExamSchedule === 'quarterly' ? 'fa-calendar-alt' : 'fa-calendar-star'} mr-3`}></i>
+                    {activeExamSchedule === 'quarterly' ? 'त्रैमासिक परीक्षा समय सारणी (Quarterly Examination Schedule)' : 'अर्धवार्षिक परीक्षा समय सारणी (Half-Yearly Examination Schedule)'}
+                  </h2>
+                  <p className="mt-2 opacity-90">
+                    {activeExamSchedule === 'quarterly' ? 'October 2026 | Time: 8:30 AM - 11:30 AM' : 'December 2026 | Time: 8:30 AM - 11:30 AM'}
+                  </p>
+                </div>
+                
+                <div className="p-6">
+                  <div className="overflow-x-auto rounded-lg border border-gray-200">
+                    <table className="exam-table min-w-full">
+                      <thead className={`${activeExamSchedule === 'quarterly' ? 'bg-green-50' : 'bg-orange-50'}`}>
+                        <tr>
+                          <th className="py-3 px-4 text-left font-bold text-gray-700 border-b">Date</th>
+                          <th className="py-3 px-4 text-left font-bold text-gray-700 border-b">Day</th>
+                          <th className="py-3 px-4 text-left font-bold text-gray-700 border-b">UKG to 2nd</th>
+                          <th className="py-3 px-4 text-left font-bold text-gray-700 border-b">3rd to 5th</th>
+                          <th className="py-3 px-4 text-left font-bold text-gray-700 border-b">6th to 8th</th>
+                          <th className="py-3 px-4 text-left font-bold text-gray-700 border-b">9th to 10th</th>
+                          <th className="py-3 px-4 text-left font-bold text-gray-700 border-b">11th to 12th</th>
                         </tr>
-                      ))}
-                    </>
-                  ) : (
-                    <>
-                      {halfYearlyExamSchedule.map((exam, index) => (
-                        <tr 
-                          key={index} 
-                          className={`hover:bg-gray-50 transition ${exam.isHoliday ? 'bg-red-50' : ''}`}
-                        >
-                          <td className="py-3 px-4 border-b font-semibold">{exam.date}</td>
-                          <td className="py-3 px-4 border-b">{exam.day}</td>
-                          <td className="py-3 px-4 border-b">
-                            <span className={`inline-block px-3 py-1 rounded-full ${exam.ukg_1_2.includes('Holiday') ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>
-                              {exam.ukg_1_2}
-                            </span>
-                          </td>
-                          <td className="py-3 px-4 border-b">
-                            <span className="inline-block px-3 py-1 rounded-full bg-green-100 text-green-700">
-                              {exam.class_3_5}
-                            </span>
-                          </td>
-                          <td className="py-3 px-4 border-b">
-                            <span className="inline-block px-3 py-1 rounded-full bg-purple-100 text-purple-700">
-                              {exam.class_6_8}
-                            </span>
-                          </td>
-                          <td className="py-3 px-4 border-b">
-                            <span className="inline-block px-3 py-1 rounded-full bg-yellow-100 text-yellow-700">
-                              {exam.class_9_10}
-                            </span>
-                          </td>
-                          <td className="py-3 px-4 border-b">
-                            <span className="inline-block px-3 py-1 rounded-full bg-indigo-100 text-indigo-700">
-                              {exam.class_11_12}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </>
-                  )}
-                </tbody>
-              </table>
-            </div>
-            
-            <div className="mt-6 flex flex-col sm:flex-row gap-4">
-              <a 
-                href={`assets/${activeExamSchedule === 'quarterly' ? 'त्रैमासिक परीक्षा समय सारणी.pdf' : 'Half Yearly Examination Date Sheet 2025.pdf'}`}
-                className="inline-flex items-center justify-center bg-gradient-to-r from-sricblue to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 shadow-lg hover:shadow-xl"
-                download
-              >
-                <i className="fas fa-download mr-2"></i>
-                Download {activeExamSchedule === 'quarterly' ? 'Quarterly' : 'Half-Yearly'} Datesheet (PDF)
-              </a>
-              <a 
-                href="#year-calendar" 
-                className="inline-flex items-center justify-center bg-gradient-to-r from-sricgold to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-sricblue font-bold py-3 px-6 rounded-lg transition duration-300 shadow-lg hover:shadow-xl"
-              >
-                <i className="fas fa-calendar mr-2"></i>
-                View Full Calendar
-              </a>
-            </div>
-          </div>
-        </div>
+                      </thead>
+                      <tbody>
+                        {activeExamSchedule === 'quarterly' ? (
+                          <>
+                            {quarterlyExamSchedule.map((exam, index) => (
+                              <tr 
+                                key={index} 
+                                className={`hover:bg-gray-50 transition ${exam.isSpecial ? 'bg-blue-50' : ''}`}
+                              >
+                                <td className="py-3 px-4 border-b font-semibold">{exam.date}</td>
+                                <td className="py-3 px-4 border-b">{exam.day}</td>
+                                <td className="py-3 px-4 border-b">
+                                  <span className={`inline-block px-3 py-1 rounded-full ${exam.ukg_1_2.includes('Holiday') ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>
+                                    {exam.ukg_1_2}
+                                  </span>
+                                </td>
+                                <td className="py-3 px-4 border-b">
+                                  <span className="inline-block px-3 py-1 rounded-full bg-green-100 text-green-700">
+                                    {exam.class_3_5}
+                                  </span>
+                                </td>
+                                <td className="py-3 px-4 border-b">
+                                  <span className="inline-block px-3 py-1 rounded-full bg-purple-100 text-purple-700">
+                                    {exam.class_6_8}
+                                  </span>
+                                </td>
+                                <td className="py-3 px-4 border-b">
+                                  <span className="inline-block px-3 py-1 rounded-full bg-yellow-100 text-yellow-700">
+                                    {exam.class_9_10}
+                                  </span>
+                                </td>
+                                <td className="py-3 px-4 border-b">
+                                  <span className="inline-block px-3 py-1 rounded-full bg-indigo-100 text-indigo-700">
+                                    {exam.class_11_12}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))}
+                          </>
+                        ) : (
+                          <>
+                            {halfYearlyExamSchedule.map((exam, index) => (
+                              <tr 
+                                key={index} 
+                                className={`hover:bg-gray-50 transition ${exam.isHoliday ? 'bg-red-50' : ''}`}
+                              >
+                                <td className="py-3 px-4 border-b font-semibold">{exam.date}</td>
+                                <td className="py-3 px-4 border-b">{exam.day}</td>
+                                <td className="py-3 px-4 border-b">
+                                  <span className={`inline-block px-3 py-1 rounded-full ${exam.ukg_1_2.includes('Holiday') ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>
+                                    {exam.ukg_1_2}
+                                  </span>
+                                </td>
+                                <td className="py-3 px-4 border-b">
+                                  <span className="inline-block px-3 py-1 rounded-full bg-green-100 text-green-700">
+                                    {exam.class_3_5}
+                                  </span>
+                                </td>
+                                <td className="py-3 px-4 border-b">
+                                  <span className="inline-block px-3 py-1 rounded-full bg-purple-100 text-purple-700">
+                                    {exam.class_6_8}
+                                  </span>
+                                </td>
+                                <td className="py-3 px-4 border-b">
+                                  <span className="inline-block px-3 py-1 rounded-full bg-yellow-100 text-yellow-700">
+                                    {exam.class_9_10}
+                                  </span>
+                                </td>
+                                <td className="py-3 px-4 border-b">
+                                  <span className="inline-block px-3 py-1 rounded-full bg-indigo-100 text-indigo-700">
+                                    {exam.class_11_12}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))}
+                          </>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                  
+                  <div className="mt-6 flex flex-col sm:flex-row gap-4">
+                    <a 
+                      href={`/assets/${activeExamSchedule === 'quarterly' ? 'त्रैमासिक परीक्षा समय सारणी.pdf' : 'Half Yearly Examination Date Sheet 2026.pdf'}`}
+                      className="inline-flex items-center justify-center bg-gradient-to-r from-sricblue to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 shadow-lg hover:shadow-xl"
+                      download
+                    >
+                      <i className="fas fa-download mr-2"></i>
+                      Download {activeExamSchedule === 'quarterly' ? 'Quarterly' : 'Half-Yearly'} Datesheet (PDF)
+                    </a>
+                    <a 
+                      href="#year-calendar" 
+                      className="inline-flex items-center justify-center bg-gradient-to-r from-sricgold to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-sricblue font-bold py-3 px-6 rounded-lg transition duration-300 shadow-lg hover:shadow-xl"
+                    >
+                      <i className="fas fa-calendar mr-2"></i>
+                      View Full Calendar
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </>
+          );
+        })()}
         
         {/* Year Navigation */}
         <div className="flex justify-between items-center mb-8 bg-white p-6 rounded-xl shadow-lg">
           <div>
-            <h2 className="text-2xl font-bold text-sricblue">2025-2026 Academic Year</h2>
+            <h2 className="text-2xl font-bold text-sricblue">2026-2027 Academic Year</h2>
             <p className="text-gray-600">Important dates and events at a glance</p>
           </div>
           <div className="flex items-center gap-4">
-            <Link to="/calendar" className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition font-medium">2024-25</Link>
-            <span className="px-6 py-2 bg-gradient-to-r from-sricblue to-blue-600 text-white rounded-lg font-bold shadow-lg">2025-26</span>
+            <Link to="/calendar" className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition font-medium">2026-27</Link>
+            <span className="px-6 py-2 bg-gradient-to-r from-sricblue to-blue-600 text-white rounded-lg font-bold shadow-lg">2026-26</span>
           </div>
         </div>
         
@@ -621,28 +622,28 @@ const Calendar = () => {
             
             <div className="relative">
               <select 
-                value={currentMonth + (currentYear === 2026 ? 12 : 0)}
+                value={currentMonth + (currentYear === 2027 ? 12 : 0)}
                 onChange={handleMonthSelect}
                 className="appearance-none bg-gradient-to-r from-gray-100 to-gray-200 border border-gray-300 rounded-lg px-6 py-3 pr-10 focus:outline-none focus:ring-2 focus:ring-sricblue focus:border-transparent font-medium shadow-sm"
               >
-                <option value="0">January 2025</option>
-                <option value="1">February 2025</option>
-                <option value="2">March 2025</option>
-                <option value="3">April 2025</option>
-                <option value="4">May 2025</option>
-                <option value="5">June 2025</option>
-                <option value="6">July 2025</option>
-                <option value="7">August 2025</option>
-                <option value="8">September 2025</option>
-                <option value="9">October 2025</option>
-                <option value="10">November 2025</option>
-                <option value="11">December 2025</option>
-                <option value="12">January 2026</option>
-                <option value="13">February 2026</option>
-                <option value="14">March 2026</option>
-                <option value="15">April 2026</option>
-                <option value="16">May 2026</option>
-                <option value="17">June 2026</option>
+                <option value="0">January 2026</option>
+                <option value="1">February 2026</option>
+                <option value="2">March 2026</option>
+                <option value="3">April 2026</option>
+                <option value="4">May 2026</option>
+                <option value="5">June 2026</option>
+                <option value="6">July 2026</option>
+                <option value="7">August 2026</option>
+                <option value="8">September 2026</option>
+                <option value="9">October 2026</option>
+                <option value="10">November 2026</option>
+                <option value="11">December 2026</option>
+                <option value="12">January 2027</option>
+                <option value="13">February 2027</option>
+                <option value="14">March 2027</option>
+                <option value="15">April 2027</option>
+                <option value="16">May 2027</option>
+                <option value="17">June 2027</option>
               </select>
               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-700">
                 <i className="fas fa-chevron-down"></i>
@@ -751,7 +752,7 @@ const Calendar = () => {
         <div id="year-calendar">
           <h2 className="text-3xl font-bold text-sricblue mb-8 flex items-center">
             <i className="fas fa-calendar-alt mr-3"></i>
-            Academic Year 2025-26 Important Dates
+            Academic Year 2026-26 Important Dates
           </h2>
           
           <div className="bg-white rounded-xl shadow-xl overflow-hidden">
@@ -788,103 +789,7 @@ const Calendar = () => {
       </main>
 
       {/* Footer */}
-      <footer className="bg-gradient-to-r from-gray-900 to-sricblue text-white py-12 mt-12">
-        <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center mb-6">
-                <div className="bg-gradient-to-br from-white to-gray-200 w-14 h-14 rounded-xl flex items-center justify-center shadow-lg">
-                  <span className="text-sricblue text-2xl font-bold">SRIC</span>
-                </div>
-                <h3 className="text-2xl font-bold ml-4 bg-clip-text bg-gradient-to-r from-white to-gray-300">SRIC</h3>
-              </div>
-              <p className="text-gray-300 mb-6 text-lg">Preparing students for board success since 2002.</p>
-              <div className="flex space-x-4">
-                <a href="#" className="bg-gray-800 hover:bg-sricblue w-10 h-10 rounded-full flex items-center justify-center transition">
-                  <i className="fab fa-facebook-f"></i>
-                </a>
-                <a href="#" className="bg-gray-800 hover:bg-sricblue w-10 h-10 rounded-full flex items-center justify-center transition">
-                  <i className="fab fa-twitter"></i>
-                </a>
-                <a href="#" className="bg-gray-800 hover:bg-sricblue w-10 h-10 rounded-full flex items-center justify-center transition">
-                  <i className="fab fa-instagram"></i>
-                </a>
-                <a href="#" className="bg-gray-800 hover:bg-sricblue w-10 h-10 rounded-full flex items-center justify-center transition">
-                  <i className="fab fa-linkedin-in"></i>
-                </a>
-              </div>
-            </div>
-            
-            <div>
-              <h4 className="text-xl font-bold mb-6 flex items-center">
-                <i className="fas fa-link mr-2"></i>
-                Quick Links
-              </h4>
-              <ul className="space-y-3">
-                <li><Link to="/" className="text-gray-300 hover:text-white transition flex items-center">
-                  <i className="fas fa-home mr-2"></i> Home
-                </Link></li>
-                <li><a href="#" className="text-gray-300 hover:text-white transition flex items-center">
-                  <i className="fas fa-info-circle mr-2"></i> About Us
-                </a></li>
-                <li><a href="#" className="text-gray-300 hover:text-white transition flex items-center">
-                  <i className="fas fa-book mr-2"></i> Academics
-                </a></li>
-                <li><Link to="/admission-form" className="text-gray-300 hover:text-white transition flex items-center">
-                  <i className="fas fa-user-graduate mr-2"></i> Admissions
-                </Link></li>
-                <li><Link to="/contact" className="text-gray-300 hover:text-white transition flex items-center">
-                  <i className="fas fa-phone-alt mr-2"></i> Contact
-                </Link></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="text-xl font-bold mb-6 flex items-center">
-                <i className="fas fa-newspaper mr-2"></i>
-                News & Events
-              </h4>
-              <ul className="space-y-3">
-                <li><Link to="/calendar" className="text-gray-300 hover:text-white transition flex items-center font-medium">
-                  <i className="fas fa-calendar-check mr-2"></i> School Calendar
-                </Link></li>
-                <li><Link to="/announcements" className="text-gray-300 hover:text-white transition flex items-center">
-                  <i className="fas fa-bullhorn mr-2"></i> Announcements
-                </Link></li>
-                <li><a href="#" className="text-gray-300 hover:text-white transition flex items-center">
-                  <i className="fas fa-newspaper mr-2"></i> Latest News
-                </a></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="text-xl font-bold mb-6 flex items-center">
-                <i className="fas fa-address-book mr-2"></i>
-                Contact Us
-              </h4>
-              <ul className="space-y-4">
-                <li className="flex items-start">
-                  <i className="fas fa-map-marker-alt mt-1 mr-4 text-sricgold text-xl"></i>
-                  <span className="text-gray-300">Sabdalpur Sharki, Mathana Road Hasanpur, Amroha 244242</span>
-                </li>
-                <li className="flex items-center">
-                  <i className="fas fa-phone-alt mr-4 text-sricgold text-xl"></i>
-                  <span className="text-gray-300">+91 9756517750</span>
-                </li>
-                <li className="flex items-center">
-                  <i className="fas fa-envelope mr-4 text-sricgold text-xl"></i>
-                  <span className="text-gray-300">info@sricschool.edu.in</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-          
-          <div className="border-t border-gray-800 mt-10 pt-6 text-center">
-            <p className="text-gray-400">© 2025 SRIC Senior Secondary School. All rights reserved.</p>
-            <p className="text-gray-500 text-sm mt-2">Empowering Minds, Shaping Futures Since 2002</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };
