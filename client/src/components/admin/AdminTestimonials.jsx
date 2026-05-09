@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, MessageSquare, Loader, X, Star, Eye, EyeOff, User } from 'lucide-react';
+import { apiUrl } from '../../lib/config';
 
 const AdminTestimonials = ({ showToast }) => {
   const [testimonials, setTestimonials] = useState([]);
@@ -24,7 +25,7 @@ const AdminTestimonials = ({ showToast }) => {
   const fetchTestimonials = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch('/api/testimonials/all');
+      const res = await fetch(apiUrl('/api/testimonials/all'));
       const data = await res.json();
       if (data.success) setTestimonials(data.data);
     } catch (err) {
@@ -62,7 +63,7 @@ const AdminTestimonials = ({ showToast }) => {
     if (selectedPhoto) data.append('photo', selectedPhoto);
 
     try {
-      const res = await fetch('/api/testimonials', {
+      const res = await fetch(apiUrl('/api/testimonials'), {
         method: 'POST',
         body: data,
       });
@@ -90,7 +91,7 @@ const AdminTestimonials = ({ showToast }) => {
 
   const handleToggle = async (id) => {
     try {
-      const res = await fetch(`/api/testimonials/${id}/toggle`, { method: 'PATCH' });
+      const res = await fetch(apiUrl(`/api/testimonials/${id}/toggle`), { method: 'PATCH' });
       const result = await res.json();
       if (result.success) {
         showToast(result.message, 'success');
@@ -104,7 +105,7 @@ const AdminTestimonials = ({ showToast }) => {
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this testimonial permanently?')) return;
     try {
-      const res = await fetch(`/api/testimonials/${id}`, { method: 'DELETE' });
+      const res = await fetch(apiUrl(`/api/testimonials/${id}`), { method: 'DELETE' });
       const result = await res.json();
       if (result.success) {
         showToast('Testimonial deleted', 'success');

@@ -18,7 +18,7 @@ import AdminAchievements from './admin/AdminAchievements';
 import AdminAnnouncements from './admin/AdminAnnouncements';
 import AdminExamSchedules from './admin/AdminExamSchedules';
 import AdminTestimonials from './admin/AdminTestimonials';
-import { apiUrl } from '../lib/config';
+import { apiUrl, SOCKET_URL } from '../lib/config';
 
 const Admin = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -71,7 +71,7 @@ const Admin = () => {
       loadDashboardData();
       
       // Initialize Socket.io connection for Admin
-      socketRef.current = io(window.location.origin);
+      socketRef.current = io(SOCKET_URL);
       
       socketRef.current.on('new_fee_payment', (data) => {
         showToast('New fee payment submitted', 'info');
@@ -365,7 +365,7 @@ const Admin = () => {
     try {
       const token = localStorage.getItem('adminToken');
       // First try to upload the file to Cloudinary if our endpoint supports it
-      const response = await fetch(`/api/fee-payments/${paymentId}/receipt`, {
+      const response = await fetch(apiUrl(`/api/fee-payments/${paymentId}/receipt`), {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -382,7 +382,7 @@ const Admin = () => {
         // Update current view details if it's the one being viewed
         if (viewDetails && viewDetails._id === paymentId) {
           // Re-fetch this single payment
-          const paymentRes = await fetch(`/api/fee-payments/${paymentId}`, {
+          const paymentRes = await fetch(apiUrl(`/api/fee-payments/${paymentId}`), {
             headers: {
               'Authorization': `Bearer ${token}`
             }

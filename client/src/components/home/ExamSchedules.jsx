@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { apiUrl } from '../../lib/config';
 
 const ExamSchedules = () => {
   const [dynamicSchedules, setDynamicSchedules] = useState([]);
@@ -8,7 +9,7 @@ const ExamSchedules = () => {
   useEffect(() => {
     const fetchSchedules = async () => {
       try {
-        const res = await fetch('/api/examschedules');
+        const res = await fetch(apiUrl('/api/examschedules'));
         const data = await res.json();
         if (data.success && data.data.length > 0) {
           const now = new Date();

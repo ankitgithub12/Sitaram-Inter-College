@@ -3,6 +3,7 @@ import {
   User, Mail, Lock, Shield, Check, 
   Settings, Save, BookOpen, AlertCircle
 } from 'lucide-react';
+import { apiUrl } from '../../lib/config';
 
 const TeacherSettings = ({ showToast, teacherName, setTeacherName }) => {
   const [formData, setFormData] = useState({
@@ -33,7 +34,7 @@ const TeacherSettings = ({ showToast, teacherName, setTeacherName }) => {
       };
 
       const token = localStorage.getItem('teacherToken');
-      const response = await fetch(`/api/users/${userId}`, {
+      const response = await fetch(apiUrl(`/api/users/${userId}`), {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
@@ -69,7 +70,7 @@ const TeacherSettings = ({ showToast, teacherName, setTeacherName }) => {
     try {
       const userId = sessionStorage.getItem('userId');
       const token = localStorage.getItem('teacherToken');
-      const response = await fetch(`/api/users/${userId}`, {
+      const response = await fetch(apiUrl(`/api/users/${userId}`), {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',

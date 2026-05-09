@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, Megaphone, Loader, X, FileText } from 'lucide-react';
+import { apiUrl } from '../../lib/config';
 
 const AdminAnnouncements = ({ showToast }) => {
   const [announcements, setAnnouncements] = useState([]);
@@ -20,7 +21,7 @@ const AdminAnnouncements = ({ showToast }) => {
   const fetchAnnouncements = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch('/api/announcements');
+      const res = await fetch(apiUrl('/api/announcements'));
       const data = await res.json();
       if (data.success) setAnnouncements(data.data);
     } catch (err) {
@@ -49,7 +50,7 @@ const AdminAnnouncements = ({ showToast }) => {
     }
 
     try {
-      const res = await fetch('/api/announcements', {
+      const res = await fetch(apiUrl('/api/announcements'), {
         method: 'POST',
         body: data,
       });
@@ -71,7 +72,7 @@ const AdminAnnouncements = ({ showToast }) => {
   const handleDelete = async (id) => {
     if(!window.confirm('Delete announcement?')) return;
     try {
-      const res = await fetch(`/api/announcements/${id}`, { method: 'DELETE' });
+      const res = await fetch(apiUrl(`/api/announcements/${id}`), { method: 'DELETE' });
       if(res.ok) {
         showToast('Deleted successfully', 'success');
         fetchAnnouncements();

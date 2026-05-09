@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, Edit, Loader, FileText, X } from 'lucide-react';
+import { apiUrl } from '../../lib/config';
 
 const AdminAchievements = ({ showToast }) => {
   const [achievements, setAchievements] = useState([]);
@@ -34,7 +35,7 @@ const AdminAchievements = ({ showToast }) => {
     if (yearFilter !== 'all') url += `year=${yearFilter}&`;
     
     try {
-      const res = await fetch(url);
+      const res = await fetch(apiUrl(url));
       const data = await res.json();
       if (data.success) {
         setAchievements(data.data);
@@ -62,7 +63,7 @@ const AdminAchievements = ({ showToast }) => {
     if (certificateFile) data.append('certificate', certificateFile);
 
     try {
-      const res = await fetch('/api/achievements', {
+      const res = await fetch(apiUrl('/api/achievements'), {
         method: 'POST',
         body: data,
       });
@@ -85,7 +86,7 @@ const AdminAchievements = ({ showToast }) => {
   const handleDelete = async (id) => {
     if(!window.confirm('Delete this achievement?')) return;
     try {
-      const res = await fetch(`/api/achievements/${id}`, { method: 'DELETE' });
+      const res = await fetch(apiUrl(`/api/achievements/${id}`), { method: 'DELETE' });
       const data = await res.json();
       if (data.success) {
         showToast('Deleted', 'success');

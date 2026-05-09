@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Activity, ClipboardCheck, AlertCircle, IndianRupee, CheckCircle } from 'lucide-react';
+import { apiUrl } from '../../lib/config';
 import Header from '../Header';
 import Footer from '../Footer';
 
@@ -29,7 +30,6 @@ const Fees = () => {
   const [lookupResults, setLookupResults] = useState(null);
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState('');
-  const API_BASE_URL = '';
 
   const fileInputRef = useRef(null);
   const bankFileInputRef = useRef(null);
@@ -479,7 +479,7 @@ const submitPaymentToBackend = async () => {
     }
     
     // Send to backend
-    const response = await fetch(`${API_BASE_URL}/api/fee-payments/upload`, {
+    const response = await fetch(apiUrl('/api/fee-payments/upload'), {
       method: 'POST',
       body: formDataToSend,
     });
@@ -1013,7 +1013,7 @@ const submitPaymentToBackend = async () => {
         endpoint = `/api/fee-payments/receipt/${lookupInput.trim().toUpperCase()}`;
       }
 
-      const response = await fetch(endpoint);
+      const response = await fetch(apiUrl(endpoint));
       const result = await response.json();
 
       if (result.success) {

@@ -4,6 +4,7 @@ import {
   Trash2, Edit, CheckCircle, XCircle, MoreVertical,
   GraduationCap, Hash, BookOpen, MapPin, User
 } from 'lucide-react';
+import { apiUrl } from '../../lib/config';
 
 const AdminStudents = () => {
   const [students, setStudents] = useState([]);
@@ -41,7 +42,7 @@ const AdminStudents = () => {
     setIsLoading(true);
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await fetch('/api/users/manage?role=student', {
+      const response = await fetch(apiUrl('/api/users/manage?role=student'), {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await response.json();
@@ -63,7 +64,7 @@ const AdminStudents = () => {
   const handleToggleStatus = async (id) => {
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await fetch(`/api/users/${id}/toggle-status?role=student`, {
+      const response = await fetch(apiUrl(`/api/users/${id}/toggle-status?role=student`), {
         method: 'PATCH',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -81,7 +82,7 @@ const AdminStudents = () => {
     if (!window.confirm('Are you sure you want to delete this student account?')) return;
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await fetch(`/api/users/${id}?role=student`, {
+      const response = await fetch(apiUrl(`/api/users/${id}?role=student`), {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -101,7 +102,7 @@ const AdminStudents = () => {
       const creator = localStorage.getItem('loginID') || 'admin';
       const creatorName = localStorage.getItem('adminName') || 'Administrator';
       
-      const response = await fetch('/api/users/create', {
+      const response = await fetch(apiUrl('/api/users/create'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -130,7 +131,7 @@ const AdminStudents = () => {
     e.preventDefault();
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await fetch(`/api/users/${selectedStudent._id}`, {
+      const response = await fetch(apiUrl(`/api/users/${selectedStudent._id}`), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -160,7 +161,7 @@ const AdminStudents = () => {
 
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await fetch(`/api/users/${userId}`, {
+      const response = await fetch(apiUrl(`/api/users/${userId}`), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { apiUrl } from '../lib/config';
 import Header from './Header';
 import Footer from './Footer';
 
@@ -80,7 +81,7 @@ const Testimonials = () => {
   useEffect(() => {
     const fetchTestimonials = async () => {
       try {
-        const res = await fetch('/api/testimonials');
+        const res = await fetch(apiUrl('/api/testimonials'));
         const data = await res.json();
         if (data.success && data.data) {
           setDynamicTestimonials(data.data);

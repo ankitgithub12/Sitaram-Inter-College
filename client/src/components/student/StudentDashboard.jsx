@@ -8,6 +8,7 @@ import {
   CheckCircle, IndianRupee, File, UploadCloud, TrendingUp
 } from 'lucide-react';
 import { io } from 'socket.io-client';
+import { apiUrl, SOCKET_URL } from '../../lib/config';
 
 const StudentDashboard = () => {
   const navigate = useNavigate();
@@ -35,7 +36,7 @@ const StudentDashboard = () => {
     loadStudentData(userId);
     
     // Initialize Socket.io connection for real-time updates
-    socketRef.current = io(window.location.origin);
+    socketRef.current = io(SOCKET_URL);
     
     socketRef.current.on('connect', () => {
       console.log('Connected to real-time server');
@@ -79,7 +80,7 @@ const StudentDashboard = () => {
       const headers = { 'Authorization': `Bearer ${token}` };
 
       // Profile
-      const resProfile = await fetch(`/api/users/${userId}`, { headers });
+      const resProfile = await fetch(apiUrl(`/api/users/${userId}`), { headers });
       const dataProfile = await resProfile.json();
       let email = '';
       let className = '';
@@ -90,14 +91,14 @@ const StudentDashboard = () => {
       }
 
       // Attendance
-      const resAttendance = await fetch(`/api/attendance/student/${userId}`, { headers });
+      const resAttendance = await fetch(apiUrl(`/api/attendance/student/${userId}`), { headers });
       if (resAttendance.ok) {
         const dataAtt = await resAttendance.json();
         if (dataAtt.success) setAttendance(dataAtt.data);
       }
 
       // Marks
-      const resMarks = await fetch(`/api/marks/student/${userId}`, { headers });
+      const resMarks = await fetch(apiUrl(`/api/marks/student/${userId}`), { headers });
       if (resMarks.ok) {
         const dataMarks = await resMarks.json();
         if (dataMarks.success) setMarks(dataMarks.data);
@@ -105,7 +106,7 @@ const StudentDashboard = () => {
 
       // Fees
       if (email) {
-        const resFees = await fetch(`/api/fee-payments/email/${email}`);
+        const resFees = await fetch(apiUrl(`/api/fee-payments/email/${email}`));
         if (resFees.ok) {
           const dataFees = await resFees.json();
           if (dataFees.success) {
@@ -116,7 +117,7 @@ const StudentDashboard = () => {
 
       // Assignments
       if (className) {
-        const resAssign = await fetch(`/api/assignments/student/${className}`);
+        const resAssign = await fetch(apiUrl(`/api/assignments/student/${className}`));
         if (resAssign.ok) {
           const dataAssign = await resAssign.json();
           if (dataAssign.success) setAssignments(dataAssign.data);
@@ -223,7 +224,7 @@ const StudentDashboard = () => {
       submitData.append('receiptFile', file);
 
       try {
-        const response = await fetch('/api/fee-payments/upload', {
+        const response = await fetch(apiUrl('/api/fee-payments/upload'), {
           method: 'POST',
           body: submitData
         });

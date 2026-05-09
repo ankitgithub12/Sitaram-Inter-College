@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, Loader, FileText, X, AlertTriangle } from 'lucide-react';
+import { apiUrl } from '../../lib/config';
 
 const AdminExamSchedules = ({ showToast }) => {
   const [schedules, setSchedules] = useState([]);
@@ -27,7 +28,7 @@ const AdminExamSchedules = ({ showToast }) => {
   const fetchSchedules = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch('/api/examschedules');
+      const res = await fetch(apiUrl('/api/examschedules'));
       const data = await res.json();
       if (data.success) {
         setSchedules(data.data);
@@ -71,7 +72,7 @@ const AdminExamSchedules = ({ showToast }) => {
     if (pdfFile) data.append('pdfFile', pdfFile);
 
     try {
-      const res = await fetch('/api/examschedules', {
+      const res = await fetch(apiUrl('/api/examschedules'), {
         method: 'POST',
         body: data,
       });
@@ -94,7 +95,7 @@ const AdminExamSchedules = ({ showToast }) => {
   const handleDelete = async (id) => {
     if(!window.confirm('Delete this exam schedule?')) return;
     try {
-      const res = await fetch(`/api/examschedules/${id}`, { method: 'DELETE' });
+      const res = await fetch(apiUrl(`/api/examschedules/${id}`), { method: 'DELETE' });
       const data = await res.json();
       if (data.success) {
         showToast('Deleted schedule successfully', 'success');

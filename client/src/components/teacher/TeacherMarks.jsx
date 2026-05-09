@@ -4,6 +4,7 @@ import {
   Check, X, GraduationCap, Shield, User,
   Calendar, BookOpen, AlertCircle
 } from 'lucide-react';
+import { apiUrl } from '../../lib/config';
 
 const TeacherMarks = ({ showToast }) => {
   const [marks, setMarks] = useState([]);
@@ -32,7 +33,7 @@ const TeacherMarks = ({ showToast }) => {
     try {
       const token = localStorage.getItem('teacherToken');
       // Load my students to populate the dropdown
-      const studentRes = await fetch(`/api/users/manage?role=student&creator=${teacherUsername}`, {
+      const studentRes = await fetch(apiUrl(`/api/users/manage?role=student&creator=${teacherUsername}`), {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const studentData = await studentRes.json();
@@ -41,7 +42,7 @@ const TeacherMarks = ({ showToast }) => {
       }
 
       // Load marks entered by me
-      const marksRes = await fetch(`/api/marks?teacherUsername=${teacherUsername}`, {
+      const marksRes = await fetch(apiUrl(`/api/marks?teacherUsername=${teacherUsername}`), {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const marksData = await marksRes.json();
@@ -74,7 +75,7 @@ const TeacherMarks = ({ showToast }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const url = isEditMode ? `/api/marks/${currentMarkId}` : '/api/marks';
+      const url = isEditMode ? apiUrl(`/api/marks/${currentMarkId}`) : apiUrl('/api/marks');
       const method = isEditMode ? 'PUT' : 'POST';
       
       const payload = {
@@ -111,7 +112,7 @@ const TeacherMarks = ({ showToast }) => {
     if (!window.confirm("Are you sure you want to delete this marks record?")) return;
     try {
       const token = localStorage.getItem('teacherToken');
-      const response = await fetch(`/api/marks/${id}`, { 
+      const response = await fetch(apiUrl(`/api/marks/${id}`), { 
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });

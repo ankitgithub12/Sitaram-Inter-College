@@ -3,6 +3,7 @@ import {
   Trash2, Key, RefreshCw, Eye, EyeOff, Check, X, Edit2, Camera, Briefcase, GraduationCap, FileText,
   UserPlus, Shield, Power, Mail, Info
 } from 'lucide-react';
+import { apiUrl } from '../../lib/config';
 
 const AdminUsers = ({ showToast }) => {
   const [users, setUsers] = useState([]);
@@ -37,7 +38,7 @@ const AdminUsers = ({ showToast }) => {
     try {
       const adminUsername = sessionStorage.getItem('userName') || '221205';
       const token = localStorage.getItem('adminToken');
-      const response = await fetch(`/api/users/manage?role=teacher&creator=${adminUsername}`, {
+      const response = await fetch(apiUrl(`/api/users/manage?role=teacher&creator=${adminUsername}`), {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await response.json();
@@ -70,7 +71,7 @@ const AdminUsers = ({ showToast }) => {
     
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await fetch(`/api/users/${id}`, {
+      const response = await fetch(apiUrl(`/api/users/${id}`), {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -89,7 +90,7 @@ const AdminUsers = ({ showToast }) => {
   const handleToggleStatus = async (id) => {
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await fetch(`/api/users/${id}/toggle-status`, {
+      const response = await fetch(apiUrl(`/api/users/${id}/toggle-status`), {
         method: 'PATCH',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -112,7 +113,7 @@ const AdminUsers = ({ showToast }) => {
 
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await fetch(`/api/users/${id}`, {
+      const response = await fetch(apiUrl(`/api/users/${id}`), {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
@@ -138,7 +139,7 @@ const AdminUsers = ({ showToast }) => {
     try {
       const adminUsername = sessionStorage.getItem('userName') || 'admin';
       const token = localStorage.getItem('adminToken');
-      const response = await fetch('/api/users/create', {
+      const response = await fetch(apiUrl('/api/users/create'), {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -169,7 +170,7 @@ const AdminUsers = ({ showToast }) => {
     e.preventDefault();
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await fetch(`/api/users/${editingUser._id}`, {
+      const response = await fetch(apiUrl(`/api/users/${editingUser._id}`), {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
@@ -230,7 +231,7 @@ const AdminUsers = ({ showToast }) => {
 
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await fetch('/api/users/upload-photo', {
+      const response = await fetch(apiUrl('/api/users/upload-photo'), {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
         body: formDataUpload

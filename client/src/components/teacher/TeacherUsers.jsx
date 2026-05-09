@@ -4,6 +4,7 @@ import {
   User, Users, Trash2, Edit3, Key, Eye, EyeOff, RefreshCw,
   MoreVertical, Check, AlertCircle
 } from 'lucide-react';
+import { apiUrl } from '../../lib/config';
 
 const TeacherUsers = ({ showToast, teacherName }) => {
   const [users, setUsers] = useState([]);
@@ -35,7 +36,7 @@ const TeacherUsers = ({ showToast, teacherName }) => {
     setIsLoading(true);
     try {
       const token = localStorage.getItem('teacherToken');
-      const response = await fetch(`/api/users/manage?role=student&creator=${teacherUsername}`, {
+      const response = await fetch(apiUrl(`/api/users/manage?role=student&creator=${teacherUsername}`), {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await response.json();
@@ -66,7 +67,7 @@ const TeacherUsers = ({ showToast, teacherName }) => {
   const handleToggleStatus = async (id) => {
     try {
       const token = localStorage.getItem('teacherToken');
-      const response = await fetch(`/api/users/${id}/toggle-status`, {
+      const response = await fetch(apiUrl(`/api/users/${id}/toggle-status`), {
         method: 'PATCH',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -85,7 +86,7 @@ const TeacherUsers = ({ showToast, teacherName }) => {
     
     try {
       const token = localStorage.getItem('teacherToken');
-      const response = await fetch(`/api/users/${id}`, {
+      const response = await fetch(apiUrl(`/api/users/${id}`), {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -117,8 +118,8 @@ const TeacherUsers = ({ showToast, teacherName }) => {
     e.preventDefault();
     try {
       const url = isEditMode 
-        ? `/api/users/${currentUserId}` 
-        : '/api/users/create';
+        ? apiUrl(`/api/users/${currentUserId}`) 
+        : apiUrl('/api/users/create');
       const method = isEditMode ? 'PUT' : 'POST';
       
       const payload = { ...formData, createdBy: teacherUsername, creatorName: teacherName };

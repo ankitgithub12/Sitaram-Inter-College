@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { apiUrl } from './lib/config';
 import { Link } from 'react-router-dom';
 import Header from './Header';
 import Footer from './Footer';
@@ -10,7 +11,7 @@ const Calendar = () => {
   const [dynamicSchedules, setDynamicSchedules] = useState([]);
 
   useEffect(() => {
-    fetch('/api/examschedules')
+    fetch(apiUrl('/api/examschedules'))
       .then(r => r.json())
       .then(d => {
         if (d.success && d.data.length > 0) {

@@ -6,6 +6,7 @@ import {
   Plus, Trash2, FileText, CheckCircle2, Activity
 } from 'lucide-react';
 import { io } from 'socket.io-client';
+import { apiUrl, SOCKET_URL } from '../../lib/config';
 
 // We import these subcomponents since they are complex enough
 import TeacherUsers from './TeacherUsers';
@@ -45,7 +46,7 @@ const TeacherDashboard = () => {
     setTeacherName(name || 'Faculty');
     fetchStats();
     
-    socketRef.current = io(window.location.origin);
+    socketRef.current = io(SOCKET_URL);
     
     // Listen for new assignments created by this teacher
     socketRef.current.on('assignment_created', (data) => {
@@ -79,7 +80,7 @@ const TeacherDashboard = () => {
     try {
       const teacherUsername = sessionStorage.getItem('userName') || 'teacher';
       const token = localStorage.getItem('teacherToken');
-      const response = await fetch(`/api/users/manage?role=student&creator=${teacherUsername}`, {
+      const response = await fetch(apiUrl(`/api/users/manage?role=student&creator=${teacherUsername}`), {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       
@@ -101,7 +102,7 @@ const TeacherDashboard = () => {
     try {
       const teacherUsername = sessionStorage.getItem('userName') || 'teacher';
       const token = localStorage.getItem('teacherToken');
-      const response = await fetch(`/api/users/manage?role=student&creator=${teacherUsername}`, {
+      const response = await fetch(apiUrl(`/api/users/manage?role=student&creator=${teacherUsername}`), {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await response.json();
@@ -125,7 +126,7 @@ const TeacherDashboard = () => {
     try {
       const teacherId = sessionStorage.getItem('userId');
       const token = localStorage.getItem('teacherToken');
-      const response = await fetch(`/api/assignments?teacherId=${teacherId}`, {
+      const response = await fetch(apiUrl(`/api/assignments?teacherId=${teacherId}`), {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await response.json();
@@ -150,7 +151,7 @@ const TeacherDashboard = () => {
   const submitAttendance = async () => {
     try {
       const token = localStorage.getItem('teacherToken');
-      const response = await fetch('/api/attendance', {
+      const response = await fetch(apiUrl('/api/attendance'), {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -193,7 +194,7 @@ const TeacherDashboard = () => {
         status: 'Published'
       };
 
-      const response = await fetch('/api/assignments', {
+      const response = await fetch(apiUrl('/api/assignments'), {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -224,7 +225,7 @@ const TeacherDashboard = () => {
     if (!window.confirm("Are you sure you want to delete this task?")) return;
     try {
       const token = localStorage.getItem('teacherToken');
-      const response = await fetch(`/api/assignments/${id}`, { 
+      const response = await fetch(apiUrl(`/api/assignments/${id}`), { 
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });

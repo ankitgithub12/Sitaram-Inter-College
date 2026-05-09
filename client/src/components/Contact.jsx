@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { apiUrl } from '../lib/config';
 import Header from './Header';
 import Footer from './Footer';
 
@@ -16,7 +17,6 @@ const Contact = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [toast, setToast] = useState({ show: false, message: '', type: '' });
   const [openFaq, setOpenFaq] = useState(null);
-  const [apiUrl] = useState('/api');
 
   // Show toast notification
   const showToast = (message, type) => {
@@ -57,7 +57,7 @@ const Contact = () => {
     try {
       console.log('Submitting contact form:', formData);
 
-      const response = await axios.post(`${apiUrl}/contact`, formData, {
+      const response = await axios.post(apiUrl('/api/contact'), formData, {
         headers: {
           'Content-Type': 'application/json'
         }
