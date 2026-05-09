@@ -553,7 +553,11 @@ const AdminUsers = ({ showToast }) => {
                     {formData.photoUrl ? (
                       <img src={formData.photoUrl} alt="Preview" className="w-full h-full object-cover" />
                     ) : (
-                      <Camera className="w-6 h-6 text-gray-300" />
+                      <img 
+                        src={`https://ui-avatars.com/api/?name=${encodeURIComponent(formData.name || 'User')}&background=random&color=fff`} 
+                        className="w-full h-full object-cover opacity-50"
+                        alt="Default"
+                      />
                     )}
                   </div>
                   <div className="flex-grow">
