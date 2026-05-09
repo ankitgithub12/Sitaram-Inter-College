@@ -121,222 +121,358 @@ const AdmissionForm = () => {
   // Handle print
   const handlePrint = () => {
     const printWindow = window.open('', '_blank');
+    const logoUrl = "/assets/SRIC LOGO.PNG";
+    
     printWindow.document.write(`
       <!DOCTYPE html>
       <html>
       <head>
         <title>SRIC Admission Form - ${printData.name}</title>
         <style>
-          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+          @import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@700&family=Inter:wght@300;400;500;600;700&display=swap');
+          
+          :root {
+            --primary: #1e3a8a;
+            --secondary: #1e40af;
+            --accent: #b45309;
+            --text-dark: #111827;
+            --text-light: #4b5563;
+            --border: #e5e7eb;
+          }
+
           * { 
             margin: 0; padding: 0; box-sizing: border-box; 
             -webkit-print-color-adjust: exact !important; 
             print-color-adjust: exact !important; 
           }
-          body { font-family: 'Inter', sans-serif; line-height: 1.6; color: #333; padding: 20px; }
-          .print-container { max-width: 1000px; margin: 0 auto; background: white; }
-          .header { text-align: center; padding: 20px 0; border-bottom: 4px solid #1e3a8a; margin-bottom: 25px; }
-          .school-name { font-size: 28px; font-weight: 700; color: #1e3a8a; margin-bottom: 5px; }
-          .school-address { color: #4b5563; font-size: 15px; margin-bottom: 5px; }
-          .document-title { font-size: 20px; font-weight: 600; color: #111827; margin: 15px 0; text-align: center; text-decoration: underline; }
-          .section { margin-bottom: 20px; padding: 15px; border: 1px solid #e5e7eb; border-radius: 8px; page-break-inside: avoid; }
-          .section-title { font-size: 16px; font-weight: 600; color: #1e3a8a; margin-bottom: 12px; padding-bottom: 6px; border-bottom: 2px solid #e5e7eb; text-transform: uppercase; }
-          .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px; }
-          .info-item { margin-bottom: 8px; font-size: 14px; }
-          .info-label { font-weight: 600; color: #374151; display: inline-block; width: 140px; }
-          .info-value { color: #111827; display: inline-block; font-weight: 500; border-bottom: 1px dashed #ccc; width: calc(100% - 150px); }
-          .full-width { display: flex; }
-          .full-width .info-label { width: 140px; flex-shrink: 0; }
-          .full-width .info-value { width: calc(100% - 140px); }
-          .declaration { background: #fef3c7; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b; font-size: 13px; page-break-inside: avoid; }
-          .declaration-title { font-weight: 600; color: #92400e; margin-bottom: 5px; text-transform: uppercase; }
-          .instructions { background: #dbeafe; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #3b82f6; font-size: 13px; page-break-inside: avoid; }
-          .instructions-title { font-weight: 600; color: #1e40af; margin-bottom: 5px; text-transform: uppercase; }
-          .instructions-list { list-style: decimal inside; margin-left: 5px; }
-          .instructions-list li { margin-bottom: 4px; }
-          .footer { margin-top: 30px; padding-top: 15px; border-top: 2px solid #e5e7eb; text-align: center; color: #6b7280; font-size: 12px; page-break-inside: avoid; }
-          .print-watermark { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 60px; color: rgba(0,0,0,0.05); font-weight: bold; z-index: -1; pointer-events: none; }
-          .signature-area { margin-top: 50px; display: flex; justify-content: space-between; padding: 0 40px; page-break-inside: avoid; }
-          .signature-box { width: 250px; padding: 10px; border-top: 1px solid #374151; text-align: center; }
-          .signature-label { font-weight: 600; margin-top: 5px; font-size: 14px; }
-          .application-id { background: #1e3a8a; color: white; padding: 8px 15px; border-radius: 6px; display: inline-block; margin: 0 auto 20px auto; text-align: center; width: auto; font-size: 14px; }
-          .app-id-container { text-align: center; }
+
+          body { 
+            font-family: 'Inter', sans-serif; 
+            line-height: 1.5; 
+            color: var(--text-dark); 
+            background: #f3f4f6;
+            padding: 40px 20px;
+          }
+
+          .page {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 20mm;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            position: relative;
+            border: 1px solid var(--border);
+          }
+
+          /* Professional Border */
+          .page::before {
+            content: '';
+            position: absolute;
+            top: 10mm; left: 10mm; right: 10mm; bottom: 10mm;
+            border: 2px solid var(--primary);
+            pointer-events: none;
+            z-index: 10;
+          }
+
+          .header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px double var(--primary);
+          }
+
+          .logo-container {
+            margin-bottom: 15px;
+          }
+
+          .logo {
+            height: 100px;
+            width: 100px;
+            object-fit: contain;
+          }
+
+          .school-info h1 {
+            font-family: 'Bodoni Moda', serif;
+            font-size: 32px;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+          }
+
+          .school-info p {
+            font-size: 14px;
+            color: var(--text-light);
+            font-weight: 500;
+          }
+
+          .form-title-box {
+            background: var(--primary);
+            color: white;
+            padding: 10px 30px;
+            border-radius: 50px;
+            display: inline-block;
+            margin: 20px 0;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-size: 16px;
+          }
+
+          .meta-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-light);
+          }
+
+          .section {
+            margin-bottom: 25px;
+            position: relative;
+            z-index: 20;
+          }
+
+          .section-title {
+            background: #f8fafc;
+            border-left: 5px solid var(--primary);
+            padding: 8px 15px;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--primary);
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+          }
+
+          .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px 30px;
+          }
+
+          .field {
+            display: flex;
+            flex-direction: column;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 4px;
+          }
+
+          .label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-light);
+            text-transform: uppercase;
+            margin-bottom: 2px;
+          }
+
+          .value {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-dark);
+          }
+
+          .full-width {
+            grid-column: span 2;
+          }
+
+          .declaration {
+            font-size: 12px;
+            color: var(--text-light);
+            line-height: 1.6;
+            margin: 30px 0;
+            padding: 15px;
+            background: #fffcf0;
+            border: 1px solid #fef3c7;
+            border-radius: 8px;
+            text-align: justify;
+          }
+
+          .signature-section {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 60px;
+          }
+
+          .signature-box {
+            width: 200px;
+            text-align: center;
+          }
+
+          .signature-line {
+            border-top: 1px solid var(--text-dark);
+            margin-bottom: 8px;
+          }
+
+          .signature-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--primary);
+          }
+
+          .footer-note {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 11px;
+            color: #94a3b8;
+          }
+
+          .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 100px;
+            font-weight: 900;
+            color: rgba(30, 58, 138, 0.03);
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 1;
+          }
+
           @media print {
-            .no-print { display: none; }
-            body { padding: 0; background: white; }
-            .print-container { width: 100%; max-width: none; box-shadow: none; }
-            .section { border: 1px solid #ccc; }
-            @page { margin: 1cm; }
+            body { padding: 0; background: none; }
+            .page { margin: 0; box-shadow: none; border: none; }
+            .page::before { border-color: var(--primary); }
           }
         </style>
       </head>
       <body>
-        <div class="print-container">
-          <div class="print-watermark">SRIC ADMISSION</div>
+        <div class="page">
+          <div class="watermark">SRIC ADMISSION</div>
           
-          <div className="header">
-            <div class="school-name">SITARAM INTER COLLEGE (SRIC)</div>
-            <div class="school-address">Affiliated to UP Board, Prayagraj</div>
-            <div class="school-address">Sabdalpur Sharki, Mathana Road, Hasanpur, Amroha - 244242</div>
-            <div class="school-address">Academic Year 2026-27</div>
-          </div>
-          
-          <div class="document-title">OFFICIAL ADMISSION FORM</div>
-          
-          <div class="app-id-container">
-            <div class="application-id">
-              Application ID: ${printData._id} | Status: ${printData.status.toUpperCase()}
-              ${printData.applicationNumber ? `<br>Application Number: ${printData.applicationNumber}` : ''}
+          <div class="header">
+            <div class="logo-container">
+              <img src="${logoUrl}" class="logo" alt="SRIC" onerror="this.src='https://via.placeholder.com/100/1e3a8a/ffffff?text=SRIC'">
             </div>
+            <div class="school-info">
+              <h1>Sitaram Inter College</h1>
+              <p>Sabdalpur Sharki, Hasanpur, Amroha, Uttar Pradesh - 244242</p>
+              <p>Affiliated to UP Board, Prayagraj | Academic Session 2026-27</p>
+            </div>
+            <div class="form-title-box">ADMISSION APPLICATION FORM</div>
           </div>
-          
+
+          <div class="meta-info">
+            <div>Application ID: <span style="color:var(--primary)">${printData._id}</span></div>
+            <div>Date: ${new Date().toLocaleDateString()}</div>
+          </div>
+
           <div class="section">
-            <div class="section-title">Student Information</div>
-            <div class="info-grid">
-              <div class="info-item">
-                <div class="info-label">Full Name:</div>
-                <div class="info-value">${printData.name}</div>
+            <div class="section-title">Personal Details</div>
+            <div class="grid">
+              <div class="field">
+                <span class="label">Student Full Name</span>
+                <span class="value">${printData.name}</span>
               </div>
-              <div class="info-item">
-                <div class="info-label">Date of Birth:</div>
-                <div class="info-value">${printData.dob}</div>
+              <div class="field">
+                <span class="label">Date of Birth</span>
+                <span class="value">${printData.dob}</span>
               </div>
-              <div class="info-item">
-                <div class="info-label">Mother Tongue:</div>
-                <div class="info-value">${printData.motherTongue}</div>
+              <div class="field">
+                <span class="label">Admission Sought for Class</span>
+                <span class="value">${printData.admissionClass}</span>
               </div>
-              <div class="info-item">
-                <div class="info-label">Caste:</div>
-                <div class="info-value">${printData.caste}</div>
+              <div class="field">
+                <span class="label">Mother Tongue</span>
+                <span class="value">${printData.motherTongue}</span>
               </div>
-              <div class="info-item">
-                <div class="info-label">Religion:</div>
-                <div class="info-value">${printData.religion}</div>
+              <div class="field">
+                <span class="label">Religion</span>
+                <span class="value">${printData.religion}</span>
               </div>
-              <div class="info-item">
-                <div class="info-label">Previous Class:</div>
-                <div class="info-value">${printData.previousClass}</div>
-              </div>
-              <div class="info-item">
-                <div class="info-label">Admission Class:</div>
-                <div class="info-value">${printData.admissionClass}</div>
-              </div>
-              <div class="info-item">
-                <div class="info-label">Previous School:</div>
-                <div class="info-value">${printData.previousSchool}</div>
-              </div>
-              <div class="info-item">
-                <div class="info-label">Admission Date:</div>
-                <div class="info-value">${printData.admissionDate}</div>
+              <div class="field">
+                <span class="label">Caste/Category</span>
+                <span class="value">${printData.caste}</span>
               </div>
             </div>
           </div>
-          
+
           <div class="section">
-            <div class="section-title">Parent/Guardian Information</div>
-            <div class="info-grid">
-              <div class="info-item">
-                <div class="info-label">Father's Name:</div>
-                <div class="info-value">${printData.fatherName}</div>
+            <div class="section-title">Academic History</div>
+            <div class="grid">
+              <div class="field full-width">
+                <span class="label">Last School Attended</span>
+                <span class="value">${printData.previousSchool}</span>
               </div>
-              <div class="info-item">
-                <div class="info-label">Mother's Name:</div>
-                <div class="info-value">${printData.motherName}</div>
+              <div class="field">
+                <span class="label">Last Class Passed</span>
+                <span class="value">${printData.previousClass}</span>
               </div>
-              <div class="info-item">
-                <div class="info-label">Father's Contact:</div>
-                <div class="info-value">${printData.fatherContact}</div>
-              </div>
-              <div class="info-item">
-                <div class="info-label">Mother's Contact:</div>
-                <div class="info-value">${printData.motherContact || 'Not provided'}</div>
-              </div>
-              <div class="info-item">
-                <div class="info-label">Email:</div>
-                <div class="info-value">${printData.email}</div>
-              </div>
-              <div class="info-item">
-                <div class="info-label">Father's Occupation:</div>
-                <div class="info-value">${printData.occupation}</div>
-              </div>
-              <div class="info-item">
-                <div class="info-label">Mother's Occupation:</div>
-                <div class="info-value">${printData.motherOccupation || 'Not provided'}</div>
+              <div class="field">
+                <span class="label">Preferred Start Date</span>
+                <span class="value">${printData.admissionDate}</span>
               </div>
             </div>
           </div>
-          
+
           <div class="section">
-            <div class="section-title">Address Information</div>
-            <div class="info-item full-width">
-              <span class="info-label">Complete Address:</span>
-              <span class="info-value" style="white-space: pre-line;">${printData.address}</span>
+            <div class="section-title">Parental Information</div>
+            <div class="grid">
+              <div class="field">
+                <span class="label">Father's Full Name</span>
+                <span class="value">${printData.fatherName}</span>
+              </div>
+              <div class="field">
+                <span class="label">Mother's Full Name</span>
+                <span class="value">${printData.motherName}</span>
+              </div>
+              <div class="field">
+                <span class="label">Primary Contact Number</span>
+                <span class="value">+91 ${printData.fatherContact}</span>
+              </div>
+              <div class="field">
+                <span class="label">Email Address</span>
+                <span class="value">${printData.email}</span>
+              </div>
+              <div class="field">
+                <span class="label">Father's Occupation</span>
+                <span class="value">${printData.occupation}</span>
+              </div>
+              <div class="field">
+                <span class="label">Mother's Occupation</span>
+                <span class="value">${printData.motherOccupation || 'Housewife'}</span>
+              </div>
             </div>
           </div>
-          
+
           <div class="section">
-            <div class="section-title">Application Details</div>
-            <div class="info-grid">
-              <div class="info-item">
-                <div class="info-label">Application Submitted:</div>
-                <div class="info-value">${printData.submittedAt}</div>
-              </div>
-              <div class="info-item">
-                <div class="info-label">Application Status:</div>
-                <div class="info-value" style="font-weight: 600; color: #059669;">${printData.status.toUpperCase()}</div>
-              </div>
+            <div class="section-title">Communication Address</div>
+            <div class="field full-width">
+              <span class="label">Permanent Address</span>
+              <span class="value" style="display:block; min-height:40px">${printData.address}</span>
             </div>
           </div>
-          
+
           <div class="declaration">
-            <div class="declaration-title">Declaration:</div>
-            <p>I hereby solemnly declare that all the information provided in this admission form is true, correct, and complete to the best of my knowledge. I understand that any false information or concealment of material facts will lead to immediate cancellation of admission and may result in legal action. I agree to abide by the rules and regulations of SRIC Senior Secondary School.</p>
+            <strong>Declaration:</strong> I hereby declare that the information provided above is true to the best of my knowledge and belief. I agree to comply with the rules and regulations of Sitaram Inter College. Any discrepancy found at a later stage may lead to cancellation of the admission.
           </div>
-          
-          <div class="instructions">
-            <div class="instructions-title">IMPORTANT INSTRUCTIONS:</div>
-            <ol class="instructions-list">
-              <li><strong>PRINT THIS FORM:</strong> Keep a printed copy for your records</li>
-              <li><strong>SUBMIT HARD COPY:</strong> You MUST submit a signed hard copy of this form to the school office within 7 days</li>
-              <li><strong>REQUIRED DOCUMENTS:</strong> Bring original + photocopies of:
-                <ul style="margin-left: 20px; margin-top: 5px;">
-                  <li>Birth Certificate</li>
-                  <li>Aadhar Card (Student & Parents)</li>
-                  <li>Previous School Transfer Certificate</li>
-                  <li>Previous Class Marksheet</li>
-                  <li>Passport Size Photos (4 copies)</li>
-                  <li>Caste Certificate (if applicable)</li>
-                </ul>
-              </li>
-              <li><strong>OFFICE HOURS:</strong> Monday to Saturday, 9:00 AM to 4:00 PM</li>
-              <li><strong>CONTACT:</strong> For queries, call +91-XXXXXXXXXX or email admissions@sric.edu.in</li>
-            </ol>
-            <p style="margin-top: 15px; color: #dc2626; font-weight: 600;">
-              ⚠️ ADMISSION WILL NOT BE PROCESSED WITHOUT SUBMISSION OF HARD COPY
-            </p>
-          </div>
-          
-          <div class="signature-area">
+
+          <div class="signature-section">
             <div class="signature-box">
-              <div>_________________________</div>
-              <div class="signature-label">Student's Signature</div>
+              <div class="signature-line"></div>
+              <div class="signature-label">Student Signature</div>
             </div>
             <div class="signature-box">
-              <div>_________________________</div>
-              <div class="signature-label">Parent/Guardian's Signature</div>
+              <div class="signature-line"></div>
+              <div class="signature-label">Parent Signature</div>
+            </div>
+            <div class="signature-box">
+              <div class="signature-line"></div>
+              <div class="signature-label">Principal/Office Seal</div>
             </div>
           </div>
-          
-          <div class="footer">
-            <p>This is a computer-generated document. No physical signature is required for online submission.</p>
-            <p>Generated on: ${new Date().toLocaleDateString('en-US', { 
-              year: 'numeric', 
-              month: 'long', 
-              day: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit'
-            })}</p>
-            <p>SRIC Admission System - Copyright © 2026 SRIC Senior Secondary School. All rights reserved.</p>
+
+          <div class="footer-note">
+            This is an electronically generated application form. Please submit a signed copy with all required documents to the school office.
+            <br>© 2026 Sitaram Inter College. Generated via SRIC Online Portal.
           </div>
         </div>
         
