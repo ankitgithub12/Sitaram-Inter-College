@@ -72,6 +72,7 @@ exports.uploadPhoto = async (req, res) => {
       title: req.body.title || 'Untitled',
       description: req.body.description || '',
       category: req.body.category || 'general',
+      album: req.body.album || '',
       cloudinaryPublicId: req.file.filename,
       secureUrl: req.file.path,
       format: req.file.mimetype?.split('/')[1] || 'jpg',

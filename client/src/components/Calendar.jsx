@@ -298,7 +298,7 @@ const Calendar = () => {
         <div className="text-center mb-12 relative">
           <div className="absolute -top-6 -left-6 w-20 h-20 rounded-full bg-gradient-to-r from-sricgold to-yellow-400 opacity-20 animate-pulse"></div>
           <div className="absolute -bottom-6 -right-6 w-32 h-32 rounded-full bg-gradient-to-r from-sricblue to-blue-600 opacity-20 animate-pulse"></div>
-          <h1 className="text-4xl md:text-5xl font-bold text-sricblue mb-4 relative z-10 bg-clip-text bg-gradient-to-r from-sricblue to-blue-600">Academic Calendar 2026-26</h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-sricblue mb-4 relative z-10 bg-clip-text bg-gradient-to-r from-sricblue to-blue-600">Academic Calendar 2026-27</h1>
           <div className="w-32 h-2 bg-gradient-to-r from-sricblue via-sricgold to-sricblue mx-auto mb-6 rounded-full"></div>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto relative z-10">Stay updated with all important dates, events, and academic schedules</p>
           

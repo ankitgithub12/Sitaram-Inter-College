@@ -262,6 +262,7 @@ const galleryPhotoSchema = new mongoose.Schema({
     enum: ['events', 'achievements', 'cultural', 'competitions', 'general'],
     default: 'general'
   },
+  album: { type: String, default: '' },
   cloudinaryPublicId: { type: String },
   secureUrl: { type: String, required: true },
   format: { type: String },

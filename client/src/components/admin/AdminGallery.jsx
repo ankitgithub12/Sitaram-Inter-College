@@ -12,6 +12,7 @@ const AdminGallery = ({ showToast }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [uploadCategory, setUploadCategory] = useState('general');
+  const [album, setAlbum] = useState('');
 
   useEffect(() => {
     fetchPhotos();
@@ -47,6 +48,7 @@ const AdminGallery = ({ showToast }) => {
     formData.append('title', title);
     formData.append('description', description);
     formData.append('category', uploadCategory);
+    formData.append('album', album);
 
     try {
       const res = await fetch('/api/gallery/upload', {
@@ -60,6 +62,7 @@ const AdminGallery = ({ showToast }) => {
         setFile(null);
         setTitle('');
         setDescription('');
+        setAlbum('');
         fetchPhotos();
       } else {
         showToast(data.message || 'Upload failed', 'error');
@@ -197,6 +200,20 @@ const AdminGallery = ({ showToast }) => {
                   <option value="cultural">Cultural</option>
                   <option value="competitions">Competitions</option>
                   <option value="general">General</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Album (Optional)</label>
+                <select
+                  value={album}
+                  onChange={(e) => setAlbum(e.target.value)}
+                  className="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-2 ring-sricblue"
+                >
+                  <option value="">No Album (General Gallery)</option>
+                  <option value="farewell-album">Farewell 2026</option>
+                  <option value="prize-album">Prize Day 2026</option>
+                  <option value="independence-album">Independence Day</option>
+                  <option value="teacher-album">Teacher Recognition</option>
                 </select>
               </div>
               <button 

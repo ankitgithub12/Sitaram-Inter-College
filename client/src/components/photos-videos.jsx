@@ -25,25 +25,25 @@ const PhotosVideos = () => {
 
   const initialPhotos = [
     // Farewell Photos
-    { id: 'static_1', category: 'events', src: '/assets/farewell1.jpeg', title: 'Farewell 2026', description: 'Graduating Students' },
-    { id: 'static_2', category: 'events', src: '/assets/farewell2.jpeg', title: 'Farewell 2026', description: 'Gift Distribution' },
-    { id: 'static_3', category: 'events', src: '/assets/farewell3.jpeg', title: 'Farewell 2026', description: 'Group Photos' },
-    { id: 'static_4', category: 'events', src: '/assets/farewell4.jpeg', title: 'Farewell 2026', description: 'Cultural Performances' },
-    { id: 'static_5', category: 'events', src: '/assets/farewell5.jpeg', title: 'Farewell 2026', description: 'Cultural Performances' },
-    { id: 'static_6', category: 'events', src: '/assets/farewell6.jpeg', title: 'Farewell 2026', description: 'Certificate Distribution' },
-    { id: 'static_7', category: 'events', src: '/assets/farewell7.jpeg', title: 'Farewell 2026', description: 'Farewell Party' },
-    { id: 'static_8', category: 'events', src: '/assets/farewell8.jpeg', title: 'Farewell 2024', description: 'Final Memories' },
-    { id: 'static_9', category: 'events', src: '/assets/2018 farewell.jpeg', title: 'Farewell 2018', description: 'Nostalgic Memories' },
+    { id: 'static_1', category: 'events', src: '/assets/farewell1.jpeg', title: 'Farewell 2026', description: 'Graduating Students', album: 'farewell-album' },
+    { id: 'static_2', category: 'events', src: '/assets/farewell2.jpeg', title: 'Farewell 2026', description: 'Gift Distribution', album: 'farewell-album' },
+    { id: 'static_3', category: 'events', src: '/assets/farewell3.jpeg', title: 'Farewell 2026', description: 'Group Photos', album: 'farewell-album' },
+    { id: 'static_4', category: 'events', src: '/assets/farewell4.jpeg', title: 'Farewell 2026', description: 'Cultural Performances', album: 'farewell-album' },
+    { id: 'static_5', category: 'events', src: '/assets/farewell5.jpeg', title: 'Farewell 2026', description: 'Cultural Performances', album: 'farewell-album' },
+    { id: 'static_6', category: 'events', src: '/assets/farewell6.jpeg', title: 'Farewell 2026', description: 'Certificate Distribution', album: 'farewell-album' },
+    { id: 'static_7', category: 'events', src: '/assets/farewell7.jpeg', title: 'Farewell 2026', description: 'Farewell Party', album: 'farewell-album' },
+    { id: 'static_8', category: 'events', src: '/assets/farewell8.jpeg', title: 'Farewell 2024', description: 'Final Memories', album: 'farewell-album' },
+    { id: 'static_9', category: 'events', src: '/assets/2018 farewell.jpeg', title: 'Farewell 2018', description: 'Nostalgic Memories', album: 'farewell-album' },
     
     // Prize Distribution Photos
-    { id: 'static_10', category: 'achievements', src: '/assets/prize1.jpeg', title: 'Prize Day 2026', description: 'Top Performers' },
-    { id: 'static_11', category: 'achievements', src: '/assets/prize3.jpeg', title: 'Prize Day 2026', description: 'Award Winners' },
-    { id: 'static_12', category: 'achievements', src: '/assets/prize4.jpeg', title: 'Prize Day 2026', description: 'Certificate Distribution' },
-    { id: 'static_13', category: 'achievements', src: '/assets/prize5.jpeg', title: 'Prize Day 2026', description: 'Sports Achievements' },
-    { id: 'static_14', category: 'achievements', src: '/assets/prize6.jpeg', title: 'Prize Day 2026', description: 'Special Achievements' },
-    { id: 'static_15', category: 'achievements', src: '/assets/prize7.jpeg', title: 'Prize Day 2026', description: 'Perfect Attendance' },
-    { id: 'static_16', category: 'achievements', src: '/assets/prize8.jpeg', title: 'Glory Moment', description: 'Recognition Day' },
-    { id: 'static_17', category: 'achievements', src: '/assets/prize9.jpeg', title: 'Prize Day 2026', description: 'Winners with Teachers' },
+    { id: 'static_10', category: 'achievements', src: '/assets/prize1.jpeg', title: 'Prize Day 2026', description: 'Top Performers', album: 'prize-album' },
+    { id: 'static_11', category: 'achievements', src: '/assets/prize3.jpeg', title: 'Prize Day 2026', description: 'Award Winners', album: 'prize-album' },
+    { id: 'static_12', category: 'achievements', src: '/assets/prize4.jpeg', title: 'Prize Day 2026', description: 'Certificate Distribution', album: 'prize-album' },
+    { id: 'static_13', category: 'achievements', src: '/assets/prize5.jpeg', title: 'Prize Day 2026', description: 'Sports Achievements', album: 'prize-album' },
+    { id: 'static_14', category: 'achievements', src: '/assets/prize6.jpeg', title: 'Prize Day 2026', description: 'Special Achievements', album: 'prize-album' },
+    { id: 'static_15', category: 'achievements', src: '/assets/prize7.jpeg', title: 'Prize Day 2026', description: 'Perfect Attendance', album: 'prize-album' },
+    { id: 'static_16', category: 'achievements', src: '/assets/prize8.jpeg', title: 'Glory Moment', description: 'Recognition Day', album: 'prize-album' },
+    { id: 'static_17', category: 'achievements', src: '/assets/prize9.jpeg', title: 'Prize Day 2026', description: 'Winners with Teachers', album: 'prize-album' },
     
     // Competition Photos
     { id: 'static_18', category: 'competitions', src: '/assets/competition1.jpeg', title: 'GK Quiz Championship', description: 'Battle of Wits' },
@@ -53,7 +53,7 @@ const PhotosVideos = () => {
     { id: 'static_20', category: 'cultural', src: '/assets/rangoli.jpeg', title: 'Rangoli Competition', description: 'Artistic Skills' },
     { id: 'static_21', category: 'cultural', src: '/assets/mehandi.jpeg', title: 'Mehandi Competition', description: 'Artistic Designs' },
     { id: 'static_22', category: 'cultural', src: '/assets/Mehandi 2025.jpeg', title: 'Mehandi 2025', description: 'Creative Patterns' },
-    { id: 'static_23', category: 'cultural', src: '/assets/independence_day.jpeg', title: 'Independence Day', description: 'Patriotic Celebration' },
+    { id: 'static_23', category: 'cultural', src: '/assets/independence_day.jpeg', title: 'Independence Day', description: 'Patriotic Celebration', album: 'independence-album' },
     { id: 'static_24', category: 'events', src: '/assets/tour_photo.jpeg', title: 'School Excursion', description: 'Learning Beyond Classroom' },
   ];
 
@@ -68,6 +68,7 @@ const PhotosVideos = () => {
           const mapped = data.data.map(p => ({
             id: p._id,
             category: p.category || 'general',
+            album: p.album || '',
             src: p.secureUrl,
             title: p.title,
             description: p.description || ''
@@ -85,11 +86,14 @@ const PhotosVideos = () => {
 
 
   const albums = [
-    { id: 'farewell-album', title: 'Farewell 2026', description: 'Graduation ceremony', count: 24, cover: '/assets/farewell2.jpeg' },
-    { id: 'prize-album', title: 'Prize Day 2026', description: 'Academic excellence', count: 32, cover: '/assets/prize4.jpeg' },
-    { id: 'independence-album', title: 'Independence Day', description: 'Patriotic celebrations', count: 15, cover: '/assets/independence_day.jpeg' },
-    { id: 'teacher-album', title: 'Teacher Recognition', description: 'Honoring our educators', count: 12, cover: '/assets/teachers1.jpeg' },
-  ];
+    { id: 'farewell-album', title: 'Farewell 2026', description: 'Graduation ceremony', cover: '/assets/farewell2.jpeg' },
+    { id: 'prize-album', title: 'Prize Day 2026', description: 'Academic excellence', cover: '/assets/prize4.jpeg' },
+    { id: 'independence-album', title: 'Independence Day', description: 'Patriotic celebrations', cover: '/assets/independence_day.jpeg' },
+    { id: 'teacher-album', title: 'Teacher Recognition', description: 'Honoring our educators', cover: '/assets/teachers1.jpeg' },
+  ].map(album => ({
+    ...album,
+    count: photoGalleryItems.filter(p => p.album === album.id).length
+  }));
 
   const videos = [
     { id: 1, youtubeId: 'Yq_Edmb3hi8', title: 'Prize Distribution 2026', description: 'Highlights from our prize distribution event celebrating student achievements', date: 'July 15, 2026' },
@@ -132,35 +136,7 @@ const PhotosVideos = () => {
   };
 
   const getAlbumImages = (albumId) => {
-    const albumMap = {
-      'farewell-album': [
-        { src: '/assets/farewell1.jpeg', title: 'Farewell 2026' },
-        { src: '/assets/farewell2.jpeg', title: 'Farewell 2026' },
-        { src: '/assets/farewell3.jpeg', title: 'Farewell 2026' },
-        { src: '/assets/farewell4.jpeg', title: 'Farewell 2026' },
-        { src: '/assets/farewell5.jpeg', title: 'Farewell 2026' },
-        { src: '/assets/farewell6.jpeg', title: 'Farewell 2026' },
-        { src: '/assets/farewell7.jpeg', title: 'Farewell 2026' },
-        { src: '/assets/farewell8.jpeg', title: 'Farewell 2024' },
-      ],
-      'prize-album': [
-        { src: '/assets/prize1.jpeg', title: 'Prize Day 2026' },
-        { src: '/assets/prize3.jpeg', title: 'Prize Day 2026' },
-        { src: '/assets/prize4.jpeg', title: 'Prize Day 2026' },
-        { src: '/assets/prize5.jpeg', title: 'Prize Day 2026' },
-        { src: '/assets/prize6.jpeg', title: 'Prize Day 2026' },
-        { src: '/assets/prize7.jpeg', title: 'Prize Day 2026' },
-        { src: '/assets/prize8.jpeg', title: 'Prize Day 2026' },
-        { src: '/assets/prize9.jpeg', title: 'Prize Day 2026' },
-      ],
-      'independence-album': [
-        { src: '/assets/independence_day.jpeg', title: 'Independence Day' },
-      ],
-      'teacher-album': [
-        { src: '/assets/teachers1.jpeg', title: 'Teacher Recognition' },
-      ],
-    };
-    return albumMap[albumId] || [];
+    return photoGalleryItems.filter(p => p.album === albumId);
   };
 
   const getAlbumTitle = (albumId) => {
