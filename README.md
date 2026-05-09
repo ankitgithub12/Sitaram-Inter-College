@@ -10,7 +10,7 @@ Built using **React, Node.js, Express, MongoDB, JWT Authentication, and Cloudina
 
 Recruiters love clickable links. Update these with your actual deployment URLs!
 
-*   **Frontend:** [https://sric-lms.vercel.app](https://sric-lms.vercel.app)
+*   **Frontend:** (https://sric-fdq2.onrender.com/)
 *   **Backend API:** [https://sric-backend.render.com](https://sric-backend.render.com)
 *   **GitHub Repo:** [https://github.com/ankitgithub12/Sitaram-Inter-College](https://github.com/ankitgithub12/Sitaram-Inter-College)
 
