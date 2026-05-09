@@ -134,6 +134,13 @@ const userSchema = new mongoose.Schema({
   createdBy: { type: String },
   creatorName: { type: String },
   subject: { type: String },
+  // Faculty specific fields
+  position: { type: String },
+  qualification: { type: String },
+  experience: { type: String },
+  description: { type: String },
+  photoUrl: { type: String },
+  department: { type: String },
   createdAt: { type: Date, default: Date.now }
 });
 

@@ -27,107 +27,32 @@ const Faculty = () => {
     });
   }, []);
 
-  const facultyMembers = [
-    {
-      id: 1,
-      name: "Mrs. Renu Saini",
-      position: "Senior Science Teacher",
-      qualification: "M.Sc (Physics), B.Ed | 12 Years Experience",
-      description: "Dedicated science educator with expertise in experimental physics and science pedagogy. She inspires curiosity through hands-on learning and is passionate about making science engaging and accessible for every student.",
-      department: "science",
-      image: "/assets/faculty/renu-saini.jpg"
-    },
-    {
-      id: 2,
-      name: "Mrs. Kiran",
-      position: "Senior History Teacher",
-      qualification: "M.A. (History), B.Ed | 15 Years Experience",
-      description: "A specialist in Indian history and cultural studies, she connects the past with the present to help students understand contemporary issues. She believes in nurturing critical thinking through historical perspectives.",
-      department: "humanities",
-      image: "/assets/kiran.png"
-    },
-    {
-      id: 3,
-      name: "Mrs. Kamlesh",
-      position: "Senior Home Science Teacher",
-      qualification: "M.Sc. (Home Science), B.Ed | 10+ Years Experience",
-      description: "A specialist in nutritional sciences and human development, she teaches students essential life skills, blending theory with practical application in areas like dietetics, textile design, and resource management.",
-      department: "home-science",
-      image: "/assets/placeholder-female-avatar.png"
-    },
-    {
-      id: 4,
-      name: "Mr. Khempal Singh",
-      position: "Senior Hindi Teacher",
-      qualification: "M.A. (Hindi), B.Ed | 20 Years Experience",
-      description: "With deep expertise in Hindi literature and pedagogy, he focuses on strengthening students' language proficiency and communication skills. His teaching combines tradition with modern methods of learning.",
-      department: "language",
-      image: "/assets/khempal singh.jpg"
-    },
-    {
-      id: 5,
-      name: "Mr. Ammar Haider",
-      position: "Senior English Teacher",
-      qualification: "M.A. (English), B.Ed | 11 Years Experience",
-      description: "An expert in British literature and creative writing, he encourages students to express themselves confidently while enhancing critical and analytical skills through literature and language learning.",
-      department: "english",
-      image: "/assets/Ammar Haider.jpeg"
-    },
-    {
-      id: 6,
-      name: "Mr. Narotam Singh",
-      position: "Urdu Language Teacher",
-      qualification: "M.A. (Urdu), B.Ed | 14 Years Experience",
-      description: "Passionate about Urdu literature and poetry, he works to preserve the beauty of the language while helping students develop strong reading, writing, and interpretative skills in Urdu.",
-      department: "urdu",
-      image: "/assets/Narotam singh.png"
-    },
-    {
-      id: 7,
-      name: "Mr. Chanderpal Singh",
-      position: "Senior Mathematics Teacher",
-      qualification: "M.Sc (Mathematics), B.Ed | 15 Years Experience",
-      description: "A specialist in applied mathematics, he emphasizes logical thinking and problem-solving. His innovative methods make mathematics practical, engaging, and enjoyable for learners.",
-      department: "math",
-      image: "/assets/chandarpal singh.jpeg"
-    },
-    {
-      id: 8,
-      name: "Mr. Bablu Saini",
-      position: "Chemistry Teacher",
-      qualification: "M.Sc (Chemistry), B.Ed | 10 Years Experience",
-      description: "Expert in Physical and Organic Chemistry, he focuses on practical applications of chemical concepts. His teaching bridges theoretical knowledge with real-life experiments, sparking curiosity in learners.",
-      department: "science",
-      image: "/assets/faculty/Bablu Saini.jpg"
-    },
-    {
-      id: 9,
-      name: "Mr. Rajpal Singh",
-      position: "Senior Biology Teacher",
-      qualification: "M.Sc (Biology), B.Ed | 8 Years Experience",
-      description: "Specializes in life sciences and holistic development. He blends biological knowledge with fitness education, ensuring students understand both the science of life and healthy living.",
-      department: "physical",
-      image: "/assets/rajpal singh.jpeg"
-    },
-    {
-      id: 10,
-      name: "Mr. Keshav Kumar",
-      position: "Art Teacher",
-      qualification: "B.F.A | 5 Years Experience",
-      description: "A creative professional specializing in traditional Indian art forms, he motivates students to express their imagination freely. His classes encourage artistic skills, innovation, and appreciation of cultural heritage.",
-      department: "arts",
-      image: "/assets/faculty/keshav-kumar.jpg"
-    },
-    {
-      id: 11,
-      name: "Mrs. Kapil Kumar",
-      position: "Social Studies Teacher",
-      qualification: "M.A. (Political Science), B.Ed | 12 Years Experience",
-      description: "An expert in civics and political science, she guides students in understanding society, governance, and global perspectives. Her teaching emphasizes responsibility, awareness, and active citizenship.",
-      department: "humanities",
-      image: "/assets/kapil kumar staff.jpeg"
-    }
-  ];
+  const [facultyMembers, setFacultyMembers] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedFaculty, setSelectedFaculty] = useState(null);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+
+  useEffect(() => {
+    const fetchFaculty = async () => {
+      try {
+        const response = await fetch('/api/users/faculty');
+        const data = await response.json();
+        if (data.success) {
+          setFacultyMembers(data.data);
+        }
+      } catch (err) {
+        console.error('Error fetching faculty:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchFaculty();
+  }, []);
+
+  const openProfile = (faculty) => {
+    setSelectedFaculty(faculty);
+    setIsProfileModalOpen(true);
+  };
 
   const filteredFaculty = activeDept === 'all' 
     ? facultyMembers 
@@ -271,16 +196,17 @@ const Faculty = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
             {filteredFaculty.map((faculty, index) => (
               <div 
-                key={faculty.id} 
+                key={faculty._id} 
                 className="faculty-card fade-in"
                 style={{ transitionDelay: `${index * 0.1}s` }}
               >
                 <div className="bg-white rounded-2xl shadow-lg overflow-hidden h-full flex flex-col transform transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
                   <div className="relative h-64 overflow-hidden">
                     <img 
-                      src={faculty.image} 
+                      src={faculty.photoUrl || faculty.image || "/assets/placeholder-female-avatar.png"} 
                       alt={faculty.name} 
                       className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+                      onError={(e) => e.target.src = "/assets/placeholder-female-avatar.png"}
                     />
                     <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm text-sricblue px-3 py-1 rounded-full text-xs font-bold shadow-md">
                       {departmentData[faculty.department]?.name || faculty.department}
@@ -290,7 +216,7 @@ const Faculty = () => {
                         <div className="flex items-center justify-between">
                           <h3 className="text-xl font-bold">{faculty.name}</h3>
                           <span className="text-xs bg-sricgold text-sricblue px-2 py-1 rounded-full">
-                            {faculty.qualification.split('|')[1].trim()}
+                            {faculty.experience || 'Educator'}
                           </span>
                         </div>
                       </div>
@@ -303,13 +229,16 @@ const Faculty = () => {
                       </div>
                       <div>
                         <p className="text-sricgold font-bold text-lg">{faculty.position}</p>
-                        <p className="text-gray-500 text-sm">{faculty.qualification.split('|')[0].trim()}</p>
+                        <p className="text-gray-500 text-sm">{faculty.qualification}</p>
                       </div>
                     </div>
-                    <p className="text-gray-600 mb-6">{faculty.description}</p>
+                    <p className="text-gray-600 mb-6 line-clamp-3">{faculty.description}</p>
                   </div>
-                  <div className="px-6 pb-6">
-                    <button className="w-full bg-gradient-to-r from-sricblue to-blue-600 text-white py-3 rounded-xl font-semibold hover:from-blue-600 hover:to-sricblue transition-all duration-300 transform hover:scale-[1.02] shadow-md hover:shadow-lg">
+                  <div className="px-6 pb-6 mt-auto">
+                    <button 
+                      onClick={() => openProfile(faculty)}
+                      className="w-full bg-gradient-to-r from-sricblue to-blue-600 text-white py-3 rounded-xl font-semibold hover:from-blue-600 hover:to-sricblue transition-all duration-300 transform hover:scale-[1.02] shadow-md hover:shadow-lg"
+                    >
                       <div className="flex items-center justify-center">
                         <span>View Complete Profile</span>
                         <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -378,6 +307,99 @@ const Faculty = () => {
           </div>
         </section>
       </main>
+
+      {/* Faculty Profile Modal */}
+      {isProfileModalOpen && selectedFaculty && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col md:flex-row animate-in zoom-in-95 duration-300">
+            {/* Left side: Photo & Basic Info */}
+            <div className="md:w-1/3 bg-gradient-to-br from-sricblue to-blue-900 text-white p-8 flex flex-col items-center text-center">
+              <div className="w-40 h-40 rounded-2xl overflow-hidden border-4 border-white/20 shadow-2xl mb-6 transform hover:rotate-3 transition-transform duration-500">
+                <img 
+                  src={selectedFaculty.photoUrl || selectedFaculty.image || "/assets/placeholder-female-avatar.png"} 
+                  alt={selectedFaculty.name} 
+                  className="w-full h-full object-cover"
+                  onError={(e) => e.target.src = "/assets/placeholder-female-avatar.png"}
+                />
+              </div>
+              <h3 className="text-2xl font-bold mb-2">{selectedFaculty.name}</h3>
+              <p className="text-sricgold font-semibold mb-4">{selectedFaculty.position}</p>
+              <div className="w-full h-px bg-white/20 mb-6"></div>
+              
+              <div className="space-y-4 w-full">
+                <div className="flex items-center space-x-3 text-left">
+                  <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <i className="fas fa-graduation-cap text-sricgold"></i>
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase tracking-widest text-blue-200">Qualification</p>
+                    <p className="text-sm font-medium">{selectedFaculty.qualification}</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3 text-left">
+                  <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <i className="fas fa-history text-sricgold"></i>
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase tracking-widest text-blue-200">Experience</p>
+                    <p className="text-sm font-medium">{selectedFaculty.experience || "10+ Years"}</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3 text-left">
+                  <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <i className="fas fa-book text-sricgold"></i>
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase tracking-widest text-blue-200">Primary Subject</p>
+                    <p className="text-sm font-medium">{selectedFaculty.subject || "General"}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right side: Biography & Close */}
+            <div className="md:w-2/3 p-8 md:p-12 relative overflow-y-auto">
+              <button 
+                onClick={() => setIsProfileModalOpen(false)}
+                className="absolute top-6 right-6 text-gray-400 hover:text-sricblue p-2 hover:bg-gray-100 rounded-full transition-all"
+              >
+                <i className="fas fa-times text-xl"></i>
+              </button>
+
+              <div className="mb-8">
+                <h4 className="text-sricblue text-sm font-bold uppercase tracking-widest mb-4 flex items-center">
+                  <span className="w-8 h-1 bg-sricgold mr-3 rounded-full"></span>
+                  About Educator
+                </h4>
+                <p className="text-gray-600 text-lg leading-relaxed text-justify">
+                  {selectedFaculty.description}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-12">
+                <div className="p-6 bg-gray-50 rounded-2xl border border-gray-100">
+                  <h5 className="text-sricblue font-bold mb-2">Teaching Philosophy</h5>
+                  <p className="text-sm text-gray-500 italic">"Empowering students through personalized guidance and innovative learning methods."</p>
+                </div>
+                <div className="p-6 bg-gray-50 rounded-2xl border border-gray-100">
+                  <h5 className="text-sricblue font-bold mb-2">Contact Info</h5>
+                  <p className="text-sm text-gray-500">Professional inquiries can be directed via the school administration office.</p>
+                </div>
+              </div>
+
+              <div className="mt-12 flex justify-end">
+                <button 
+                  onClick={() => setIsProfileModalOpen(false)}
+                  className="bg-sricblue text-white px-8 py-3 rounded-xl font-bold shadow-lg hover:shadow-sricblue/30 transition-all hover:-translate-y-1"
+                >
+                  Close Profile
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <Footer />
       <style>{`
         .faculty-card {

@@ -40,14 +40,20 @@ exports.getUsers = async (req, res) => {
 
 exports.createUser = async (req, res) => {
   try {
-    const { username, password, role, name, email, createdBy, creatorName, subject } = req.body;
+    const { 
+      username, password, role, name, email, createdBy, creatorName, subject,
+      position, qualification, experience, description, photoUrl, department 
+    } = req.body;
 
     const existingUser = await User.findOne({ username });
     if (existingUser) {
       return res.status(400).json({ success: false, message: 'Username already exists' });
     }
 
-    const newUser = new User({ username, password, plainPassword: password, role, name, email, createdBy, creatorName, subject });
+    const newUser = new User({ 
+      username, password, plainPassword: password, role, name, email, createdBy, creatorName, subject,
+      position, qualification, experience, description, photoUrl, department
+    });
     await newUser.save();
     res.status(201).json({ success: true, message: `${role} created successfully`, data: newUser });
   } catch (err) {
@@ -76,7 +82,10 @@ exports.getUserById = async (req, res) => {
 
 exports.updateUser = async (req, res) => {
   try {
-    const { name, email, username, password, subject } = req.body;
+    const { 
+      name, email, username, password, subject,
+      position, qualification, experience, description, photoUrl, department
+    } = req.body;
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
@@ -88,6 +97,12 @@ exports.updateUser = async (req, res) => {
       user.plainPassword = password;
     }
     if (subject) user.subject = subject;
+    if (position) user.position = position;
+    if (qualification) user.qualification = qualification;
+    if (experience) user.experience = experience;
+    if (description) user.description = description;
+    if (photoUrl) user.photoUrl = photoUrl;
+    if (department) user.department = department;
 
     await user.save();
     res.json({ success: true, message: 'User credentials updated successfully', data: user });
@@ -124,5 +139,19 @@ exports.deleteUser = async (req, res) => {
   } catch (err) {
     console.error('❌ Error deleting user:', err);
     res.status(500).json({ success: false, message: 'Error deleting user' });
+  }
+};
+
+exports.getFaculty = async (req, res) => {
+  try {
+    const teachers = await User.find({ 
+      role: 'teacher', 
+      isDisabled: { $ne: true } 
+    }).select('name position qualification experience description photoUrl department subject');
+    
+    res.json({ success: true, count: teachers.length, data: teachers });
+  } catch (err) {
+    console.error('❌ Error fetching faculty:', err);
+    res.status(500).json({ success: false, message: 'Error fetching faculty' });
   }
 };
