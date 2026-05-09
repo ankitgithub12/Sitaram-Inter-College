@@ -1,129 +1,150 @@
-# SRIC Academic & Administrative Management System
+# SRIC Learning Management System
 
-A production-grade MERN stack enterprise solution built for **Sitaram Inter College (SRIC)**. This platform streamlines school operations, digitizes administrative workflows, and enhances the academic experience through AI-driven interactions and real-time updates.
+A full-stack MERN-based LMS platform designed for **Sitaram Inter College (SRIC)**. This platform streamlines academic workflows, allowing students to enroll in courses, teachers to manage content, and admins to monitor the entire ecosystem with AI-driven insights.
 
----
-
-## 🚀 Project Overview
-
-This project is a comprehensive school management ecosystem that replaces manual record-keeping with a modern, high-performance web architecture. It features a robust **Role-Based Access Control (RBAC)** system, separate database collections for data integrity, and a premium, responsive UI/UX tailored to the institution's branding.
-
-### 🎯 Key Objectives
-- **Data Integrity:** Production-level database architecture with decoupled collections.
-*   **Administrative Efficiency:** Automated admission processing and fee verification.
-*   **User Engagement:** Dynamic faculty profiles and an integrated AI assistant.
-*   **Performance:** Real-time dashboards and optimized asset delivery via Cloudinary.
+Built using **React, Node.js, Express, MongoDB, JWT Authentication, and Cloudinary**.
 
 ---
 
-## ✨ Technical Highlights
+## 🔗 Live Demo & Links
 
-### 🛡️ Advanced Database Architecture
-Unlike standard "all-in-one" user tables, this project implements a **Decoupled Collection Model** using MongoDB & Mongoose:
-- **`admins`**: Secure system administration.
-- **`teachers`**: Comprehensive profiles with qualifications, experience, and department filtering.
-- **`students`**: Academic records, roll numbers, and parent contact information.
-- **Cross-Collection Authentication:** A custom universal login system that searches across collections while maintaining strict schema validation.
+Recruiters love clickable links. Update these with your actual deployment URLs!
 
-### 🤖 Intelligent Features
-- **AI-Powered Chatbot:** Integrated with LLM providers (Moonshot AI via HuggingFace) to provide students with instant answers about fee structures, admissions, and school history.
-- **Real-Time Synchronization:** Uses **Socket.IO** for live notification of fee payments and administrative updates.
-
-### 🖼️ Cloud-Native Asset Management
-- **Cloudinary Integration:** Seamless image and document handling for faculty photos and admission proofs.
-- **Multer Middleware:** Server-side validation for file types and sizes before secure cloud transmission.
+*   **Frontend:** [https://sric-lms.vercel.app](https://sric-lms.vercel.app)
+*   **Backend API:** [https://sric-backend.render.com](https://sric-backend.render.com)
+*   **GitHub Repo:** [https://github.com/ankitgithub12/Sitaram-Inter-College](https://github.com/ankitgithub12/Sitaram-Inter-College)
 
 ---
 
-## 🛠️ Tech Stack
+## 📸 Screenshots / UI Preview
+
+| Home Page | Admin Dashboard |
+| :--- | :--- |
+| ![Home Page](https://via.placeholder.com/600x400?text=Home+Page+Preview) | ![Admin Dashboard](https://via.placeholder.com/600x400?text=Admin+Dashboard+Preview) |
+
+| Authentication | Mobile View |
+| :--- | :--- |
+| ![Auth Page](https://via.placeholder.com/600x400?text=Authentication+Page) | ![Mobile View](https://via.placeholder.com/300x600?text=Mobile+Responsive+View) |
+
+> [!TIP]
+> Add your actual screenshots in the `client/public/screenshots` folder and update the links above!
+
+---
+
+## 🚀 Features
+
+-   **JWT Authentication & Authorization:** Secure role-based access for Students, Teachers, and Admins.
+-   **Separate Modules:** Dedicated interfaces and functionalities for different user roles.
+-   **AI-Powered Chatbot:** Integrated AI assistant (via Hugging Face) for instant student support.
+-   **Course Enrollment & Management:** Streamlined system for course handling and academic tracking.
+-   **Assignment System:** Easy uploading and management of student assignments.
+-   **Admin Dashboard:** Centralized control for admissions, fee verification, and site content.
+-   **Cloudinary Integration:** Robust image and document handling for profiles and proofs.
+-   **Real-Time Updates:** Live notifications using Socket.IO for administrative actions.
+-   **Responsive Design:** Fully optimized for mobile, tablet, and desktop using Tailwind CSS.
+
+---
+
+## 🛠 Tech Stack
 
 ### Frontend
-- **React (Vite):** High-speed development and optimized production builds.
-- **Tailwind CSS:** Modern utility-first styling with custom animation extensions.
-- **Lucide Icons:** Premium, consistent iconography.
-- **Framer Motion:** Smooth micro-animations and entrance effects.
+-   **React.js (Vite):** Core framework for a fast, modern UI.
+-   **Tailwind CSS:** For sleek, utility-first styling.
+-   **Framer Motion:** For smooth micro-animations and transitions.
+-   **Lucide React:** Premium iconography.
 
 ### Backend
-- **Node.js & Express.js:** Scalable RESTful API architecture.
-- **MongoDB & Mongoose:** Schema-based modeling for complex data relationships.
-- **Socket.IO:** Bi-directional real-time communication.
-- **JWT & bcryptjs:** Industry-standard secure authentication and password hashing.
+-   **Node.js & Express.js:** Scalable server-side architecture.
+-   **Socket.IO:** Bi-directional real-time communication.
+
+### Database
+-   **MongoDB & Mongoose:** Flexible NoSQL database with schema validation.
+
+### Authentication
+-   **JWT (JSON Web Tokens):** Secure token-based authentication.
+-   **bcryptjs:** Password hashing for data security.
+
+### Deployment
+-   **Render:** For backend hosting.
+-   **Vercel:** For frontend hosting.
 
 ---
 
-## 📂 Project Structure
+## 🏗 System Design / Architecture
 
-```text
-├── client/                 # React frontend (Vite)
-│   ├── src/
-│   │   ├── components/     # Reusable UI components
-│   │   ├── admin/          # Admin-specific modules
-│   │   └── assets/         # Static styles and images
-├── server/                 # Node.js backend
-│   ├── models/             # Mongoose schemas (Decoupled Architecture)
-│   ├── controllers/        # Business logic for APIs
-│   ├── routes/             # API endpoint definitions
-│   └── migrateUsers.js     # Data migration utility
-└── README.md
+-   **Decoupled Collection Model:** Separate MongoDB collections for Admins, Teachers, and Students to ensure data integrity and security.
+-   **MVC Pattern:** Organized backend structure (Models, Views, Controllers) for maintainability.
+-   **RESTful APIs:** Standardized communication between frontend and backend.
+-   **Modular Components:** Reusable and scalable React components.
+
+---
+
+## ⚙️ Installation & Setup
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/ankitgithub12/Sitaram-Inter-College.git
+```
+
+### 2. Install Dependencies
+**For the Frontend:**
+```bash
+cd client
+npm install
+```
+
+**For the Backend:**
+```bash
+cd ../server
+npm install
+```
+
+### 3. Run the Project
+**Start Backend:**
+```bash
+# Inside server folder
+npm run dev
+```
+
+**Start Frontend:**
+```bash
+# Inside client folder
+npm run dev
 ```
 
 ---
 
-## 🌟 Key Features
+## 🔑 Environment Variables
 
-### 1. Administrative Dashboard
-- **Admission Management:** Review, approve, or reject student applications with attached documentation.
-- **Fee Verification:** Audit digital fee receipts uploaded by students.
-- **Content Management:** Full CRUD control over Faculty, Achievements, Announcements, and Gallery.
+Create a `.env` file in the `server` folder and add the following:
 
-### 2. Faculty Management
-- **Dynamic Faculty Page:** Responsive grid with department-based filtering.
-- **Detailed Profiles:** Interactive modals showcasing educator biographies, philosophies, and expertise.
-
-### 3. Student/Teacher Interaction
-- **Attendance System:** Teachers can record daily attendance with bulk update capabilities.
-- **Academic Grading:** Secure marks entry and tracking for student performance reports.
-
----
-
-## 🔧 Installation & Setup
-
-### Prerequisites
-- Node.js (v18+)
-- MongoDB Atlas account
-- Cloudinary credentials
-
-### Step-by-Step Setup
-
-1. **Clone & Install:**
-   ```bash
-   git clone https://github.com/ankitgithub12/Sitaram-Inter-College.git
-   npm run install-all
-   ```
-
-2. **Environment Configuration:**
-   Create a `.env` file in the `/server` directory:
-   ```env
-   PORT=5000
-   MONGODB_URI=your_mongodb_connection_string
-   JWT_SECRET=your_jwt_secret_key
-   CLOUDINARY_CLOUD_NAME=your_cloud_name
-   CLOUDINARY_API_KEY=your_api_key
-   CLOUDINARY_API_SECRET=your_api_secret
-   HF_TOKEN=your_huggingface_token
-   ```
-
-3. **Run Application:**
-   ```bash
-   npm run dev
-   ```
+```env
+PORT=5000
+MONGODB_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret_key
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+HF_TOKEN=your_huggingface_token
+```
 
 ---
 
-## 🔐 Credentials & Security
-For security reasons, default administrative credentials are not stored in this repository. Upon initial setup, the system automatically seeds base administrative accounts into the database. Please refer to the system initialization logs for setup details.
+## 🧠 Challenges Faced & Solutions
+
+-   **Cross-Collection Auth:** Solved by implementing a custom authentication logic that validates users across multiple collections without compromising performance.
+-   **Real-Time Data Flow:** Integrated Socket.IO to provide instant UI updates for administrative approvals and fee payments.
+-   **Asset Optimization:** Utilized Cloudinary's dynamic transformation features to optimize images for different screen sizes.
 
 ---
 
-## 🤝 Contributing
-Built with ❤️ for Sitaram Inter College. For any inquiries or feature requests, please contact the administration office.
+## 🔮 Future Enhancements
+
+-   [ ] **Real-time Chat:** Direct messaging between faculty and students.
+-   [ ] **Video Lectures:** Integrated platform for hosting and viewing educational videos.
+-   [ ] **Payment Gateway:** Integration with Razorpay or Stripe for automated fee collection.
+-   [ ] **AI Recommendations:** personalized course suggestions based on student performance.
+
+---
+
+Built with ❤️ by **Ankit** for **Sitaram Inter College**.
