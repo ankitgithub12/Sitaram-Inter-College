@@ -286,7 +286,7 @@ const Chatbot = () => {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 bg-sricblue text-white p-4 rounded-full shadow-2xl hover:bg-blue-800 transition-transform transform hover:scale-110 z-50 flex items-center justify-center"
+          className="fixed bottom-[85px] lg:bottom-6 right-6 bg-sricblue text-white p-4 rounded-full shadow-2xl hover:bg-blue-800 transition-transform transform hover:scale-110 z-[110] flex items-center justify-center"
           aria-label="Open chat"
         >
           <MessageSquare size={28} />
@@ -296,7 +296,7 @@ const Chatbot = () => {
 
       {/* Chat window */}
       <div
-        className={`fixed bottom-6 right-6 w-[calc(100vw-3rem)] sm:w-96 max-w-sm bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden transition-all duration-300 transform origin-bottom-right z-50 ${
+        className={`fixed bottom-[85px] lg:bottom-6 right-6 w-[calc(100vw-3rem)] sm:w-96 max-w-sm bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden transition-all duration-300 transform origin-bottom-right z-[110] ${
           isOpen ? 'scale-100 opacity-100 pointer-events-auto' : 'scale-0 opacity-0 pointer-events-none'
         }`}
         style={{ height: '580px', maxHeight: 'calc(100vh - 120px)' }}
