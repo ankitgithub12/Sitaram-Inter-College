@@ -186,6 +186,21 @@ exports.createFeePayment = async (req, res) => {
         paymentData: paymentData
       });
     }
+
+    // Name validation regex
+    const nameRegex = /^[a-zA-Z\s.]+$/;
+    if (!nameRegex.test(paymentData.studentName)) {
+      return res.status(400).json({ success: false, message: 'Student name can only contain letters, spaces and dots' });
+    }
+    if (paymentData.studentName.trim().length < 3) {
+      return res.status(400).json({ success: false, message: 'Student name must be at least 3 characters long' });
+    }
+    if (!nameRegex.test(paymentData.fatherName)) {
+      return res.status(400).json({ success: false, message: "Father's name can only contain letters, spaces and dots" });
+    }
+    if (paymentData.fatherName.trim().length < 3) {
+      return res.status(400).json({ success: false, message: "Father's name must be at least 3 characters long" });
+    }
     
     // Check for duplicate receipt number
     const existingPayment = await FeePayment.findOne({ receiptNumber: paymentData.receiptNumber });

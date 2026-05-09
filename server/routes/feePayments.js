@@ -21,6 +21,14 @@ router.post(
   feePaymentController.createFeePayment
 );
 
+// Alias for the /upload endpoint used by the frontend
+router.post(
+  '/upload', 
+  feePaymentController.handleFormData, 
+  feePaymentController.upload.single('receiptFile'), 
+  feePaymentController.createFeePayment
+);
+
 router.get('/', authenticateAdmin, feePaymentController.getFeePayments);
 router.get('/stats/summary', authenticateAdmin, feePaymentController.getFeePaymentStats);
 router.get('/search/advanced', authenticateAdmin, feePaymentController.searchFeePaymentsAdvanced);

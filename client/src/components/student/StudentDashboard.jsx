@@ -181,6 +181,32 @@ const StudentDashboard = () => {
       }
       setIsSubmitting(true);
       
+      const studentName = profile.name;
+      const fatherName = profile.createdBy || 'Parent';
+      
+      // Name validation
+      const nameRegex = /^[a-zA-Z\s.]+$/;
+      if (!nameRegex.test(studentName)) {
+        alert('Student name can only contain letters, spaces and dots');
+        setIsSubmitting(false);
+        return;
+      }
+      if (studentName.trim().length < 3) {
+        alert('Student name must be at least 3 characters long');
+        setIsSubmitting(false);
+        return;
+      }
+      if (!nameRegex.test(fatherName)) {
+        alert("Father's name can only contain letters, spaces and dots");
+        setIsSubmitting(false);
+        return;
+      }
+      if (fatherName.trim().length < 3) {
+        alert("Father's name must be at least 3 characters long");
+        setIsSubmitting(false);
+        return;
+      }
+
       const now = new Date();
       const receiptNumber = `SRIC-${now.getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
       

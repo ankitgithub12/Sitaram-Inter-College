@@ -398,6 +398,25 @@ const Fees = () => {
       return false;
     }
     
+    // Name validation
+    const nameRegex = /^[a-zA-Z\s.]+$/;
+    if (!nameRegex.test(studentName)) {
+      alert('Student name can only contain letters, spaces and dots');
+      return false;
+    }
+    if (studentName.trim().length < 3) {
+      alert('Student name must be at least 3 characters long');
+      return false;
+    }
+    if (!nameRegex.test(fatherName)) {
+      alert("Father's name can only contain letters, spaces and dots");
+      return false;
+    }
+    if (fatherName.trim().length < 3) {
+      alert("Father's name must be at least 3 characters long");
+      return false;
+    }
+
     return true;
   };
 

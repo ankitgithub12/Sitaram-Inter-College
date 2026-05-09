@@ -79,8 +79,20 @@ const contactSchema = new mongoose.Schema({
 contactSchema.pre('save', function() { this.updatedAt = new Date(); });
 
 const feePaymentSchema = new mongoose.Schema({
-  studentName: { type: String, required: true },
-  fatherName: { type: String, required: true },
+  studentName: { 
+    type: String, 
+    required: [true, 'Student name is required'],
+    trim: true,
+    minlength: [3, 'Student name must be at least 3 characters long'],
+    match: [/^[a-zA-Z\s.]+$/, 'Student name can only contain letters, spaces and dots']
+  },
+  fatherName: { 
+    type: String, 
+    required: [true, "Father's name is required"],
+    trim: true,
+    minlength: [3, "Father's name must be at least 3 characters long"],
+    match: [/^[a-zA-Z\s.]+$/, "Father's name can only contain letters, spaces and dots"]
+  },
   mobile: {
     type: String,
     required: true,
