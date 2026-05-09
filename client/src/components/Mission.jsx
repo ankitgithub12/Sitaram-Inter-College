@@ -16,7 +16,7 @@ const Mission = () => {
       });
     }, { threshold: 0.1 });
     
-    const animatedElements = document.querySelectorAll('.mission-card, .stat-card, .timeline-item, .value-icon, .fade-in-up');
+    const animatedElements = document.querySelectorAll('.mission-card, .stat-card, .timeline-item, .value-card, .fade-in-up');
     animatedElements.forEach(el => {
       el.style.opacity = 0;
       el.style.transform = 'translateY(30px)';
@@ -215,7 +215,7 @@ const Mission = () => {
               { icon: 'globe-asia', title: 'Global Awareness', desc: 'Understanding world perspectives while preparing for local boards.' },
               { icon: 'graduation-cap', title: 'Lifelong Learning', desc: 'Fostering curiosity that extends beyond board examinations.' }
             ].map((value, index) => (
-              <div key={index} className="value-icon bg-white p-6 rounded-2xl shadow-lg border border-gray-100 transform hover:-translate-y-2 transition duration-500 fade-in-up">
+              <div key={index} className="value-card bg-white p-6 rounded-2xl shadow-lg border border-gray-100 transform hover:-translate-y-2 transition duration-500 fade-in-up h-full flex flex-col items-center">
                 <div className="w-20 h-20 bg-gradient-to-br from-sricblue to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-md">
                   <i className={`fas fa-${value.icon} text-white text-2xl`}></i>
                 </div>
@@ -345,7 +345,16 @@ const Mission = () => {
           border-radius: 2px;
         }
         
-        .value-icon {
+        .value-card {
+          transition: all 0.5s ease;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: flex-start;
+          width: 100%;
+        }
+        
+        .value-card-icon {
           width: 70px;
           height: 70px;
           display: flex;
