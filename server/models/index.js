@@ -123,28 +123,19 @@ const feePaymentSchema = new mongoose.Schema({
 
 feePaymentSchema.pre('save', function() { this.updatedAt = new Date(); });
 
-const userSchema = new mongoose.Schema({
+// ==================== AUTH & IDENTITY SCHEMAS ====================
+
+const authFields = {
   username: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  plainPassword: { type: String },
-  role: { type: String, enum: ['admin', 'teacher', 'student'], default: 'student' },
-  name: { type: String },
+  plainPassword: { type: String }, // For admin visibility/receipts
+  name: { type: String, required: true },
   email: { type: String, unique: true, sparse: true },
   isDisabled: { type: Boolean, default: false },
-  createdBy: { type: String },
-  creatorName: { type: String },
-  subject: { type: String },
-  // Faculty specific fields
-  position: { type: String },
-  qualification: { type: String },
-  experience: { type: String },
-  description: { type: String },
-  photoUrl: { type: String },
-  department: { type: String },
   createdAt: { type: Date, default: Date.now }
-});
+};
 
-userSchema.pre('save', async function(next) {
+const authPreSave = async function(next) {
   if (!this.isModified('password')) return next();
   try {
     if (!this.plainPassword && !this.password.startsWith('$2')) {
@@ -156,15 +147,58 @@ userSchema.pre('save', async function(next) {
   } catch (err) {
     next(err);
   }
-});
-
-userSchema.methods.comparePassword = async function(candidatePassword) {
-  return await bcrypt.compare(candidatePassword, this.password);
 };
 
+const authMethods = {
+  comparePassword: async function(candidatePassword) {
+    return await bcrypt.compare(candidatePassword, this.password);
+  }
+};
+
+// Admin Schema
+const adminSchema = new mongoose.Schema({
+  ...authFields,
+  role: { type: String, default: 'admin' }
+});
+adminSchema.pre('save', authPreSave);
+adminSchema.methods.comparePassword = authMethods.comparePassword;
+
+// Teacher Schema
+const teacherSchema = new mongoose.Schema({
+  ...authFields,
+  role: { type: String, default: 'teacher' },
+  subject: { type: String },
+  position: { type: String },
+  qualification: { type: String },
+  experience: { type: String },
+  description: { type: String },
+  photoUrl: { type: String },
+  department: { type: String },
+  createdBy: { type: String },
+  creatorName: { type: String }
+});
+teacherSchema.pre('save', authPreSave);
+teacherSchema.methods.comparePassword = authMethods.comparePassword;
+
+// Student Schema
+const studentSchema = new mongoose.Schema({
+  ...authFields,
+  role: { type: String, default: 'student' },
+  class: { type: String },
+  rollNo: { type: String },
+  fatherName: { type: String },
+  motherName: { type: String },
+  contact: { type: String },
+  address: { type: String },
+  createdBy: { type: String },
+  creatorName: { type: String }
+});
+studentSchema.pre('save', authPreSave);
+studentSchema.methods.comparePassword = authMethods.comparePassword;
+
 const attendanceSchema = new mongoose.Schema({
-  studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  teacherId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Student', required: true },
+  teacherId: { type: mongoose.Schema.Types.ObjectId, ref: 'Teacher', required: true },
   date: { type: Date, required: true },
   status: { type: String, enum: ['present', 'absent', 'late'], default: 'present' },
   class: { type: String },
@@ -174,7 +208,7 @@ const attendanceSchema = new mongoose.Schema({
 attendanceSchema.index({ studentId: 1, date: 1 }, { unique: true });
 
 const marksSchema = new mongoose.Schema({
-  studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Student', required: true },
   studentName: { type: String, required: true },
   studentUsername: { type: String, required: true },
   subject: { type: String, required: true },
@@ -199,7 +233,7 @@ const assignmentSchema = new mongoose.Schema({
   dueDate: { type: Date, required: true },
   className: { type: String, required: true },
   description: { type: String },
-  teacherId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  teacherId: { type: mongoose.Schema.Types.ObjectId, ref: 'Teacher', required: true },
   teacherName: { type: String, required: true },
   status: { type: String, enum: ['Published', 'Draft', 'In Review'], default: 'Published' },
   createdAt: { type: Date, default: Date.now }
@@ -302,7 +336,9 @@ announcementSchema.pre('save', function(next) {
 const Application = mongoose.models.Application || mongoose.model('Application', admissionSchema, 'applications');
 const Contact = mongoose.models.Contact || mongoose.model('Contact', contactSchema, 'contacts');
 const FeePayment = mongoose.models.FeePayment || mongoose.model('FeePayment', feePaymentSchema, 'feePayments');
-const User = mongoose.models.User || mongoose.model('User', userSchema, 'users');
+const Admin = mongoose.models.Admin || mongoose.model('Admin', adminSchema, 'admins');
+const Teacher = mongoose.models.Teacher || mongoose.model('Teacher', teacherSchema, 'teachers');
+const Student = mongoose.models.Student || mongoose.model('Student', studentSchema, 'students');
 const Attendance = mongoose.models.Attendance || mongoose.model('Attendance', attendanceSchema, 'attendance');
 const Mark = mongoose.models.Mark || mongoose.model('Mark', marksSchema, 'marks');
 const Assignment = mongoose.models.Assignment || mongoose.model('Assignment', assignmentSchema, 'assignments');
@@ -312,6 +348,6 @@ const Announcement = mongoose.models.Announcement || mongoose.model('Announcemen
 const Testimonial = mongoose.models.Testimonial || mongoose.model('Testimonial', testimonialSchema, 'testimonials');
 
 module.exports = {
-  Application, Contact, FeePayment, User, Attendance, Mark, Assignment,
+  Application, Contact, FeePayment, Admin, Teacher, Student, Attendance, Mark, Assignment,
   GalleryPhoto, Achievement, Announcement, Testimonial
 };

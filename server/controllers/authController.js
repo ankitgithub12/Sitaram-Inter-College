@@ -1,10 +1,34 @@
-const { User } = require('../models');
+const { Admin, Teacher, Student } = require('../models');
 
-// Universal login (all roles)
+// Universal login (checks separate collections)
 exports.login = async (req, res) => {
   try {
-    const { username, password } = req.body;
-    const user = await User.findOne({ username });
+    const { username, password, role } = req.body;
+    let user = null;
+    let userRole = role;
+
+    // If role is provided, search in that specific collection
+    if (role === 'admin') {
+      user = await Admin.findOne({ username });
+    } else if (role === 'teacher') {
+      user = await Teacher.findOne({ username });
+    } else if (role === 'student') {
+      user = await Student.findOne({ username });
+    } else {
+      // If no role provided, search sequentially (production should ideally have role)
+      user = await Admin.findOne({ username });
+      if (user) userRole = 'admin';
+      
+      if (!user) {
+        user = await Teacher.findOne({ username });
+        if (user) userRole = 'teacher';
+      }
+      
+      if (!user) {
+        user = await Student.findOne({ username });
+        if (user) userRole = 'student';
+      }
+    }
 
     if (!user) {
       return res.status(401).json({ success: false, message: 'Invalid username or password' });
@@ -24,9 +48,9 @@ exports.login = async (req, res) => {
 
     res.json({
       success: true,
-      token: `token_${user.role}_${user.username}`,
+      token: `token_${userRole}_${user.username}`,
       userId: user._id,
-      role: user.role,
+      role: userRole,
       name: user.name,
       username: user.username,
       message: 'Login successful'

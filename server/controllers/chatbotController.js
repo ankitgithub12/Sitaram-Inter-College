@@ -1,5 +1,5 @@
 const { OpenAI } = require("openai");
-const { User, FeePayment } = require('../models');
+const { Student, FeePayment } = require('../models');
 
 const SYSTEM_PROMPT = `You are a helpful and polite virtual assistant for SRIC (SITARAM INTER COLLEGE).
 
@@ -172,6 +172,7 @@ GUIDELINES:
 exports.chat = async (req, res) => {
   try {
     const userMessage = req.body.message;
+    const studentId = req.body.studentId;
 
     if (!userMessage) {
       return res.status(400).json({ success: false, message: 'Message is required' });
@@ -190,18 +191,13 @@ exports.chat = async (req, res) => {
       apiKey: hfToken,
     });
 
-
-
     let studentContext = "";
 
-
-    const potentialIds = userMessage.match(/\b([a-zA-Z0-9]{4,15})\b/g);
-
-    if (potentialIds && potentialIds.length > 0) {
-      const student = await User.findOne({ username: { $in: potentialIds }, role: 'student' });
+    if (studentId) {
+      const student = await Student.findOne({ studentId: studentId });
 
       if (student) {
-        console.log(`🔍 Chatbot: Found student ${student.name} for ID ${student.username}`);
+        console.log(`🔍 Chatbot: Found student ${student.name} for ID ${studentId}`);
         const payments = await FeePayment.find({
           email: new RegExp(`^${student.email}$`, 'i')
         }).sort({ submittedAt: -1 });
@@ -210,7 +206,7 @@ exports.chat = async (req, res) => {
           const summary = payments.map(p => `- ₹${p.amount} (${p.status}) on ${new Date(p.receiptDate).toLocaleDateString()}`).join('\n');
           studentContext = `\nSTUDENT DATA DETECTED:
 Name: ${student.name}
-Class: ${student.subject || 'N/A'}
+Class: ${student.class || 'N/A'}
 Fee History:
 ${summary}
 Total Payments Found: ${payments.length}`;

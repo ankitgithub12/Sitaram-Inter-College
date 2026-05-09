@@ -12,6 +12,7 @@ import AdminAdmissions from './admin/AdminAdmissions';
 import AdminFees from './admin/AdminFees';
 import AdminContacts from './admin/AdminContacts';
 import AdminUsers from './admin/AdminUsers';
+import AdminStudents from './admin/AdminStudents';
 import AdminGallery from './admin/AdminGallery';
 import AdminAchievements from './admin/AdminAchievements';
 import AdminAnnouncements from './admin/AdminAnnouncements';
@@ -604,6 +605,7 @@ const Admin = () => {
                   {currentTab === 'fees' && 'Fees'}
                   {currentTab === 'contacts' && 'Messages'}
                   {currentTab === 'users' && 'Teacher Management'}
+                  {currentTab === 'students' && 'Student Management'}
                   {currentTab === 'gallery' && 'Gallery Manager'}
                   {currentTab === 'achievements' && 'Achievements'}
                   {currentTab === 'announcements' && 'Announcements'}
@@ -848,6 +850,10 @@ const Admin = () => {
 
               {currentTab === 'users' && (
                 <AdminUsers showToast={showToast} />
+              )}
+
+              {currentTab === 'students' && (
+                <AdminStudents showToast={showToast} />
               )}
 
               {currentTab === 'gallery' && (

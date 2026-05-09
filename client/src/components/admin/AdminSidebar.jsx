@@ -236,6 +236,18 @@ const AdminSidebar = ({
           </button>
 
           <button
+            onClick={() => setCurrentTab('students')}
+            className={`w-full flex items-center space-x-3 p-3 rounded-xl mb-2 transition-all ${
+              currentTab === 'students'
+                ? 'bg-blue-800 text-white shadow-lg'
+                : 'hover:bg-blue-800/50'
+            }`}
+          >
+            <GraduationCap className="w-5 h-5 flex-shrink-0" />
+            {!sidebarCollapsed && <span>Manage Students</span>}
+          </button>
+
+          <button
             onClick={() => setCurrentTab('settings')}
             className={`w-full flex items-center space-x-3 p-3 rounded-xl mb-2 transition-all ${
               currentTab === 'settings'

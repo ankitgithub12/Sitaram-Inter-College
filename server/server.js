@@ -106,10 +106,12 @@ mongoose.connect(MONGODB_URI)
 
 // ==================== MODELS & SEEDING ====================
 // Import models (triggers schema registration)
-const { User, Application, FeePayment, Contact, Attendance, Mark, Assignment } = require('./models');
+const { Admin, Teacher, Student, Application, FeePayment, Contact, Attendance, Mark, Assignment } = require('./models');
 
 // Sync indexes
-User.syncIndexes().catch(err => console.error('❌ Error syncing User indexes:', err));
+Admin.syncIndexes().catch(err => console.error('❌ Error syncing Admin indexes:', err));
+Teacher.syncIndexes().catch(err => console.error('❌ Error syncing Teacher indexes:', err));
+Student.syncIndexes().catch(err => console.error('❌ Error syncing Student indexes:', err));
 Attendance.syncIndexes().catch(err => console.error('❌ Error syncing Attendance indexes:', err));
 Mark.syncIndexes().catch(err => console.error('❌ Error syncing Mark indexes:', err));
 Assignment.syncIndexes().catch(err => console.error('❌ Error syncing Assignment indexes:', err));
@@ -117,25 +119,37 @@ Assignment.syncIndexes().catch(err => console.error('❌ Error syncing Assignmen
 // Seed default users
 const seedUsers = async () => {
   try {
-    await User.deleteMany({ username: null });
-
-    const defaultUsers = [
-      { username: '221205', password: 'Sitaram@2002', role: 'admin', name: 'Administrator', email: 'admin@sric.edu.in' },
-      { username: 'teacher1', password: 'Teacher@2024', role: 'teacher', name: 'John Doe', email: 'teacher1@sric.edu.in' },
-      { username: 'student1', password: 'Student@2024', role: 'student', name: 'Jane Smith', email: 'student1@sric.edu.in', subject: '12-A' }
+    const defaultAdmins = [
+      { username: '221205', password: 'Sitaram@2002', role: 'admin', name: 'Administrator', email: 'admin@sric.edu.in' }
+    ];
+    
+    const defaultTeachers = [
+      { username: 'teacher1', password: 'Teacher@2024', role: 'teacher', name: 'John Doe', email: 'teacher1@sric.edu.in' }
+    ];
+    
+    const defaultStudents = [
+      { username: 'student1', password: 'Student@2024', role: 'student', name: 'Jane Smith', email: 'student1@sric.edu.in' }
     ];
 
-    for (const userData of defaultUsers) {
-      const user = await User.findOne({ username: userData.username });
-      if (!user) {
-        await User.create(userData);
-        console.log(`✅ Seeded user: ${userData.username}`);
-      } else if (!user.password.startsWith('$2')) {
-        user.password = userData.password;
-        await user.save();
-        console.log(`✅ Updated plain-text password for: ${userData.username}`);
-      }
+    // Seed Admins
+    for (const data of defaultAdmins) {
+      const exists = await Admin.findOne({ username: data.username });
+      if (!exists) await Admin.create(data);
     }
+    
+    // Seed Teachers
+    for (const data of defaultTeachers) {
+      const exists = await Teacher.findOne({ username: data.username });
+      if (!exists) await Teacher.create(data);
+    }
+    
+    // Seed Students
+    for (const data of defaultStudents) {
+      const exists = await Student.findOne({ username: data.username });
+      if (!exists) await Student.create(data);
+    }
+    
+    console.log('✅ Base users seeded successfully');
   } catch (err) {
     console.error('❌ Error seeding users:', err);
   }

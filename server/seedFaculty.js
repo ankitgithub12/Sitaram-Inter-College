@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 require('dotenv').config();
-const { User } = require('./models');
+const { Teacher } = require('./models');
 
 const facultyData = [
   {
@@ -154,9 +154,9 @@ const seedFaculty = async () => {
     console.log('Connected to MongoDB');
 
     for (const faculty of facultyData) {
-      const existing = await User.findOne({ username: faculty.username });
+      const existing = await Teacher.findOne({ username: faculty.username });
       if (!existing) {
-        await User.create(faculty);
+        await Teacher.create(faculty);
         console.log(`Added: ${faculty.name}`);
       } else {
         // Update existing with new fields
