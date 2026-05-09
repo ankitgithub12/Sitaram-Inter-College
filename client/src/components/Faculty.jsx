@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { apiUrl } from '../lib/config';
 import Header from './Header';
 import Footer from './Footer';
 
@@ -32,7 +33,7 @@ const Faculty = () => {
   useEffect(() => {
     const fetchFaculty = async () => {
       try {
-        const response = await fetch('/api/users/faculty');
+        const response = await fetch(apiUrl('/api/users/faculty'));
         const data = await response.json();
         if (data.success) {
           setFacultyMembers(data.data);

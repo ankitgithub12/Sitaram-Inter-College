@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { apiUrl } from '../../lib/config';
 
 const ToppersSection = () => {
   const defaultToppers = {
@@ -36,7 +37,7 @@ const ToppersSection = () => {
   useEffect(() => {
     const fetchToppers = async () => {
       try {
-        const res = await fetch('/api/achievements');
+        const res = await fetch(apiUrl('/api/achievements'));
         const data = await res.json();
         
         if (data.success && data.data && data.data.length > 0) {

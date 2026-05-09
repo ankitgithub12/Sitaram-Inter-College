@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { apiUrl } from '../lib/config';
 import Header from './Header';
 import Footer from './Footer';
 
@@ -50,7 +51,7 @@ const Announcements = () => {
   useEffect(() => {
     const fetchAnnouncements = async () => {
       try {
-        const res = await fetch('/api/announcements');
+        const res = await fetch(apiUrl('/api/announcements'));
         const data = await res.json();
         if (data.success) {
           const formatted = data.data.map(a => {

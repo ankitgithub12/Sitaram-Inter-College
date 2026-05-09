@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { apiUrl } from '../../lib/config';
 
 // Static fallback testimonials (always shown)
 const staticTestimonials = [
@@ -78,7 +79,7 @@ const TestimonialsSection = () => {
   useEffect(() => {
     const fetchTestimonials = async () => {
       try {
-        const res = await fetch('/api/testimonials');
+        const res = await fetch(apiUrl('/api/testimonials'));
         const data = await res.json();
         if (data.success && data.data && data.data.length > 0) {
           setDynamicTestimonials(data.data.slice(0, 4));
