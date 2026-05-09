@@ -295,10 +295,10 @@ const Chatbot = () => {
 
       {/* Chat window */}
       <div
-        className={`fixed bottom-6 right-6 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden transition-all duration-300 transform origin-bottom-right z-50 ${
+        className={`fixed bottom-6 right-6 w-[calc(100vw-3rem)] sm:w-96 max-w-sm bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden transition-all duration-300 transform origin-bottom-right z-50 ${
           isOpen ? 'scale-100 opacity-100 pointer-events-auto' : 'scale-0 opacity-0 pointer-events-none'
         }`}
-        style={{ height: '580px', maxHeight: '90vh' }}
+        style={{ height: '580px', maxHeight: 'calc(100vh - 120px)' }}
       >
         {/* ── Header ───────────────────────────────────────────── */}
         <div className="bg-gradient-to-r from-sricblue to-blue-900 text-white p-3 flex justify-between items-center flex-shrink-0">

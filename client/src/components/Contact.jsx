@@ -210,8 +210,8 @@ const Contact = () => {
                   <i className="fas fa-envelope text-2xl"></i>
                 </div>
                 <h3 className="text-xl font-bold mb-4">Email Us</h3>
-                <p className="mb-2">Yespalsinghsaini@gmail.com</p>
-                <p>sitaramintercollege1205@gmail.com</p>
+                <p className="break-long-text">Yespalsinghsaini@gmail.com</p>
+                <p className="break-long-text">sitaramintercollege1205@gmail.com</p>
                 <a href="mailto:Yespalsinghsaini@gmail.com" className="mt-4 inline-block text-sricgold font-medium hover:underline">
                   Send Email
                 </a>

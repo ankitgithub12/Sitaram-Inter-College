@@ -4,8 +4,8 @@ import Header from './Header';
 import Footer from './Footer';
 
 const Calendar = () => {
-  const [currentMonth, setCurrentMonth] = useState(11); // December (0-indexed)
-  const [currentYear, setCurrentYear] = useState(2026);
+  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
+  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const [activeExamSchedule, setActiveExamSchedule] = useState('quarterly'); // 'quarterly' or 'halfyearly'
   const [dynamicSchedules, setDynamicSchedules] = useState([]);
 
@@ -138,7 +138,7 @@ const Calendar = () => {
     // Add empty cells for days before the first day of the month
     for (let i = 0; i < firstDay; i++) {
       days.push(
-        <div key={`empty-${i}`} className="calendar-day bg-gray-50 p-2 min-h-[100px] md:min-h-[140px] transition-all duration-300 hover:bg-gray-100"></div>
+        <div key={`empty-${i}`} className="calendar-day bg-gray-50 p-1 md:p-2 min-h-[60px] md:min-h-[140px] transition-all duration-300 hover:bg-gray-100"></div>
       );
     }
     
@@ -149,7 +149,7 @@ const Calendar = () => {
       const currentDate = new Date(currentYear, currentMonth, day);
       const isToday = currentDate.getTime() === today.getTime();
       
-      let dayClass = "calendar-day p-3 min-h-[100px] md:min-h-[140px] border border-gray-200 transition-all duration-300 hover:bg-gray-50 relative";
+      let dayClass = "calendar-day p-1 md:p-3 min-h-[60px] md:min-h-[140px] border border-gray-200 transition-all duration-300 hover:bg-gray-50 relative";
       
       if (event) {
         dayClass += " event-day";
@@ -174,9 +174,9 @@ const Calendar = () => {
       days.push(
         <div key={day} className={dayClass}>
           <div className="flex justify-between items-center mb-2">
-            <span className={`text-lg font-bold ${isToday ? 'text-blue-600' : 'text-gray-800'}`}>
+            <span className={`text-sm md:text-lg font-bold ${isToday ? 'text-blue-600' : 'text-gray-800'}`}>
               {day}
-              {isToday && <span className="ml-1 text-xs bg-blue-500 text-white px-2 py-1 rounded-full">Today</span>}
+              {isToday && <span className="ml-1 text-[8px] md:text-xs bg-blue-500 text-white px-1 md:px-2 py-0.5 md:py-1 rounded-full uppercase">Today</span>}
             </span>
             {event && (
               <span 
@@ -186,8 +186,8 @@ const Calendar = () => {
             )}
           </div>
           {event && (
-            <div className={`mt-2 p-2 rounded-lg bg-white shadow-sm border-l-4 border-${event.color}-500`}>
-              <div className={`text-xs md:text-sm font-semibold text-${event.color}-700`}>
+            <div className={`mt-1 md:mt-2 p-1 md:p-2 rounded md:rounded-lg bg-white shadow-sm border-l-2 md:border-l-4 border-${event.color}-500`}>
+              <div className={`text-[8px] md:text-sm font-semibold text-${event.color}-700 line-clamp-2 md:line-clamp-none`}>
                 {event.title}
               </div>
             </div>
@@ -594,59 +594,61 @@ const Calendar = () => {
         
         {/* Calendar Navigation with Month Selector */}
         <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
-          <div className="p-4 flex flex-col md:flex-row justify-between items-center gap-4 bg-gradient-to-r from-blue-50 to-gray-50">
-            <div className="flex items-center gap-4">
+          <div className="p-3 md:p-4 flex flex-col md:flex-row justify-between items-center gap-4 bg-gradient-to-r from-blue-50 to-gray-50">
+            <div className="flex items-center justify-between w-full md:w-auto gap-2 md:gap-4">
               <button 
                 onClick={() => navigateMonth('prev')}
-                className="p-3 rounded-full bg-gradient-to-r from-gray-200 to-gray-300 hover:from-gray-300 hover:to-gray-400 transition shadow-md"
+                className="p-2 md:p-3 rounded-full bg-white hover:bg-gray-100 transition shadow-sm border border-gray-200"
               >
-                <i className="fas fa-chevron-left text-gray-700"></i>
+                <i className="fas fa-chevron-left text-sricblue"></i>
               </button>
-              <h3 className="text-2xl font-bold text-sricblue">
+              <h3 className="text-lg md:text-2xl font-bold text-sricblue whitespace-nowrap">
                 {monthNames[currentMonth]} {currentYear}
               </h3>
               <button 
                 onClick={() => navigateMonth('next')}
-                className="p-3 rounded-full bg-gradient-to-r from-gray-200 to-gray-300 hover:from-gray-300 hover:to-gray-400 transition shadow-md"
+                className="p-2 md:p-3 rounded-full bg-white hover:bg-gray-100 transition shadow-sm border border-gray-200"
               >
-                <i className="fas fa-chevron-right text-gray-700"></i>
-              </button>
-              <button 
-                onClick={goToToday}
-                className="px-5 py-2 bg-gradient-to-r from-sricblue to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition font-bold shadow-md"
-              >
-                <i className="fas fa-calendar-day mr-2"></i>
-                Today
+                <i className="fas fa-chevron-right text-sricblue"></i>
               </button>
             </div>
             
-            <div className="relative">
-              <select 
-                value={currentMonth + (currentYear === 2027 ? 12 : 0)}
-                onChange={handleMonthSelect}
-                className="appearance-none bg-gradient-to-r from-gray-100 to-gray-200 border border-gray-300 rounded-lg px-6 py-3 pr-10 focus:outline-none focus:ring-2 focus:ring-sricblue focus:border-transparent font-medium shadow-sm"
+            <div className="flex items-center w-full md:w-auto gap-2">
+              <button 
+                onClick={goToToday}
+                className="flex-1 md:flex-none px-4 py-2 bg-sricblue text-white rounded-lg hover:bg-blue-800 transition font-bold shadow-md text-sm md:text-base"
               >
-                <option value="0">January 2026</option>
-                <option value="1">February 2026</option>
-                <option value="2">March 2026</option>
-                <option value="3">April 2026</option>
-                <option value="4">May 2026</option>
-                <option value="5">June 2026</option>
-                <option value="6">July 2026</option>
-                <option value="7">August 2026</option>
-                <option value="8">September 2026</option>
-                <option value="9">October 2026</option>
-                <option value="10">November 2026</option>
-                <option value="11">December 2026</option>
-                <option value="12">January 2027</option>
-                <option value="13">February 2027</option>
-                <option value="14">March 2027</option>
-                <option value="15">April 2027</option>
-                <option value="16">May 2027</option>
-                <option value="17">June 2027</option>
-              </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-700">
-                <i className="fas fa-chevron-down"></i>
+                Today
+              </button>
+            
+              <div className="relative flex-1 md:flex-none">
+                <select 
+                  value={currentMonth + (currentYear === 2027 ? 12 : 0)}
+                  onChange={handleMonthSelect}
+                  className="w-full appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-sricblue font-medium shadow-sm text-sm md:text-base"
+                >
+                  <option value="0">Jan 2026</option>
+                  <option value="1">Feb 2026</option>
+                  <option value="2">Mar 2026</option>
+                  <option value="3">Apr 2026</option>
+                  <option value="4">May 2026</option>
+                  <option value="5">Jun 2026</option>
+                  <option value="6">Jul 2026</option>
+                  <option value="7">Aug 2026</option>
+                  <option value="8">Sep 2026</option>
+                  <option value="9">Oct 2026</option>
+                  <option value="10">Nov 2026</option>
+                  <option value="11">Dec 2026</option>
+                  <option value="12">Jan 2027</option>
+                  <option value="13">Feb 2027</option>
+                  <option value="14">Mar 2027</option>
+                  <option value="15">Apr 2027</option>
+                  <option value="16">May 2027</option>
+                  <option value="17">Jun 2027</option>
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400">
+                  <i className="fas fa-chevron-down text-xs"></i>
+                </div>
               </div>
             </div>
           </div>
@@ -654,15 +656,18 @@ const Calendar = () => {
         
         {/* Calendar Grid */}
         <div className="bg-white rounded-xl shadow-xl overflow-hidden mb-12 animate-fade-in">
-          <div className="calendar-grid grid grid-cols-7">
+          <div className="calendar-grid grid grid-cols-7 border-b border-gray-200">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, index) => (
               <div 
                 key={day} 
-                className="bg-gradient-to-r from-sricblue to-blue-700 text-white p-3 text-center font-bold text-lg shadow-sm"
+                className="bg-sricblue text-white p-2 md:p-3 text-center font-bold text-[10px] md:text-lg uppercase tracking-wider"
               >
-                {day}
+                <span className="hidden md:inline">{day}</span>
+                <span className="md:hidden">{day.charAt(0)}</span>
               </div>
             ))}
+          </div>
+          <div className="calendar-grid grid grid-cols-7">
             {generateCalendar()}
           </div>
           

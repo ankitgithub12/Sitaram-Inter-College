@@ -20,6 +20,7 @@ import TeacherDashboard from './components/teacher/TeacherDashboard';
 import Chatbot from './components/Chatbot';
 import ScrollToTop from './components/ScrollToTop';
 import Testimonials from './components/Testimonials';
+import MobileBottomNav from './components/MobileBottomNav';
 import './App.css';
 
 function App() {
@@ -32,8 +33,8 @@ function App() {
           <Route path="/admin-login" element={<AdminLogin />} />
           <Route path="/admission-form" element={<AdmissionForm />} />
           <Route path="/contact" element={<Contact />} />
-<Route path="/achievements" element={<Achievements/>}/>
- <Route path="/announcements" element={<Announcements />} />
+          <Route path="/achievements" element={<Achievements/>}/>
+          <Route path="/announcements" element={<Announcements />} />
           <Route path="/calendar" element={<Calendar />} />
           <Route path="/mission" element={<Mission/>}/>
           <Route path="/history" element={<History/>}/>
@@ -47,10 +48,11 @@ function App() {
           <Route path="/admin" element={<Admin />} />
           <Route path="/student-dashboard" element={<StudentDashboard />} />
           <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
-          {/* Add other routes as we convert more pages */}
         </Routes>
         {/* Global Chatbot Component */}
         <Chatbot />
+        {/* Mobile App-style Navigation */}
+        <MobileBottomNav />
       </div>
     </Router>
   );

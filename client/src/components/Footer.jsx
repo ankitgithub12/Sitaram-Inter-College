@@ -55,7 +55,7 @@ const Footer = () => {
               </li>
               <li className="flex items-center">
                 <i className="fas fa-envelope mr-3 text-gray-400"></i>
-                <span className="text-gray-400">sitaramintercollege1205@gmail.com</span>
+                <span className="text-gray-400 break-long-text">sitaramintercollege1205@gmail.com</span>
               </li>
             </ul>
           </div>
