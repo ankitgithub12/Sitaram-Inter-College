@@ -18,7 +18,7 @@ const Curriculum = () => {
   const curriculumData = {
     class9: {
       title: "Class 9-10 Curriculum",
-      description: "Foundational education with comprehensive syllabus coverage",
+      description: "Foundational education with comprehensive syllabus coverage following UP Board guidelines.",
       subjects: {
         core: [
           { name: "Hindi & English", icon: "fa-language", description: "Comprehensive study of literature, grammar, and composition skills" },
@@ -36,7 +36,7 @@ const Curriculum = () => {
     },
     class11sci: {
       title: "Science Stream (PCM/PCB)",
-      description: "Advanced science education with specialization options",
+      description: "Advanced science education with specialization options for engineering and medical aspirants.",
       subjects: {
         pcm: [
           { name: "Physics", icon: "fa-atom", description: "Theory and practical with modern laboratory equipment" },
@@ -54,7 +54,7 @@ const Curriculum = () => {
     },
     class11hum: {
       title: "Humanities Stream",
-      description: "Comprehensive study of social sciences and arts",
+      description: "Comprehensive study of social sciences and arts for a deep understanding of society.",
       subjects: {
         core: [
           { name: "History", icon: "fa-landmark", description: "Indian and World History with focus on analytical skills" },
@@ -90,119 +90,70 @@ const Curriculum = () => {
     }
   ];
 
-  const testimonials = [
-    {
-      name: "Mr. Chandarpal Singh",
-      role: "Physics Teacher",
-      quote: "Our curriculum aligns perfectly with UP Board requirements while providing additional practical exposure that gives our students an edge in examinations.",
-      color: "from-sricblue to-blue-900",
-      textColor: "text-white"
-    },
-    {
-      name: "Mrs. Kiran",
-      role: "Humanities Coordinator",
-      quote: "We focus on developing strong writing skills and analytical abilities that are crucial for scoring well in UP Board humanities subjects.",
-      color: "from-sricgold to-yellow-600",
-      textColor: "text-sricblue"
-    }
-  ];
-
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen bg-white">
       <Header />
 
-      {/* Enhanced Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-sricblue via-blue-800 to-purple-900 text-white py-24">
-        {/* Background decorative elements */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-10 left-10 w-64 h-64 bg-sricgold rounded-full blur-3xl"></div>
-          <div className="absolute bottom-10 right-10 w-96 h-96 bg-blue-500 rounded-full blur-3xl"></div>
-        </div>
-        
-        {/* Floating academic icons */}
-        <div className="absolute top-1/4 right-1/4 opacity-20 animate-float">
-          <i className="fas fa-book-open text-8xl"></i>
-        </div>
-        <div className="absolute bottom-1/4 left-1/4 opacity-20 animate-float" style={{animationDelay: '1.5s'}}>
-          <i className="fas fa-graduation-cap text-6xl"></i>
+      {/* Hero Section - Matching Home Aesthetics */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-sricblue via-blue-900 to-indigo-950 text-white py-24 lg:py-32">
+        <div className="absolute inset-0 opacity-20 pointer-events-none">
+          <div className="absolute top-0 left-0 w-96 h-96 bg-sricgold rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2"></div>
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-500 rounded-full blur-[120px] translate-x-1/2 translate-y-1/2"></div>
         </div>
         
         <div className="container mx-auto px-4 text-center relative z-10">
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 animate-fade-in">
-            UP Board Curriculum
+          <div className="mb-6 inline-block animate-bounce-slow">
+            <span className="bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-5 py-2 text-xs font-black uppercase tracking-widest text-sricgold shadow-xl">
+              Academic Excellence
+            </span>
+          </div>
+          
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-black mb-8 leading-tight tracking-tight animate-fade-in-up">
+            UP Board <span className="text-sricgold underline decoration-white/20 underline-offset-8">Curriculum</span>
           </h1>
-          <p className="text-xl md:text-2xl max-w-4xl mx-auto mb-8 opacity-90">
-            Comprehensive academic programs designed for Classes 9-12 with focus on UP Board examination success
+          
+          <p className="text-lg md:text-xl max-w-3xl mx-auto mb-10 text-gray-200 leading-relaxed font-medium">
+            A comprehensive academic framework designed for Classes 9-12, blending traditional wisdom with modern pedagogical approaches for examination success.
           </p>
           
-          {/* Decorative divider */}
-          <div className="flex justify-center space-x-2 mb-10">
-            <div className="w-20 h-1 bg-sricgold"></div>
-            <div className="w-12 h-1 bg-sricgold opacity-70"></div>
-            <div className="w-6 h-1 bg-sricgold opacity-40"></div>
-          </div>
-          
-          <div className="flex flex-col sm:flex-row justify-center gap-6">
-            <Link 
-              to="#curriculum" 
-              className="group bg-gradient-to-r from-sricgold to-yellow-500 text-sricblue font-bold py-4 px-8 rounded-xl text-lg transition-all duration-300 transform hover:scale-105 hover:shadow-2xl"
+          <div className="flex flex-col sm:flex-row justify-center gap-4 md:gap-6">
+            <a 
+              href="#curriculum" 
+              className="bg-sricgold text-sricblue font-black py-4 px-10 rounded-2xl text-lg transition-all duration-300 transform hover:scale-105 hover:shadow-[0_20px_50px_rgba(255,215,0,0.3)] flex items-center justify-center group"
             >
-              <span className="flex items-center justify-center">
-                Explore Curriculum
-                <i className="fas fa-arrow-down ml-2 group-hover:translate-y-1 transition-transform"></i>
-              </span>
-            </Link>
+              Explore Subjects
+              <i className="fas fa-arrow-down ml-3 group-hover:translate-y-1 transition-transform"></i>
+            </a>
             <Link 
               to="/programs" 
-              className="group bg-transparent border-2 border-white text-white font-bold py-4 px-8 rounded-xl text-lg transition-all duration-300 transform hover:scale-105 hover:bg-white hover:text-sricblue"
+              className="bg-white/10 backdrop-blur-sm border-2 border-white/30 text-white font-black py-4 px-10 rounded-2xl text-lg transition-all duration-300 transform hover:scale-105 hover:bg-white hover:text-sricblue flex items-center justify-center group"
             >
-              <span className="flex items-center justify-center">
-                View Programs
-                <i className="fas fa-external-link-alt ml-2 group-hover:translate-x-1 transition-transform"></i>
-              </span>
+              Academic Streams
+              <i className="fas fa-external-link-alt ml-3 group-hover:translate-x-1 transition-transform"></i>
             </Link>
           </div>
-        </div>
-        
-        {/* Wave decoration */}
-        <div className="absolute bottom-0 left-0 w-full overflow-hidden">
-          <svg 
-            className="relative block w-full h-24" 
-            viewBox="0 0 1200 120" 
-            preserveAspectRatio="none"
-          >
-            <path 
-              d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z" 
-              opacity=".25" 
-              className="fill-white"
-            ></path>
-            <path 
-              d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z" 
-              opacity=".5" 
-              className="fill-white"
-            ></path>
-            <path 
-              d="M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,112.48,12.24,165.56,35.4C827.93,77.22,886,95.24,951.2,90c86.53-7,172.46-45.71,248.8-84.81V0Z" 
-              className="fill-white"
-            ></path>
-          </svg>
         </div>
       </section>
 
-      {/* Curriculum Section */}
-      <section id="curriculum" className="py-20 bg-gradient-to-b from-white to-blue-50">
+      {/* Curriculum Main Section */}
+      <section id="curriculum" className="py-20 lg:py-32 bg-gray-50/50">
         <div className="container mx-auto px-4">
-          <div className="max-w-6xl mx-auto text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-6">
-              Our Curriculum Framework
+          <div className="max-w-4xl mx-auto text-center mb-16">
+            <div className="flex items-center justify-center space-x-2 mb-4">
+               <div className="w-10 h-1 bg-sricgold rounded-full"></div>
+               <span className="text-sricblue font-black uppercase tracking-widest text-sm">Framework</span>
+               <div className="w-10 h-1 bg-sricgold rounded-full"></div>
+            </div>
+            <h2 className="text-3xl md:text-5xl font-black text-sricblue mb-6">
+              Our Educational Journey
             </h2>
-            <p className="text-lg md:text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
-              SRIC follows the UP Board curriculum with enhancements to provide a holistic education that balances academic rigor with practical learning experiences.
+            <p className="text-lg text-gray-600 leading-relaxed">
+              We provide a structured learning path that ensures every student achieves their highest potential through specialized streams and core foundational subjects.
             </p>
           </div>
           
-          {/* Enhanced Tab Navigation */}
-          <div className="flex flex-wrap justify-center mb-12 gap-4">
+          {/* Tab Navigation - Responsive & Premium */}
+          <div className="flex overflow-x-auto pb-4 md:pb-0 md:justify-center mb-16 gap-4 no-scrollbar px-4">
             {[
               { id: 'class9', label: 'Class 9-10', icon: 'fa-graduation-cap' },
               { id: 'class11sci', label: 'Science Stream', icon: 'fa-atom' },
@@ -211,221 +162,83 @@ const Curriculum = () => {
               <button
                 key={tab.id}
                 onClick={() => handleTabChange(tab.id)}
-                className={`px-8 py-4 font-bold text-lg rounded-xl transition-all duration-300 flex items-center gap-3 ${
+                className={`flex-shrink-0 px-6 md:px-10 py-5 rounded-2xl font-black text-base md:text-lg transition-all duration-500 flex items-center gap-4 shadow-sm border-2 ${
                   activeTab === tab.id
-                  ? 'bg-gradient-to-r from-sricblue to-blue-700 text-white shadow-2xl transform scale-105'
-                  : 'bg-white text-gray-700 hover:bg-gray-100 border-2 border-gray-200'
+                  ? 'bg-sricblue border-sricblue text-white shadow-xl transform -translate-y-1 scale-105'
+                  : 'bg-white border-transparent text-gray-500 hover:border-gray-200 hover:bg-gray-50'
                 }`}
               >
                 <i className={`fas ${tab.icon} ${activeTab === tab.id ? 'text-sricgold' : 'text-sricblue'}`}></i>
-                {tab.label}
+                <span className="whitespace-nowrap">{tab.label}</span>
               </button>
             ))}
           </div>
           
-          {/* Active Tab Content */}
-          <div className="animate-fade-in">
-            {activeTab === 'class9' && (
-              <div className="space-y-8">
-                <div className="text-center mb-10">
-                  <h3 className="text-3xl font-bold text-sricblue mb-2">
-                    {curriculumData.class9.title}
-                  </h3>
-                  <p className="text-gray-600 text-lg">
-                    {curriculumData.class9.description}
-                  </p>
-                </div>
-                
-                <div className="grid md:grid-cols-2 gap-8">
-                  <div className="subject-card bg-gradient-to-br from-blue-50 to-white p-8 rounded-2xl shadow-xl border border-blue-100">
-                    <div className="flex items-center mb-8">
-                      <div className="bg-gradient-to-r from-sricblue to-blue-700 text-white rounded-full w-16 h-16 flex items-center justify-center text-2xl mr-5 shadow-lg">
-                        <i className="fas fa-book"></i>
-                      </div>
-                      <h3 className="text-2xl font-bold text-sricblue">Core Subjects</h3>
-                    </div>
-                    <ul className="space-y-6">
-                      {curriculumData.class9.subjects.core.map((subject, index) => (
-                        <li key={index} className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300">
-                          <div className="flex items-start">
-                            <div className="bg-gradient-to-r from-blue-100 to-blue-50 text-sricblue rounded-full w-12 h-12 flex items-center justify-center text-lg mr-4 shadow-sm">
-                              <i className={`fas ${subject.icon}`}></i>
-                            </div>
-                            <div className="flex-1">
-                              <h4 className="font-bold text-lg mb-2 text-gray-800">{subject.name}</h4>
-                              <p className="text-gray-600">{subject.description}</p>
-                            </div>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+          {/* Tab Content Area */}
+          <div className="max-w-7xl mx-auto">
+            {Object.keys(curriculumData).map((key) => (
+              <div key={key} className={`${activeTab === key ? 'block' : 'hidden'} animate-fade-in`}>
+                <div className="bg-white rounded-[2.5rem] p-8 md:p-12 shadow-2xl shadow-sricblue/5 border border-gray-100 overflow-hidden relative">
+                  {/* Decorative corner */}
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-sricgold/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
                   
-                  <div className="subject-card bg-gradient-to-br from-blue-50 to-white p-8 rounded-2xl shadow-xl border border-blue-100">
-                    <div className="flex items-center mb-8">
-                      <div className="bg-gradient-to-r from-sricblue to-blue-700 text-white rounded-full w-16 h-16 flex items-center justify-center text-2xl mr-5 shadow-lg">
-                        <i className="fas fa-plus-circle"></i>
-                      </div>
-                      <h3 className="text-2xl font-bold text-sricblue">Additional Components</h3>
+                  <div className="relative z-10">
+                    <div className="mb-12">
+                      <h3 className="text-3xl md:text-4xl font-black text-sricblue mb-4">
+                        {curriculumData[key].title}
+                      </h3>
+                      <p className="text-xl text-gray-500 max-w-3xl">
+                        {curriculumData[key].description}
+                      </p>
                     </div>
-                    <ul className="space-y-6">
-                      {curriculumData.class9.subjects.additional.map((subject, index) => (
-                        <li key={index} className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300">
-                          <div className="flex items-start">
-                            <div className="bg-gradient-to-r from-blue-100 to-blue-50 text-sricblue rounded-full w-12 h-12 flex items-center justify-center text-lg mr-4 shadow-sm">
-                              <i className={`fas ${subject.icon}`}></i>
-                            </div>
-                            <div className="flex-1">
-                              <h4 className="font-bold text-lg mb-2 text-gray-800">{subject.name}</h4>
-                              <p className="text-gray-600">{subject.description}</p>
-                            </div>
+                    
+                    <div className="grid lg:grid-cols-2 gap-8 md:gap-12">
+                      {Object.entries(curriculumData[key].subjects).map(([group, subjects], gIdx) => (
+                        <div key={group} className="space-y-6">
+                          <h4 className="text-xl font-black text-sricblue uppercase tracking-widest flex items-center">
+                            <span className="w-8 h-1 bg-sricgold mr-4 rounded-full"></span>
+                            {group === 'core' ? 'Core Subjects' : group === 'additional' ? 'Complementary' : group === 'pcm' ? 'PCM Specialization' : 'PCB Specialization'}
+                          </h4>
+                          
+                          <div className="grid gap-4 md:gap-6">
+                            {subjects.map((subject, sIdx) => (
+                              <div key={sIdx} className="subject-card group p-6 rounded-3xl bg-gray-50 border border-gray-100 hover:bg-white transition-all duration-300">
+                                <div className="flex items-start gap-5">
+                                  <div className="w-14 h-14 rounded-2xl bg-white text-sricblue flex items-center justify-center text-xl shadow-lg group-hover:bg-sricblue group-hover:text-white transition-all duration-500">
+                                    <i className={`fas ${subject.icon}`}></i>
+                                  </div>
+                                  <div className="flex-1">
+                                    <h5 className="text-lg font-black text-gray-800 mb-1 group-hover:text-sricblue transition-colors">{subject.name}</h5>
+                                    <p className="text-sm text-gray-500 leading-relaxed font-medium">
+                                      {subject.description}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
                           </div>
-                        </li>
+                        </div>
                       ))}
-                    </ul>
+                    </div>
                   </div>
                 </div>
               </div>
-            )}
-            
-            {activeTab === 'class11sci' && (
-              <div className="space-y-8">
-                <div className="text-center mb-10">
-                  <h3 className="text-3xl font-bold text-sricblue mb-2">
-                    {curriculumData.class11sci.title}
-                  </h3>
-                  <p className="text-gray-600 text-lg">
-                    {curriculumData.class11sci.description}
-                  </p>
-                </div>
-                
-                <div className="grid md:grid-cols-2 gap-8">
-                  <div className="subject-card bg-gradient-to-br from-blue-50 to-white p-8 rounded-2xl shadow-xl border border-blue-100">
-                    <div className="flex items-center mb-8">
-                      <div className="bg-gradient-to-r from-sricblue to-blue-700 text-white rounded-full w-16 h-16 flex items-center justify-center text-2xl mr-5 shadow-lg">
-                        <i className="fas fa-atom"></i>
-                      </div>
-                      <h3 className="text-2xl font-bold text-sricblue">Physics-Chemistry-Mathematics</h3>
-                    </div>
-                    <ul className="space-y-6">
-                      {curriculumData.class11sci.subjects.pcm.map((subject, index) => (
-                        <li key={index} className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300">
-                          <div className="flex items-start">
-                            <div className="bg-gradient-to-r from-blue-100 to-blue-50 text-sricblue rounded-full w-12 h-12 flex items-center justify-center text-lg mr-4 shadow-sm">
-                              <i className={`fas ${subject.icon}`}></i>
-                            </div>
-                            <div className="flex-1">
-                              <h4 className="font-bold text-lg mb-2 text-gray-800">{subject.name}</h4>
-                              <p className="text-gray-600">{subject.description}</p>
-                            </div>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  
-                  <div className="subject-card bg-gradient-to-br from-blue-50 to-white p-8 rounded-2xl shadow-xl border border-blue-100">
-                    <div className="flex items-center mb-8">
-                      <div className="bg-gradient-to-r from-sricblue to-blue-700 text-white rounded-full w-16 h-16 flex items-center justify-center text-2xl mr-5 shadow-lg">
-                        <i className="fas fa-dna"></i>
-                      </div>
-                      <h3 className="text-2xl font-bold text-sricblue">Physics-Chemistry-Biology</h3>
-                    </div>
-                    <ul className="space-y-6">
-                      {curriculumData.class11sci.subjects.pcb.map((subject, index) => (
-                        <li key={index} className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300">
-                          <div className="flex items-start">
-                            <div className="bg-gradient-to-r from-blue-100 to-blue-50 text-sricblue rounded-full w-12 h-12 flex items-center justify-center text-lg mr-4 shadow-sm">
-                              <i className={`fas ${subject.icon}`}></i>
-                            </div>
-                            <div className="flex-1">
-                              <h4 className="font-bold text-lg mb-2 text-gray-800">{subject.name}</h4>
-                              <p className="text-gray-600">{subject.description}</p>
-                            </div>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            )}
-            
-            {activeTab === 'class11hum' && (
-              <div className="space-y-8">
-                <div className="text-center mb-10">
-                  <h3 className="text-3xl font-bold text-sricblue mb-2">
-                    {curriculumData.class11hum.title}
-                  </h3>
-                  <p className="text-gray-600 text-lg">
-                    {curriculumData.class11hum.description}
-                  </p>
-                </div>
-                
-                <div className="grid md:grid-cols-2 gap-8">
-                  <div className="subject-card bg-gradient-to-br from-blue-50 to-white p-8 rounded-2xl shadow-xl border border-blue-100">
-                    <div className="flex items-center mb-8">
-                      <div className="bg-gradient-to-r from-sricblue to-blue-700 text-white rounded-full w-16 h-16 flex items-center justify-center text-2xl mr-5 shadow-lg">
-                        <i className="fas fa-landmark"></i>
-                      </div>
-                      <h3 className="text-2xl font-bold text-sricblue">Core Subjects</h3>
-                    </div>
-                    <ul className="space-y-6">
-                      {curriculumData.class11hum.subjects.core.map((subject, index) => (
-                        <li key={index} className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300">
-                          <div className="flex items-start">
-                            <div className="bg-gradient-to-r from-blue-100 to-blue-50 text-sricblue rounded-full w-12 h-12 flex items-center justify-center text-lg mr-4 shadow-sm">
-                              <i className={`fas ${subject.icon}`}></i>
-                            </div>
-                            <div className="flex-1">
-                              <h4 className="font-bold text-lg mb-2 text-gray-800">{subject.name}</h4>
-                              <p className="text-gray-600">{subject.description}</p>
-                            </div>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  
-                  <div className="subject-card bg-gradient-to-br from-blue-50 to-white p-8 rounded-2xl shadow-xl border border-blue-100">
-                    <div className="flex items-center mb-8">
-                      <div className="bg-gradient-to-r from-sricblue to-blue-700 text-white rounded-full w-16 h-16 flex items-center justify-center text-2xl mr-5 shadow-lg">
-                        <i className="fas fa-ellipsis-h"></i>
-                      </div>
-                      <h3 className="text-2xl font-bold text-sricblue">Optional Subjects</h3>
-                    </div>
-                    <ul className="space-y-6">
-                      {curriculumData.class11hum.subjects.optional.map((subject, index) => (
-                        <li key={index} className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300">
-                          <div className="flex items-start">
-                            <div className="bg-gradient-to-r from-blue-100 to-blue-50 text-sricblue rounded-full w-12 h-12 flex items-center justify-center text-lg mr-4 shadow-sm">
-                              <i className={`fas ${subject.icon}`}></i>
-                            </div>
-                            <div className="flex-1">
-                              <h4 className="font-bold text-lg mb-2 text-gray-800">{subject.name}</h4>
-                              <p className="text-gray-600">{subject.description}</p>
-                            </div>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            )}
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Enhanced Assessment Section */}
-      <section className="py-20 bg-gradient-to-r from-sricblue via-sricblue to-blue-700 text-white">
-        <div className="container mx-auto px-4">
-          <div className="max-w-6xl mx-auto text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-bold mb-6">
-              UP Board Examination Preparation
+      {/* Assessment Section - Premium Gradient */}
+      <section className="py-24 bg-gradient-to-r from-sricblue via-blue-900 to-indigo-950 text-white relative overflow-hidden">
+        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10"></div>
+        
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="max-w-4xl mx-auto text-center mb-20">
+            <h2 className="text-3xl md:text-5xl font-black mb-8 leading-tight">
+              UP Board Examination <span className="text-sricgold">Preparation</span>
             </h2>
-            <p className="text-xl max-w-4xl mx-auto opacity-90">
-              Our comprehensive assessment system ensures students are well-prepared for UP Board examinations
+            <p className="text-xl text-gray-300 leading-relaxed">
+              Our rigorous assessment systems are tailored to ensure every student is mentally and academically prepared for the state board challenges.
             </p>
           </div>
           
@@ -433,109 +246,49 @@ const Curriculum = () => {
             {assessmentFeatures.map((feature, index) => (
               <div 
                 key={index} 
-                className="bg-white/10 backdrop-blur-sm border border-white/20 p-10 rounded-2xl text-center transform transition-all duration-300 hover:scale-105 hover:bg-white/20 hover:shadow-2xl"
+                className="group bg-white/10 backdrop-blur-md border border-white/20 p-10 rounded-[2.5rem] text-center transition-all duration-500 hover:bg-white hover:-translate-y-4 shadow-2xl"
               >
-                <div className="bg-gradient-to-r from-sricgold to-yellow-500 text-white w-20 h-20 rounded-full flex items-center justify-center text-3xl mx-auto mb-6 animate-float shadow-lg">
+                <div className="w-20 h-20 bg-gradient-to-br from-sricgold to-yellow-600 text-white rounded-2xl flex items-center justify-center text-3xl mx-auto mb-8 shadow-xl transform group-hover:rotate-6 transition-transform">
                   <i className={`fas ${feature.icon}`}></i>
                 </div>
-                <h3 className="text-2xl font-bold mb-4 text-white">{feature.title}</h3>
-                <p className="text-lg opacity-90">{feature.description}</p>
-              </div>
-            ))}
-          </div>
-          
-          {/* Additional Info */}
-          <div className="mt-16 max-w-4xl mx-auto">
-            <div className="bg-white/5 backdrop-blur-sm border border-white/10 p-8 rounded-2xl">
-              <h4 className="text-2xl font-bold mb-4 text-center text-sricgold">Additional Support Systems</h4>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
-                <div className="p-4">
-                  <div className="text-3xl font-bold text-sricgold mb-2">Weekly</div>
-                  <p className="text-lg">Revision Sessions</p>
-                </div>
-                <div className="p-4">
-                  <div className="text-3xl font-bold text-sricgold mb-2">24/7</div>
-                  <p className="text-lg">Doubt Clearing Support</p>
-                </div>
-                <div className="p-4">
-                  <div className="text-3xl font-bold text-sricgold mb-2">Personalized</div>
-                  <p className="text-lg">Performance Analysis</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Enhanced Testimonial Section */}
-      <section className="py-20 bg-gradient-to-b from-white to-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="max-w-6xl mx-auto text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-6">
-              What Our Teachers Say
-            </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Our educators on the SRIC curriculum approach for UP Board
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
-            {testimonials.map((testimonial, index) => (
-              <div 
-                key={index} 
-                className={`bg-gradient-to-br ${testimonial.color} ${testimonial.textColor} p-10 rounded-3xl shadow-2xl transform transition-all duration-300 hover:scale-105`}
-              >
-                <div className="flex items-start mb-8">
-                  <div className="bg-white/20 backdrop-blur-sm rounded-full w-16 h-16 flex items-center justify-center text-2xl mr-6">
-                    <i className="fas fa-quote-left"></i>
-                  </div>
-                  <div>
-                    <h4 className="text-2xl font-bold mb-1">{testimonial.name}</h4>
-                    <p className={`text-lg ${testimonial.textColor === 'text-sricblue' ? 'text-sricblue/90' : 'text-white/90'}`}>
-                      {testimonial.role}
-                    </p>
-                  </div>
-                </div>
-                <p className="text-xl italic leading-relaxed">"{testimonial.quote}"</p>
+                <h3 className="text-2xl font-black mb-4 text-white group-hover:text-sricblue transition-colors">{feature.title}</h3>
+                <p className="text-gray-300 group-hover:text-gray-600 transition-colors leading-relaxed font-medium">{feature.description}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Enhanced Call to Action */}
-      <section className="py-20 bg-gradient-to-r from-sricgold via-yellow-500 to-yellow-400 text-sricblue">
+      {/* Modern Call to Action */}
+      <section className="py-20 lg:py-28 bg-white overflow-hidden">
         <div className="container mx-auto px-4 text-center">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-4xl md:text-6xl font-bold mb-6">
-              Want Detailed Syllabus Information?
-            </h2>
-            <p className="text-xl md:text-2xl mb-10 opacity-90">
-              Contact us for complete UP Board curriculum documents and academic planning guidance
-            </p>
-            
-            <div className="flex flex-col sm:flex-row justify-center gap-6">
-              <Link 
-                to="/contact" 
-                className="group bg-gradient-to-r from-sricblue to-blue-900 text-white font-bold py-4 px-10 rounded-xl text-lg transition-all duration-300 transform hover:scale-105 hover:shadow-2xl"
-              >
-                <span className="flex items-center justify-center">
-                  <i className="fas fa-envelope mr-3"></i>
-                  Contact Us
-                  <i className="fas fa-arrow-right ml-3 group-hover:translate-x-2 transition-transform"></i>
-                </span>
-              </Link>
-              <Link 
-                to="/programs" 
-                className="group bg-white text-sricblue font-bold py-4 px-10 rounded-xl text-lg border-2 border-sricblue transition-all duration-300 transform hover:scale-105 hover:shadow-2xl"
-              >
-                <span className="flex items-center justify-center">
-                  <i className="fas fa-list-alt mr-3"></i>
-                  View Programs
-                  <i className="fas fa-external-link-alt ml-3 group-hover:translate-x-1 transition-transform"></i>
-                </span>
-              </Link>
-            </div>
+          <div className="max-w-5xl mx-auto bg-gradient-to-br from-gray-50 to-white rounded-[3rem] p-12 md:p-20 shadow-2xl border border-gray-100 relative">
+             <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 bg-sricgold rounded-3xl flex items-center justify-center shadow-2xl rotate-12">
+                <i className="fas fa-question-circle text-4xl text-sricblue"></i>
+             </div>
+             
+             <h2 className="text-3xl md:text-5xl font-black text-sricblue mb-8">
+               Need Further Details?
+             </h2>
+             <p className="text-xl text-gray-500 mb-12 max-w-2xl mx-auto font-medium">
+               Get a copy of the detailed syllabus, academic calendar, and stream specializations from our office or contact us digitally.
+             </p>
+             
+             <div className="flex flex-col sm:flex-row justify-center gap-6">
+                <Link 
+                  to="/contact" 
+                  className="bg-sricblue text-white font-black py-5 px-12 rounded-2xl text-lg shadow-xl hover:shadow-sricblue/30 transform hover:-translate-y-1 transition-all flex items-center justify-center group"
+                >
+                  Contact Admissions
+                  <i className="fas fa-arrow-right ml-3 group-hover:translate-x-1 transition-transform"></i>
+                </Link>
+                <Link 
+                  to="/programs" 
+                  className="bg-white text-sricblue border-2 border-sricblue font-black py-5 px-12 rounded-2xl text-lg transform hover:-translate-y-1 transition-all hover:bg-sricblue hover:text-white flex items-center justify-center"
+                >
+                  View All Streams
+                </Link>
+             </div>
           </div>
         </div>
       </section>
@@ -543,27 +296,38 @@ const Curriculum = () => {
       <Footer />
 
       <style>{`
+        .no-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .no-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
         .subject-card {
-          transition: all 0.3s ease;
-          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .subject-card:hover {
-          transform: translateY(-5px);
-          box-shadow: 0 10px 25px -5px rgba(0, 35, 102, 0.2);
+          transform: scale(1.02);
+          box-shadow: 0 20px 40px -10px rgba(0, 51, 102, 0.1);
         }
         .animate-fade-in {
-          animation: fadeIn 0.5s ease-in;
+          animation: fadeIn 0.8s ease-out;
         }
-        .animate-float {
-          animation: float 3s ease-in-out infinite;
+        .animate-bounce-slow {
+          animation: bounce 3s infinite;
         }
         @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(20px); }
+          from { opacity: 0; transform: translateY(30px); }
           to { opacity: 1; transform: translateY(0); }
         }
-        @keyframes float {
+        @keyframes bounce {
           0%, 100% { transform: translateY(0); }
           50% { transform: translateY(-10px); }
+        }
+        @media (max-width: 768px) {
+          .subject-card {
+            padding: 1.5rem;
+          }
         }
       `}</style>
     </div>

@@ -132,16 +132,18 @@ const Contact = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Toast Notification */}
       {toast.show && (
-        <div className={`fixed top-8 right-8 z-50 px-6 py-4 rounded-xl text-white font-semibold shadow-2xl transform transition-all duration-500 ${
+        <div className={`fixed top-4 md:top-8 left-1/2 md:left-auto md:right-8 -translate-x-1/2 md:translate-x-0 z-[100] w-[90%] md:w-auto max-w-md px-6 py-4 rounded-2xl text-white font-bold shadow-2xl transition-all duration-500 ${
           toast.type === 'success' 
-            ? 'bg-gradient-to-r from-green-500 to-emerald-600' 
-            : 'bg-gradient-to-r from-red-500 to-pink-600'
-        } ${toast.show ? 'translate-x-0 opacity-100' : 'translate-x-32 opacity-0'}`}>
-          <div className="flex items-center">
-            <i className={`mr-3 text-xl ${
-              toast.type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle'
-            }`}></i>
-            <span className="text-lg">{toast.message}</span>
+            ? 'bg-gradient-to-r from-green-600 to-emerald-700' 
+            : 'bg-gradient-to-r from-red-600 to-pink-700'
+        } ${toast.show ? 'translate-y-0 opacity-100' : '-translate-y-20 opacity-0'}`}>
+          <div className="flex items-center justify-center md:justify-start">
+            <div className="bg-white/20 p-2 rounded-lg mr-4">
+              <i className={`text-xl ${
+                toast.type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle'
+              }`}></i>
+            </div>
+            <span className="text-base md:text-lg">{toast.message}</span>
           </div>
         </div>
       )}
