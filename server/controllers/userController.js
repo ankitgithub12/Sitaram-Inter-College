@@ -62,7 +62,7 @@ const sanitizeUsers = (users, role, creator) => {
   return users.map(u => {
     const userObj = u.toObject();
     const isCreator = creator && u.createdBy && u.createdBy.toLowerCase() === creator.toLowerCase();
-    const isMainAdmin = creator === '221205';
+    const isMainAdmin = creator === process.env.DEFAULT_ADMIN_USERNAME;
     const isRequestedRoleAdmin = role === 'admin';
     const canSeePassword = isCreator || isMainAdmin || isRequestedRoleAdmin;
 

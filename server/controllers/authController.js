@@ -64,7 +64,7 @@ exports.login = async (req, res) => {
 // Backward-compat admin login (hardcoded check)
 exports.adminLogin = (req, res) => {
   const { username, password } = req.body;
-  if (username === '221205' && password === 'Sitaram@2002') {
+  if (username === process.env.DEFAULT_ADMIN_USERNAME && password === process.env.DEFAULT_ADMIN_PASSWORD) {
     res.json({ success: true, token: 'adminToken123', role: 'admin', message: 'Login successful' });
   } else {
     res.status(401).json({ success: false, message: 'Invalid username or password' });

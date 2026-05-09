@@ -27,7 +27,7 @@ const Faculty = () => {
     });
 
     return () => observer.disconnect();
-  }, [facultyMembers, isLoading, activeDept]);
+  }, [facultyMembers, isLoading, activeDept, isProfileModalOpen]);
 
   useEffect(() => {
     const fetchFaculty = async () => {
@@ -46,7 +46,11 @@ const Faculty = () => {
     fetchFaculty();
   }, []);
 
-  const openProfile = (faculty) => {
+  const openProfile = (e, faculty) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     setSelectedFaculty(faculty);
     setIsProfileModalOpen(true);
   };
@@ -202,7 +206,7 @@ const Faculty = () => {
                   </div>
                   <div className="px-6 pb-6 mt-auto">
                     <button 
-                      onClick={() => openProfile(faculty)}
+                      onClick={(e) => openProfile(e, faculty)}
                       className="w-full bg-sricblue text-white py-3 rounded-xl font-bold hover:bg-blue-800 transition-all duration-300 transform hover:scale-[1.02] shadow-md hover:shadow-sricblue/20 flex items-center justify-center space-x-2"
                     >
                       <span>Complete Profile</span>
@@ -276,8 +280,14 @@ const Faculty = () => {
 
       {/* Faculty Profile Modal */}
       {isProfileModalOpen && selectedFaculty && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col md:flex-row animate-in zoom-in-95 duration-300">
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300"
+          onClick={() => setIsProfileModalOpen(false)}
+        >
+          <div 
+            className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col md:flex-row animate-in zoom-in-95 duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
             {/* Left side: Photo & Basic Info */}
             <div className="md:w-1/3 bg-gradient-to-br from-sricblue to-blue-900 text-white p-8 flex flex-col items-center text-center">
               <div className="w-40 h-40 rounded-2xl overflow-hidden border-4 border-white/20 shadow-2xl mb-6 transform hover:rotate-3 transition-transform duration-500">

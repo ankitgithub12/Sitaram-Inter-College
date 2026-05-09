@@ -6,7 +6,7 @@ const facultyData = [
   {
     name: "Mrs. Renu Saini",
     username: "renu_saini",
-    password: "Teacher@2026",
+    password: process.env.DEFAULT_FACULTY_PASSWORD || "ChangeMe@123",
     position: "Senior Science Teacher",
     qualification: "M.Sc (Physics), B.Ed",
     experience: "12 Years Experience",
@@ -19,7 +19,7 @@ const facultyData = [
   {
     name: "Mrs. Kiran",
     username: "kiran_teacher",
-    password: "Teacher@2026",
+    password: process.env.DEFAULT_FACULTY_PASSWORD || "ChangeMe@123",
     position: "Senior History Teacher",
     qualification: "M.A. (History), B.Ed",
     experience: "15 Years Experience",
@@ -32,7 +32,7 @@ const facultyData = [
   {
     name: "Mrs. Kamlesh",
     username: "kamlesh_teacher",
-    password: "Teacher@2026",
+    password: process.env.DEFAULT_FACULTY_PASSWORD || "ChangeMe@123",
     position: "Senior Home Science Teacher",
     qualification: "M.Sc. (Home Science), B.Ed",
     experience: "10+ Years Experience",
@@ -45,7 +45,7 @@ const facultyData = [
   {
     name: "Mr. Khempal Singh",
     username: "khempal_singh",
-    password: "Teacher@2026",
+    password: process.env.DEFAULT_FACULTY_PASSWORD || "ChangeMe@123",
     position: "Senior Hindi Teacher",
     qualification: "M.A. (Hindi), B.Ed",
     experience: "20 Years Experience",
@@ -58,7 +58,7 @@ const facultyData = [
   {
     name: "Mr. Ammar Haider",
     username: "ammar_haider",
-    password: "Teacher@2026",
+    password: process.env.DEFAULT_FACULTY_PASSWORD || "ChangeMe@123",
     position: "Senior English Teacher",
     qualification: "M.A. (English), B.Ed",
     experience: "11 Years Experience",
@@ -71,7 +71,7 @@ const facultyData = [
   {
     name: "Mr. Narotam Singh",
     username: "narotam_singh",
-    password: "Teacher@2026",
+    password: process.env.DEFAULT_FACULTY_PASSWORD || "ChangeMe@123",
     position: "Urdu Language Teacher",
     qualification: "M.A. (Urdu), B.Ed",
     experience: "14 Years Experience",
@@ -84,7 +84,7 @@ const facultyData = [
   {
     name: "Mr. Chanderpal Singh",
     username: "chanderpal_singh",
-    password: "Teacher@2026",
+    password: process.env.DEFAULT_FACULTY_PASSWORD || "ChangeMe@123",
     position: "Senior Mathematics Teacher",
     qualification: "M.Sc (Mathematics), B.Ed",
     experience: "15 Years Experience",
@@ -97,7 +97,7 @@ const facultyData = [
   {
     name: "Mr. Bablu Saini",
     username: "bablu_saini",
-    password: "Teacher@2026",
+    password: process.env.DEFAULT_FACULTY_PASSWORD || "ChangeMe@123",
     position: "Chemistry Teacher",
     qualification: "M.Sc (Chemistry), B.Ed",
     experience: "10 Years Experience",
@@ -110,7 +110,7 @@ const facultyData = [
   {
     name: "Mr. Rajpal Singh",
     username: "rajpal_singh",
-    password: "Teacher@2026",
+    password: process.env.DEFAULT_FACULTY_PASSWORD || "ChangeMe@123",
     position: "Senior Biology Teacher",
     qualification: "M.Sc (Biology), B.Ed",
     experience: "8 Years Experience",
@@ -123,7 +123,7 @@ const facultyData = [
   {
     name: "Mr. Keshav Kumar",
     username: "keshav_kumar",
-    password: "Teacher@2026",
+    password: process.env.DEFAULT_FACULTY_PASSWORD || "ChangeMe@123",
     position: "Art Teacher",
     qualification: "B.F.A",
     experience: "5 Years Experience",
@@ -136,7 +136,7 @@ const facultyData = [
   {
     name: "Mrs. Kapil Kumar",
     username: "kapil_kumar",
-    password: "Teacher@2026",
+    password: process.env.DEFAULT_FACULTY_PASSWORD || "ChangeMe@123",
     position: "Social Studies Teacher",
     qualification: "M.A. (Political Science), B.Ed",
     experience: "12 Years Experience",

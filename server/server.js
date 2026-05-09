@@ -120,15 +120,15 @@ Assignment.syncIndexes().catch(err => console.error('❌ Error syncing Assignmen
 const seedUsers = async () => {
   try {
     const defaultAdmins = [
-      { username: '221205', password: 'Sitaram@2002', role: 'admin', name: 'Administrator', email: 'admin@sric.edu.in' }
+      { username: process.env.DEFAULT_ADMIN_USERNAME || 'admin_user', password: process.env.DEFAULT_ADMIN_PASSWORD || 'ChangeMe@123', role: 'admin', name: 'Administrator', email: 'admin@sric.edu.in' }
     ];
     
     const defaultTeachers = [
-      { username: 'teacher1', password: 'Teacher@2024', role: 'teacher', name: 'John Doe', email: 'teacher1@sric.edu.in' }
+      { username: 'teacher1', password: process.env.DEFAULT_TEACHER_PASSWORD || 'ChangeMe@123', role: 'teacher', name: 'John Doe', email: 'teacher1@sric.edu.in' }
     ];
     
     const defaultStudents = [
-      { username: 'student1', password: 'Student@2024', role: 'student', name: 'Jane Smith', email: 'student1@sric.edu.in' }
+      { username: 'student1', password: process.env.DEFAULT_STUDENT_PASSWORD || 'ChangeMe@123', role: 'student', name: 'Jane Smith', email: 'student1@sric.edu.in' }
     ];
 
     // Seed Admins
