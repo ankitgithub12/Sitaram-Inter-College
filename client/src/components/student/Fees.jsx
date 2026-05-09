@@ -1084,13 +1084,7 @@ const submitPaymentToBackend = async () => {
       <Header />
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-sricblue via-blue-800 to-purple-900 text-white py-20">
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-10 left-10 w-20 h-20 bg-sricgold rounded-full"></div>
-          <div className="absolute bottom-10 right-10 w-16 h-16 bg-sricgold rounded-full"></div>
-          <div className="absolute top-1/2 left-1/4 w-12 h-12 bg-white rounded-full"></div>
-        </div>
-        
+      <section className="hero relative overflow-hidden text-white py-20">
         <div className="container mx-auto px-4 text-center relative z-10">
           <h1 className="text-4xl md:text-6xl font-bold mb-6">Fee Structure & Payment</h1>
           <p className="text-xl max-w-3xl mx-auto mb-10 bg-white/10 backdrop-blur-sm p-6 rounded-2xl border border-white/20">
@@ -1102,7 +1096,7 @@ const submitPaymentToBackend = async () => {
             <div className="bg-white/10 backdrop-blur-xl border border-white/20 p-8 rounded-[2.5rem] shadow-2xl relative group">
               <div className="absolute inset-0 bg-blue-500/20 rounded-[2.5rem] blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
               <div className="relative z-10">
-                <h3 className="text-lg font-black uppercase tracking-[3px] text-blue-300 mb-6 flex items-center justify-center">
+                <h3 className="text-lg font-black uppercase tracking-[3px] text-sricgold mb-6 flex items-center justify-center">
                   <Activity className="w-5 h-5 mr-3 animate-pulse" />
                   Instant Status Lookup
                 </h3>
@@ -1136,7 +1130,7 @@ const submitPaymentToBackend = async () => {
             {lookupResults && (
               <div className="mt-6 space-y-3 animate-in slide-in-from-top-2 duration-500">
                 {lookupResults.map((p, i) => (
-                  <div key={i} className="bg-white p-5 rounded-3xl border border-blue-100 flex items-center justify-between text-left group hover:scale-[1.02] transition-all">
+                  <div key={i} className="bg-white p-5 rounded-3xl border border-gray-100 flex items-center justify-between text-left group hover:scale-[1.02] transition-all">
                     <div className="flex items-center space-x-4">
                       <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
                         p.status === 'verified' ? 'bg-emerald-50 text-emerald-600' :
@@ -1167,7 +1161,7 @@ const submitPaymentToBackend = async () => {
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Link 
               to="/process" 
-              className="bg-white/10 hover:bg-white/20 text-white font-black py-4 px-10 rounded-2xl transition-all duration-300 border border-white/20 backdrop-blur-sm shadow-xl"
+              className="bg-transparent border-2 border-white hover:bg-white hover:text-sricblue font-black py-4 px-10 rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-xl text-center"
             >
               ADMISSION PROCESS
             </Link>
@@ -1177,7 +1171,7 @@ const submitPaymentToBackend = async () => {
                  setIsPaymentActive(true);
                  handleClassSelect('lkg'); // Default to start
               }}
-              className="bg-gradient-to-r from-sricgold to-yellow-500 hover:from-sricgold hover:to-yellow-600 text-sricblue font-black py-4 px-10 rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-2xl shadow-gold/20 flex items-center justify-center uppercase tracking-widest"
+              className="bg-sricgold hover:bg-yellow-500 text-sricblue font-black py-4 px-10 rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-2xl shadow-sricgold/20 flex items-center justify-center uppercase tracking-widest"
             >
               <IndianRupee className="w-5 h-5 mr-2" />
               Pay Fees Now
@@ -1220,8 +1214,8 @@ const submitPaymentToBackend = async () => {
                   onClick={() => handleClassSelect(item.id)}
                   className={`p-4 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 ${
                     selectedClass === item.id
-                      ? 'bg-gradient-to-r from-sricblue to-blue-700 text-white shadow-2xl'
-                      : 'bg-gradient-to-r from-gray-50 to-gray-100 text-sricblue hover:from-sricblue/10 hover:to-blue-100 border-2 border-gray-200 hover:border-sricblue'
+                      ? 'bg-sricblue text-sricgold shadow-2xl border-2 border-sricgold'
+                      : 'bg-white text-sricblue hover:bg-blue-50 border-2 border-gray-200 hover:border-sricblue'
                   }`}
                 >
                   {item.label}
@@ -1234,7 +1228,7 @@ const submitPaymentToBackend = async () => {
 
       {/* Fee Structure */}
       {selectedClass && (
-        <section className="py-16 bg-gradient-to-b from-blue-50 to-white">
+        <section className="py-16 bg-white">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto">
               <div className="text-center mb-8">
@@ -1247,7 +1241,7 @@ const submitPaymentToBackend = async () => {
               <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-200">
                 <div className="overflow-x-auto">
                   <table className="min-w-full">
-                    <thead className="bg-gradient-to-r from-sricblue to-blue-700 text-white">
+                    <thead className="bg-sricblue text-white">
                       <tr>
                         <th className="py-4 px-6 text-left text-lg font-bold">Fee Component</th>
                         <th className="py-4 px-6 text-right text-lg font-bold">Amount (₹)</th>
@@ -1299,7 +1293,7 @@ const submitPaymentToBackend = async () => {
               <div className="mt-8 text-center">
                 <button
                   onClick={handleProceedToPayment}
-                  className="bg-gradient-to-r from-sricgold to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-sricblue font-bold py-3 px-8 rounded-xl transition duration-300 transform hover:scale-105 shadow-lg"
+                  className="bg-sricgold hover:bg-yellow-500 text-sricblue font-bold py-3 px-8 rounded-xl transition duration-300 transform hover:scale-105 shadow-lg"
                 >
                   Proceed to Payment
                 </button>
@@ -1311,7 +1305,7 @@ const submitPaymentToBackend = async () => {
 
       {/* Payment Process Steps */}
       {isPaymentActive && selectedClass && (
-        <section className="py-16 bg-gradient-to-b from-white to-gray-50" id="payment-process-section">
+        <section className="py-16 bg-gray-50" id="payment-process-section">
           <div className="container mx-auto px-4">
             <div className="max-w-3xl mx-auto">
               <div className="text-center mb-12">
@@ -1326,7 +1320,7 @@ const submitPaymentToBackend = async () => {
                     <div key={step} className="flex flex-col items-center">
                       <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold mb-2 ${
                         step <= activeStep 
-                          ? 'bg-gradient-to-r from-sricblue to-blue-600 shadow-lg' 
+                          ? 'bg-sricblue shadow-lg' 
                           : 'bg-gray-300'
                       }`}>
                         {step}
@@ -1344,7 +1338,7 @@ const submitPaymentToBackend = async () => {
                 <div className="relative">
                   <div className="absolute top-1/2 left-0 right-0 h-2 bg-gray-200 transform -translate-y-1/2 rounded-full"></div>
                   <div 
-                    className="absolute top-1/2 left-0 h-2 bg-gradient-to-r from-sricblue to-blue-600 transform -translate-y-1/2 rounded-full transition-all duration-500"
+                    className="absolute top-1/2 left-0 h-2 bg-sricblue transform -translate-y-1/2 rounded-full transition-all duration-500"
                     style={{ width: `${progressPercentage}%` }}
                   ></div>
                 </div>
@@ -1819,14 +1813,14 @@ const submitPaymentToBackend = async () => {
                     <div className="flex flex-col sm:flex-row justify-center gap-4">
                       <button
                         onClick={handlePrintReceipt}
-                        className="bg-gradient-to-r from-sricblue to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-3 px-8 rounded-xl transition duration-300 transform hover:scale-105 shadow-lg"
+                        className="bg-sricblue hover:bg-blue-800 text-white font-bold py-3 px-8 rounded-xl transition duration-300 transform hover:scale-105 shadow-lg"
                       >
                         <i className="fas fa-print mr-2"></i>
                         Print Receipt
                       </button>
                       <button
                         onClick={handleNewPayment}
-                        className="bg-gradient-to-r from-sricgold to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-sricblue font-bold py-3 px-8 rounded-xl transition duration-300 transform hover:scale-105 shadow-lg"
+                        className="bg-sricgold hover:bg-yellow-500 text-sricblue font-bold py-3 px-8 rounded-xl transition duration-300 transform hover:scale-105 shadow-lg"
                       >
                         <i className="fas fa-plus-circle mr-2"></i>
                         Make Another Payment
@@ -1842,7 +1836,7 @@ const submitPaymentToBackend = async () => {
 
       {/* Floating Notice */}
       {isPaymentActive && (
-        <div className="fixed bottom-4 right-4 bg-gradient-to-r from-sricblue to-blue-600 text-white p-4 rounded-xl shadow-2xl max-w-xs z-50">
+        <div className="fixed bottom-4 right-4 bg-sricblue text-white p-4 rounded-xl shadow-2xl max-w-xs z-50">
           <div className="flex items-start">
             <i className="fas fa-info-circle text-xl mr-3 mt-1"></i>
             <div>

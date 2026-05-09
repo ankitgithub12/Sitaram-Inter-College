@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import {
   Bell, Search, Menu, Settings, LogOut, CheckCircle, XCircle, RotateCcw,
   RefreshCw, ChevronLeft, Shield, ZoomIn, ZoomOut, Download, ExternalLink,
-  X, ImageIcon, Users
+  X, ImageIcon, Users, GraduationCap, DollarSign
 } from 'lucide-react';
 import { io } from 'socket.io-client';
 import AdminSidebar from './admin/AdminSidebar';

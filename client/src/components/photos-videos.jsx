@@ -52,7 +52,7 @@ const PhotosVideos = () => {
     // Cultural Photos
     { id: 'static_20', category: 'cultural', src: '/assets/rangoli.jpeg', title: 'Rangoli Competition', description: 'Artistic Skills' },
     { id: 'static_21', category: 'cultural', src: '/assets/mehandi.jpeg', title: 'Mehandi Competition', description: 'Artistic Designs' },
-    { id: 'static_22', category: 'cultural', src: '/assets/Mehandi 2026.jpeg', title: 'Mehandi 2026', description: 'Creative Patterns' },
+    { id: 'static_22', category: 'cultural', src: '/assets/Mehandi 2025.jpeg', title: 'Mehandi 2025', description: 'Creative Patterns' },
     { id: 'static_23', category: 'cultural', src: '/assets/independence_day.jpeg', title: 'Independence Day', description: 'Patriotic Celebration' },
     { id: 'static_24', category: 'events', src: '/assets/tour_photo.jpeg', title: 'School Excursion', description: 'Learning Beyond Classroom' },
   ];
@@ -169,12 +169,12 @@ const PhotosVideos = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex flex-col">
+    <div className="min-h-screen bg-white flex flex-col">
       <Header />
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-sricblue to-blue-900 text-white py-20">
-        <div className="container mx-auto px-4 text-center">
+      <section className="hero relative overflow-hidden text-white py-20">
+        <div className="container mx-auto px-4 text-center relative z-10">
           <h1 className="text-4xl md:text-6xl font-bold mb-6">SRIC Memories Gallery</h1>
           <div className="w-24 h-1.5 bg-sricgold mx-auto mb-6 rounded-full"></div>
           <p className="text-xl max-w-3xl mx-auto">Relive the memorable moments, achievements, and celebrations that make SRIC special</p>
@@ -184,7 +184,7 @@ const PhotosVideos = () => {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-12">
         {/* Featured Events Section */}
-        <div className="bg-gradient-to-br from-sriclightblue/30 via-white to-sriclightblue/10 rounded-2xl p-8 mb-12 border border-sricblue/10 shadow-lg">
+        <div className="bg-gray-50 rounded-2xl p-8 mb-12 border border-gray-100 shadow-lg">
           <div className="event-header mb-8">
             <div className="flex items-center mb-3">
               <div className="w-1 h-10 bg-sricgold mr-4 rounded-full"></div>
@@ -316,7 +316,7 @@ const PhotosVideos = () => {
         </div>
         
         {/* Photo Albums Section */}
-        <div className="bg-gradient-to-br from-sriclightblue/30 via-white to-sriclightblue/10 rounded-2xl p-8 mb-12 border border-sricblue/10 shadow-lg">
+        <div className="bg-gray-50 rounded-2xl p-8 mb-12 border border-gray-100 shadow-lg">
           <div className="event-header mb-8">
             <div className="flex items-center mb-3">
               <div className="w-1 h-10 bg-sricgold mr-4 rounded-full"></div>
@@ -359,7 +359,7 @@ const PhotosVideos = () => {
         </div>
         
         {/* Video Gallery Section */}
-        <div className="bg-gradient-to-br from-sriclightblue/30 via-white to-sriclightblue/10 rounded-2xl p-8 border border-sricblue/10 shadow-lg">
+        <div className="bg-gray-50 rounded-2xl p-8 border border-gray-100 shadow-lg">
           <div className="event-header mb-8">
             <div className="flex items-center mb-3">
               <div className="w-1 h-10 bg-sricgold mr-4 rounded-full"></div>
@@ -414,7 +414,7 @@ const PhotosVideos = () => {
 
       {/* Image Modal */}
       {isImageModalOpen && selectedImage && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/95 backdrop-blur-md">
           <div className="relative max-w-5xl max-h-[90vh]">
             <button
               onClick={closeImageModal}

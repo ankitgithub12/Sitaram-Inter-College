@@ -49,6 +49,40 @@ const AdminContacts = ({
   viewDetails,
   setViewDetails
 }) => {
+  const handleExportCSV = () => {
+    if (contactsData.length === 0) return;
+    
+    // Define headers
+    const headers = ['Name', 'Email', 'Phone', 'Subject', 'Message', 'Date', 'Status'];
+    
+    // Map data to rows
+    const rows = contactsData.map(contact => [
+      contact.name,
+      contact.email,
+      contact.phone || 'N/A',
+      contact.subject || 'General Inquiry',
+      contact.message,
+      formatDate(contact.submittedAt),
+      contact.status
+    ]);
+    
+    // Combine headers and rows
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n');
+    
+    // Create download link
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `contact_messages_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
   
   if (viewDetails) {
     const contact = viewDetails;
@@ -137,7 +171,10 @@ const AdminContacts = ({
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 space-y-4 md:space-y-0">
           <h2 className="text-2xl font-bold text-gray-800">Contact Messages ({contactsData.length})</h2>
           <div className="flex items-center space-x-3">
-            <button className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center justify-center space-x-2 hover:bg-blue-700 transition-colors">
+            <button 
+              onClick={handleExportCSV}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center justify-center space-x-2 hover:bg-blue-700 transition-colors"
+            >
               <Download className="w-4 h-4" />
               <span>Export CSV</span>
             </button>

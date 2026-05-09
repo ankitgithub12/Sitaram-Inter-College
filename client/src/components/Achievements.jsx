@@ -162,7 +162,7 @@ const Achievements = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50">
+    <div className="min-h-screen bg-white">
       {/* Lightbox */}
       {lightboxOpen && (
         <div 
@@ -187,7 +187,7 @@ const Achievements = () => {
       <Header />
 
       {/* Enhanced Hero Section */}
-      <section className="relative bg-gradient-to-br from-sricblue via-blue-800 to-purple-900 text-white py-24 md:py-32 overflow-hidden">
+      <section className="hero relative overflow-hidden text-white py-24 md:py-32">
         {/* Animated Background Elements */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-10 left-10 w-24 h-24 bg-sricgold rounded-full animate-pulse"></div>
@@ -209,11 +209,10 @@ const Achievements = () => {
         
         <div className="container mx-auto px-4 text-center relative z-10">
           <div className="inline-block relative mb-6">
-            <div className="absolute -inset-4 bg-gradient-to-r from-sricgold to-yellow-200 rounded-full blur-2xl opacity-30"></div>
-            <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-sricgold to-yellow-200 relative">
+            <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold mb-4 text-sricgold relative">
               Academic Excellence
             </h1>
-            <div className="h-2 w-32 bg-gradient-to-r from-sricgold to-yellow-200 mx-auto mt-4 rounded-full"></div>
+            <div className="h-2 w-32 bg-sricgold mx-auto mt-4 rounded-full"></div>
           </div>
           <p className="text-xl md:text-2xl lg:text-3xl max-w-4xl mx-auto mb-8 opacity-90 font-light">
             Celebrating the Brilliant Minds Who Define Success at SRIC
@@ -243,15 +242,15 @@ const Achievements = () => {
       </section>
 
       {/* Enhanced Special Recognition Banner */}
-      <section className="py-16 bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-800 text-white relative overflow-hidden">
+      <section className="py-16 bg-sricblue text-white relative overflow-hidden">
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="container mx-auto px-4 relative z-10">
           <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 md:p-12 border border-white/20 shadow-2xl">
             <div className="flex flex-col lg:flex-row items-center">
               <div className="mb-8 lg:mb-0 lg:mr-10">
                 <div className="relative">
-                  <div className="w-24 h-24 bg-gradient-to-br from-yellow-300 to-yellow-500 rounded-2xl flex items-center justify-center shadow-2xl">
-                    <i className="fas fa-crown text-4xl text-purple-700"></i>
+                  <div className="w-24 h-24 bg-sricgold rounded-2xl flex items-center justify-center shadow-2xl">
+                    <i className="fas fa-crown text-4xl text-sricblue"></i>
                   </div>
                   <div className="absolute -top-2 -right-2 w-8 h-8 bg-green-400 rounded-full animate-ping"></div>
                 </div>
@@ -259,7 +258,7 @@ const Achievements = () => {
               <div className="text-center lg:text-left flex-1">
                 <h3 className="text-3xl md:text-4xl font-bold mb-6">🏆 State-Level Excellence Achievers 🏆</h3>
                 <p className="text-xl mb-8 leading-relaxed">
-                  Our exceptional students consistently rank in the <span className="font-bold text-yellow-300 text-2xl">TOP 1%</span> of 
+                  Our exceptional students consistently rank in the <span className="font-bold text-sricgold text-2xl">TOP 1%</span> of 
                   Uttar Pradesh Board examinations, setting new benchmarks of academic excellence year after year.
                 </p>
                 <div className="flex flex-wrap justify-center lg:justify-start gap-3 mb-6">
@@ -277,7 +276,7 @@ const Achievements = () => {
               <div className="mt-6 lg:mt-0 lg:ml-auto">
                 <a 
                   href="/assets/top_performers_certificates1.pdf" 
-                  className="inline-flex items-center px-8 py-4 bg-white text-purple-600 font-bold rounded-xl hover:bg-gray-100 transition-all transform hover:scale-105 shadow-2xl hover:shadow-3xl"
+                  className="inline-flex items-center px-8 py-4 bg-white text-sricblue font-bold rounded-xl hover:bg-gray-100 transition-all transform hover:scale-105 shadow-2xl hover:shadow-3xl"
                 >
                   <i className="fas fa-certificate text-xl mr-3"></i>
                   View All Certificates
@@ -295,10 +294,8 @@ const Achievements = () => {
         
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-800 mb-6">
-              <span className="bg-gradient-to-r from-sricblue to-purple-600 bg-clip-text text-transparent">
+            <h2 className="text-4xl md:text-5xl font-bold text-sricblue mb-6">
                 Our Academic Champions
-              </span>
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
               Meet the brilliant minds who have carved their names in the annals of SRIC's academic excellence with their outstanding performances
@@ -314,7 +311,7 @@ const Achievements = () => {
                   onClick={() => setSelectedYear(year)}
                   className={`px-6 md:px-8 py-3 md:py-4 rounded-xl font-bold text-base md:text-lg transition-all duration-300 transform ${
                     selectedYear === year
-                      ? 'bg-gradient-to-r from-sricblue to-purple-600 text-white shadow-2xl scale-105'
+                      ? 'bg-sricblue text-sricgold shadow-2xl scale-105'
                       : 'text-gray-600 hover:text-sricblue hover:bg-white hover:scale-105'
                   }`}
                 >
@@ -332,7 +329,7 @@ const Achievements = () => {
               {/* Class 12 Toppers - Enhanced Design */}
               {achievementsData[selectedYear].class12.length > 0 && (
               <div className="relative group">
-                <div className="absolute -inset-4 bg-gradient-to-r from-sricblue to-purple-600 rounded-3xl blur-2xl opacity-20 group-hover:opacity-30 transition-all duration-500"></div>
+                <div className="absolute -inset-4 bg-sricblue rounded-3xl blur-2xl opacity-10 group-hover:opacity-20 transition-all duration-500"></div>
                 <div className="relative bg-white p-8 rounded-3xl shadow-2xl border border-gray-100 hover:shadow-3xl transition-all duration-500">
                   {/* Header */}
                   <div className="flex items-center mb-10">
@@ -353,11 +350,11 @@ const Achievements = () => {
                     {achievementsData[selectedYear].class12.map((topper, index) => (
                       <div 
                         key={index} 
-                        className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-2xl border border-blue-100 hover:shadow-lg transition-all duration-300 group/item hover:scale-[1.02] relative overflow-hidden"
+                        className="bg-blue-50 p-6 rounded-2xl border border-blue-100 hover:shadow-lg transition-all duration-300 group/item hover:scale-[1.02] relative overflow-hidden"
                       >
                         {/* Top 1% Badge */}
                         {topper.top1Percent && (
-                          <div className="absolute -top-3 -right-3 bg-gradient-to-r from-sricgold to-yellow-500 text-sricblue text-xs font-bold px-4 py-2 rounded-full shadow-lg animate-pulse">
+                          <div className="absolute -top-3 -right-3 bg-sricgold text-sricblue text-xs font-bold px-4 py-2 rounded-full shadow-lg animate-pulse">
                             🏆 TOP 1% IN UP
                           </div>
                         )}
@@ -365,9 +362,9 @@ const Achievements = () => {
                         <div className="flex items-center">
                           {/* Rank Badge */}
                           <div className={`relative ${
-                            topper.rank === 1 ? 'bg-gradient-to-br from-sricgold to-yellow-500 text-sricblue' : 
-                            topper.rank === 2 ? 'bg-gradient-to-br from-gray-400 to-gray-500 text-white' : 
-                            'bg-gradient-to-br from-amber-600 to-amber-700 text-white'
+                            topper.rank === 1 ? 'bg-sricgold text-sricblue' : 
+                            topper.rank === 2 ? 'bg-gray-400 text-white' : 
+                            'bg-amber-600 text-white'
                           } w-14 h-14 rounded-2xl flex items-center justify-center text-lg font-bold shadow-lg`}>
                             {topper.rank}
                             {topper.rank === 1 && (
@@ -415,11 +412,11 @@ const Achievements = () => {
               {/* Class 10 Toppers - Enhanced Design */}
               {achievementsData[selectedYear].class10.length > 0 && (
               <div className="relative group">
-                <div className="absolute -inset-4 bg-gradient-to-r from-sricgold to-yellow-500 rounded-3xl blur-2xl opacity-20 group-hover:opacity-30 transition-all duration-500"></div>
+                <div className="absolute -inset-4 bg-sricgold rounded-3xl blur-2xl opacity-10 group-hover:opacity-20 transition-all duration-500"></div>
                 <div className="relative bg-white p-8 rounded-3xl shadow-2xl border border-gray-100 hover:shadow-3xl transition-all duration-500">
                   {/* Header */}
                   <div className="flex items-center mb-10">
-                    <div className="bg-gradient-to-br from-sricgold to-yellow-500 text-sricblue w-16 h-16 rounded-2xl flex items-center justify-center text-2xl shadow-lg">
+                    <div className="bg-sricgold text-sricblue w-16 h-16 rounded-2xl flex items-center justify-center text-2xl shadow-lg">
                       <i className="fas fa-award"></i>
                     </div>
                     <div className="ml-6">
@@ -436,14 +433,14 @@ const Achievements = () => {
                     {achievementsData[selectedYear].class10.map((topper, index) => (
                       <div 
                         key={index}
-                        className="bg-gradient-to-r from-yellow-50 to-amber-50 p-6 rounded-2xl border border-yellow-100 hover:shadow-lg transition-all duration-300 group/item hover:scale-[1.02]"
+                        className="bg-amber-50 p-6 rounded-2xl border border-yellow-100 hover:shadow-lg transition-all duration-300 group/item hover:scale-[1.02]"
                       >
                         <div className="flex items-center">
                           {/* Rank Badge */}
                           <div className={`relative ${
-                            topper.rank === 1 ? 'bg-gradient-to-br from-sricgold to-yellow-500 text-sricblue' : 
-                            topper.rank === 2 ? 'bg-gradient-to-br from-gray-400 to-gray-500 text-white' : 
-                            'bg-gradient-to-br from-amber-600 to-amber-700 text-white'
+                            topper.rank === 1 ? 'bg-sricgold text-sricblue' : 
+                            topper.rank === 2 ? 'bg-gray-400 text-white' : 
+                            'bg-amber-600 text-white'
                           } w-14 h-14 rounded-2xl flex items-center justify-center text-lg font-bold shadow-lg`}>
                             {topper.rank}
                             {topper.rank === 1 && (
@@ -478,7 +475,7 @@ const Achievements = () => {
 
           {/* View More Button */}
           <div className="text-center mt-16">
-            <button className="bg-gradient-to-r from-sricblue to-purple-600 text-white font-bold py-4 px-12 rounded-2xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 inline-flex items-center group">
+            <button className="bg-sricblue text-white font-bold py-4 px-12 rounded-2xl hover:bg-blue-800 hover:shadow-2xl transition-all duration-300 transform hover:scale-105 inline-flex items-center group">
               <span>View Complete Toppers List</span>
               <i className="fas fa-arrow-right ml-3 group-hover:translate-x-2 transition-transform"></i>
             </button>
@@ -487,14 +484,12 @@ const Achievements = () => {
       </section>
 
       {/* Enhanced Subject Excellence Section */}
-      <section className="py-20 bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 relative overflow-hidden">
+      <section className="py-20 bg-gray-50 relative overflow-hidden">
         <div className="absolute inset-0 bg-white/50"></div>
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-800 mb-6">
-              <span className="bg-gradient-to-r from-sricblue to-purple-600 bg-clip-text text-transparent">
+            <h2 className="text-4xl md:text-5xl font-bold text-sricblue mb-6">
                 Subject Mastery
-              </span>
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Exceptional performance across all academic disciplines showcasing comprehensive excellence
@@ -507,7 +502,7 @@ const Achievements = () => {
                 key={index}
                 className="bg-white p-6 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-3 border border-gray-100 group"
               >
-                <div className="bg-gradient-to-br from-sricblue to-blue-600 text-white w-20 h-20 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                <div className="bg-sricblue text-white w-20 h-20 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300">
                   <i className={`fas ${subject.icon}`}></i>
                 </div>
                 <h3 className="text-xl font-bold text-center mb-3 text-gray-800 group-hover:text-sricblue transition-colors">
@@ -534,13 +529,11 @@ const Achievements = () => {
 
       {/* Enhanced Gallery Section */}
       <section className="py-20 bg-white relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 to-purple-50/30"></div>
+        <div className="absolute inset-0 bg-gray-50/50"></div>
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-800 mb-6">
-              <span className="bg-gradient-to-r from-sricblue to-purple-600 bg-clip-text text-transparent">
+            <h2 className="text-4xl md:text-5xl font-bold text-sricblue mb-6">
                 Moments of Pride
-              </span>
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Capturing the joy and celebration of our students' remarkable achievements
@@ -584,7 +577,7 @@ const Achievements = () => {
           <div className="text-center mt-16">
             <Link 
               to="/photos-videos" 
-              className="inline-flex items-center justify-center bg-gradient-to-r from-sricblue to-purple-600 text-white font-bold py-4 px-12 rounded-2xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 group"
+              className="inline-flex items-center justify-center bg-sricblue text-white font-bold py-4 px-12 rounded-2xl hover:bg-blue-800 hover:shadow-2xl transition-all duration-300 transform hover:scale-105 group"
             >
               <i className="fas fa-images text-xl mr-4 group-hover:scale-110 transition-transform"></i>
               Explore Full Achievement Gallery
@@ -595,7 +588,7 @@ const Achievements = () => {
       </section>
 
       {/* Enhanced Inspirational Call to Action */}
-      <section className="py-24 bg-gradient-to-r from-sricgold via-sricgold to-amber-400 text-sricblue relative overflow-hidden">
+      <section className="py-24 bg-sricgold text-sricblue relative overflow-hidden">
         {/* Animated Background */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-0 left-0 w-40 h-40 bg-sricblue rounded-full animate-pulse"></div>
@@ -605,7 +598,7 @@ const Achievements = () => {
         
         <div className="container mx-auto px-4 text-center relative z-10">
           <h2 className="text-5xl md:text-6xl font-bold mb-8">
-            Ready to Write Your <span className="bg-clip-text text-transparent bg-gradient-to-r from-sricblue to-purple-600">Success Story</span>?
+            Ready to Write Your <span className="text-sricblue">Success Story</span>?
           </h2>
           <p className="text-2xl max-w-3xl mx-auto mb-12 font-semibold leading-relaxed">
             Join the legacy of academic excellence and become our next proud achiever at SRIC Senior Secondary School
