@@ -622,25 +622,26 @@ const AdmissionForm = () => {
 
       {/* Print Modal */}
       {showPrintModal && printData && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
-            <div className="p-6 border-b border-gray-200 flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-sricblue">
-                <i className="fas fa-print mr-3"></i>
-                Print Admission Form
+        <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-2 sm:p-4 animate-fadeIn">
+          <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[95vh] sm:max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
+            <div className="p-4 sm:p-6 border-b border-gray-200 flex justify-between items-center bg-gray-50 flex-shrink-0">
+              <h2 className="text-xl sm:text-2xl font-bold text-sricblue flex items-center">
+                <i className="fas fa-print mr-3 text-blue-600"></i>
+                <span className="truncate">Print Admission Form</span>
               </h2>
               <button
                 onClick={() => setShowPrintModal(false)}
-                className="text-gray-500 hover:text-gray-700 text-2xl"
+                className="text-gray-400 hover:text-gray-600 transition-colors p-2"
+                aria-label="Close modal"
               >
-                <i className="fas fa-times"></i>
+                <i className="fas fa-times text-xl"></i>
               </button>
             </div>
-            <div className="p-6 overflow-y-auto max-h-[70vh]">
-              <div className="mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl border-2 border-blue-200">
-                <h3 className="font-bold text-sricblue text-xl mb-3">
-                  <i className="fas fa-exclamation-triangle mr-2 text-yellow-500"></i>
-                  Important Instructions
+            <div className="p-4 sm:p-6 overflow-y-auto flex-grow">
+              <div className="mb-6 bg-blue-50 p-4 sm:p-6 rounded-xl border-2 border-blue-100">
+                <h3 className="font-bold text-blue-900 text-lg sm:text-xl mb-3 flex items-center">
+                  <i className="fas fa-info-circle mr-2 text-blue-500"></i>
+                  Instructions
                 </h3>
                 <ul className="space-y-2 text-blue-800">
                   <li className="flex items-start">
@@ -658,24 +659,24 @@ const AdmissionForm = () => {
                 </ul>
               </div>
               
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <div className="text-sm text-gray-600">Application ID</div>
-                  <div className="font-mono font-bold">{printData._id.substring(0, 8)}...</div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-6">
+                <div className="bg-gray-50 p-3 sm:p-4 rounded-lg border border-gray-100">
+                  <div className="text-xs sm:text-sm text-gray-500 uppercase font-semibold">Application ID</div>
+                  <div className="font-mono font-bold text-gray-800 break-all">{printData._id}</div>
                 </div>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <div className="text-sm text-gray-600">Student Name</div>
-                  <div className="font-bold text-lg">{printData.name}</div>
+                <div className="bg-gray-50 p-3 sm:p-4 rounded-lg border border-gray-100">
+                  <div className="text-xs sm:text-sm text-gray-500 uppercase font-semibold">Student Name</div>
+                  <div className="font-bold text-gray-800">{printData.name}</div>
                 </div>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <div className="text-sm text-gray-600">Admission Class</div>
-                  <div className="font-bold">{printData.admissionClass}</div>
+                <div className="bg-gray-50 p-3 sm:p-4 rounded-lg border border-gray-100">
+                  <div className="text-xs sm:text-sm text-gray-500 uppercase font-semibold">Class</div>
+                  <div className="font-bold text-gray-800">{printData.admissionClass}</div>
                 </div>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <div className="text-sm text-gray-600">Application Status</div>
-                  <div className={`font-bold ${
-                    printData.status === 'pending' ? 'text-yellow-600' :
-                    printData.status === 'approved' ? 'text-green-600' : 'text-red-600'
+                <div className="bg-gray-50 p-3 sm:p-4 rounded-lg border border-gray-100">
+                  <div className="text-xs sm:text-sm text-gray-500 uppercase font-semibold">Status</div>
+                  <div className={`font-bold inline-flex items-center px-2 py-1 rounded text-xs sm:text-sm ${
+                    printData.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                    printData.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                   }`}>
                     {printData.status.toUpperCase()}
                   </div>
@@ -686,20 +687,20 @@ const AdmissionForm = () => {
                 The print preview will open in a new window. After printing, close the window to return here.
               </div>
             </div>
-            <div className="p-6 border-t border-gray-200 flex justify-end space-x-4">
+            <div className="p-4 sm:p-6 border-t border-gray-200 flex flex-col sm:flex-row justify-end gap-3 bg-gray-50 flex-shrink-0">
               <button
                 onClick={() => setShowPrintModal(false)}
-                className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all"
+                className="order-2 sm:order-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-white transition-all font-semibold"
               >
                 Cancel
               </button>
               <button
                 onClick={handlePrint}
                 disabled={isLoadingPrintData}
-                className="px-6 py-3 bg-gradient-to-r from-sricblue to-blue-700 text-white rounded-xl hover:from-blue-800 hover:to-blue-600 transition-all disabled:opacity-50"
+                className="order-1 sm:order-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-xl hover:from-blue-700 hover:to-indigo-800 transition-all shadow-lg hover:shadow-xl font-bold flex items-center justify-center disabled:opacity-50"
               >
                 <i className="fas fa-print mr-2"></i>
-                {isLoadingPrintData ? 'Loading...' : 'Print Now'}
+                {isLoadingPrintData ? 'Preparing...' : 'Print Now'}
               </button>
             </div>
           </div>
